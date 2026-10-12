@@ -37,6 +37,30 @@ def get_booking(
 @router.post("/api/bookings")
 @router.post("/api/v1/bookings")
 def create_booking(payload: BookingCreateSchema, db: Session = Depends(get_db)):
+    # 1. Strict Server-Side Date Validation: checkout > checkin (minimum 1 night)
+    try:
+        d1 = datetime.strptime(payload.checkIn, "%Y-%m-%d").date()
+        d2 = datetime.strptime(payload.checkOut, "%Y-%m-%d").date()
+        if d2 <= d1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Invalid reservation dates: Check-out date must be strictly after check-in date (minimum stay: 1 night)."
+            )
+        calculated_nights = (d2 - d1).days
+    except ValueError:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid date format. Expected YYYY-MM-DD."
+        )
+
+    # 2. Authoritative Server-Side Pricing Calculation (Nightly Rate * Nights + 18% GST - Discount)
+    base_rate = payload.baseRate or 38000
+    nights = calculated_nights
+    subtotal = base_rate * nights
+    taxes = round(subtotal * 0.18)
+    discount = payload.discount or 0
+    total_amount = subtotal + taxes - discount
+
     base_num = 1029 + db.query(Booking).count()
     booking_id = f"NH-{base_num}"
     while db.query(Booking).filter(Booking.id == booking_id).first():
@@ -56,12 +80,12 @@ def create_booking(payload: BookingCreateSchema, db: Session = Depends(get_db)):
         room_id=payload.roomId,
         check_in=payload.checkIn,
         check_out=payload.checkOut,
-        nights=payload.nights or 1,
+        nights=nights,
         guests=payload.guests,
-        base_rate=payload.baseRate or 38000,
-        taxes=payload.taxes or 6840,
-        discount=payload.discount or 0,
-        total_amount=payload.totalAmount or 44840,
+        base_rate=base_rate,
+        taxes=taxes,
+        discount=discount,
+        total_amount=total_amount,
         payment_status=payload.paymentStatus or "PAID",
         booking_status=payload.bookingStatus or "Confirmed",
         payment_method=payload.paymentMethod or "Razorpay",
@@ -137,6 +161,12 @@ def delete_booking(
     b = db.query(Booking).filter(Booking.id == booking_id).first()
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
+
+    # Clean up associated payments to prevent analytics data pollution
+    linked_payments = db.query(Payment).filter(Payment.booking_id == booking_id).all()
+    for p in linked_payments:
+        db.delete(p)
+
     db.delete(b)
     db.commit()
     return {"success": True, "deleted": booking_id}

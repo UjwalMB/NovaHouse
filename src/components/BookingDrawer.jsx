@@ -29,6 +29,21 @@ import { checkAvailability } from '../services/bookingApi';
 export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
   const [checkIn, setCheckIn] = useState('2026-10-18');
   const [checkOut, setCheckOut] = useState('2026-10-21');
+
+  const getMinCheckOut = (inDateStr) => {
+    if (!inDateStr) return '';
+    const d = new Date(inDateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleCheckInChange = (newIn) => {
+    setCheckIn(newIn);
+    const minOut = getMinCheckOut(newIn);
+    if (!checkOut || checkOut <= newIn) {
+      setCheckOut(minOut);
+    }
+  };
   const [guests, setGuests] = useState('2 Guests');
   const [roomId, setRoomId] = useState(defaultRoomId || 'deluxe-room');
   const [guestName, setGuestName] = useState('');
@@ -110,10 +125,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
     try {
       const d1 = new Date(checkIn);
       const d2 = new Date(checkOut);
-      const diff = Math.ceil(Math.abs(d2 - d1) / (1000 * 60 * 60 * 24));
+      const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
       return isNaN(diff) || diff <= 0 ? 1 : diff;
     } catch {
-      return 3;
+      return 1;
     }
   };
 
@@ -733,7 +748,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                   <input
                     type="date"
                     value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
+                    onChange={(e) => handleCheckInChange(e.target.value)}
                     className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                     required
@@ -746,6 +761,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                   <input
                     type="date"
                     value={checkOut}
+                    min={getMinCheckOut(checkIn)}
                     onChange={(e) => setCheckOut(e.target.value)}
                     className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}

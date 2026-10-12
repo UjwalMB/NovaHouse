@@ -20,6 +20,21 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   const [activeOrderData, setActiveOrderData] = useState(null);
   const [availabilityMessage, setAvailabilityMessage] = useState('');
 
+  const getMinCheckOut = (inDateStr) => {
+    if (!inDateStr) return '';
+    const d = new Date(inDateStr);
+    d.setDate(d.getDate() + 1);
+    return d.toISOString().split('T')[0];
+  };
+
+  const handleCheckInChange = (newIn) => {
+    setCheckIn(newIn);
+    const minOut = getMinCheckOut(newIn);
+    if (!checkOut || checkOut <= newIn) {
+      setCheckOut(minOut);
+    }
+  };
+
   // Compute stay details
   const selectedRoom = ROOMS_DATA.find((r) => r.id === selectedRoomId) || ROOMS_DATA[0];
 
@@ -27,11 +42,11 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     try {
       const d1 = new Date(checkIn);
       const d2 = new Date(checkOut);
-      const diffTime = Math.abs(d2 - d1);
+      const diffTime = d2 - d1;
       const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
       return isNaN(diffDays) || diffDays <= 0 ? 1 : diffDays;
     } catch {
-      return 3;
+      return 1;
     }
   };
 
@@ -230,7 +245,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   <input
                     type="date"
                     value={checkIn}
-                    onChange={(e) => setCheckIn(e.target.value)}
+                    onChange={(e) => handleCheckInChange(e.target.value)}
                     className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
                     required
                   />
@@ -245,6 +260,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   <input
                     type="date"
                     value={checkOut}
+                    min={getMinCheckOut(checkIn)}
                     onChange={(e) => setCheckOut(e.target.value)}
                     className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
                     required
