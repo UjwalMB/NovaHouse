@@ -1,6 +1,6 @@
 from typing import List, Dict, Any, Optional
 from datetime import datetime, date
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel, Field
 from sqlalchemy.orm import Session
 from ..core.database import get_db
@@ -8,31 +8,32 @@ from ..schemas.booking import BookingCreateSchema, BookingOutSchema
 from ..services.booking_service import booking_service
 from ..models.booking import Booking
 from ..models.payment import Payment
+from .auth import require_roles
+from .rooms import ROOMS_LIST  # Re-export for backward compatibility
 
 router = APIRouter(tags=["Bookings"])
 
-class AvailabilityCheckSchema(BaseModel):
-    check_in: Optional[str] = None
-    check_out: Optional[str] = None
-    checkIn: Optional[str] = None
-    checkOut: Optional[str] = None
-    guests: Optional[int] = 2
-    room_id: Optional[str] = None
-    roomId: Optional[str] = None
-
 @router.get("/api/bookings")
 @router.get("/api/v1/bookings")
-def get_bookings(db: Session = Depends(get_db)):
+def get_bookings(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     return booking_service.get_all(db)
 
 @router.get("/api/bookings/{booking_id}")
 @router.get("/api/v1/bookings/{booking_id}")
-def get_booking(booking_id: str, db: Session = Depends(get_db)):
+def get_booking(
+    booking_id: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     b = booking_service.get_by_id(db, booking_id)
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
     return b
 
+# Public booking creation (Customer Website + Staff Terminal)
 @router.post("/api/bookings")
 @router.post("/api/v1/bookings")
 def create_booking(payload: BookingCreateSchema, db: Session = Depends(get_db)):
@@ -93,11 +94,17 @@ def create_booking(payload: BookingCreateSchema, db: Session = Depends(get_db)):
     db.commit()
     return booking_service.get_by_id(db, booking_id)
 
+# Operational status changes (Requires ADMIN or MANAGER; ANALYST is denied with 403)
 @router.patch("/api/bookings/{booking_id}")
 @router.patch("/api/v1/bookings/{booking_id}")
 @router.put("/api/bookings/{booking_id}")
 @router.put("/api/v1/bookings/{booking_id}")
-def update_booking(booking_id: str, updates: Dict[str, Any], db: Session = Depends(get_db)):
+def update_booking(
+    booking_id: str,
+    updates: Dict[str, Any],
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     b = db.query(Booking).filter(Booking.id == booking_id).first()
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -122,7 +129,11 @@ def update_booking(booking_id: str, updates: Dict[str, Any], db: Session = Depen
 
 @router.delete("/api/bookings/{booking_id}")
 @router.delete("/api/v1/bookings/{booking_id}")
-def delete_booking(booking_id: str, db: Session = Depends(get_db)):
+def delete_booking(
+    booking_id: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     b = db.query(Booking).filter(Booking.id == booking_id).first()
     if not b:
         raise HTTPException(status_code=404, detail="Booking not found")
@@ -132,10 +143,13 @@ def delete_booking(booking_id: str, db: Session = Depends(get_db)):
 
 @router.get("/api/stats")
 @router.get("/api/v1/stats")
-def get_stats(db: Session = Depends(get_db)):
+def get_stats(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     bookings = db.query(Booking).all()
     payments = db.query(Payment).all()
-    today_str = "2026-10-12"
+    today_str = datetime.utcnow().strftime("%Y-%m-%d")
     
     total_bookings = len(bookings)
     today_bookings = len([
@@ -156,265 +170,25 @@ def get_stats(db: Session = Depends(get_db)):
         if p.status == "PAID" and p.created_at and p.created_at.strftime("%Y-%m-%d") == today_str
     )
     
-    total_rooms = len(ROOMS_LIST)
+    total_rooms_count = len(ROOMS_LIST)
     occupied_count = len([
         b for b in bookings 
         if b.booking_status in ["Checked In", "Confirmed"] and b.check_in <= today_str <= b.check_out
     ])
-    available_rooms = max(0, total_rooms - occupied_count)
-    occupancy_rate = round((occupied_count / total_rooms) * 100) if total_rooms > 0 else 0
-
+    available_rooms = max(0, total_rooms_count - occupied_count)
+    occupancy_rate = round((occupied_count / total_rooms_count) * 100) if total_rooms_count > 0 else 0
+    
     return {
-        "todayRevenue": today_revenue,
-        "totalRevenue": net_revenue,
-        "todayBookings": today_bookings,
         "totalBookings": total_bookings,
+        "todayBookings": today_bookings,
         "confirmedBookings": confirmed_bookings,
         "pendingPayments": pending_payments,
-        "cancelled": cancelled_bookings,
-        "availableRooms": available_rooms,
-        "occupancyRate": occupancy_rate,
+        "cancelledBookings": cancelled_bookings,
+        "totalRevenue": net_revenue,
+        "todayRevenue": today_revenue,
         "refundsTotal": total_refunds,
-        "refundsCount": len([p for p in payments if p.status in ["REFUNDED", "PARTIALLY_REFUNDED"]]),
-    }
-
-ROOMS_LIST = [
-    {
-        "id": "101",
-        "slug": "courtyard-room",
-        "name": "Deluxe Courtyard 101",
-        "type": "Deluxe Room",
-        "category": "Rooms",
-        "floor": "1st Floor",
-        "roomNumber": "101",
-        "capacity": 2,
-        "bedType": "King Bed",
-        "size": "42 m²",
-        "price": 18500,
-        "status": "Available"
-    },
-    {
-        "id": "102",
-        "slug": "deluxe-room",
-        "name": "Deluxe Courtyard 102",
-        "type": "Deluxe Room",
-        "category": "Rooms",
-        "floor": "1st Floor",
-        "roomNumber": "102",
-        "capacity": 2,
-        "bedType": "King Bed",
-        "size": "42 m²",
-        "price": 18500,
-        "status": "Occupied"
-    },
-    {
-        "id": "201",
-        "slug": "premier-room",
-        "name": "Premier Garden 201",
-        "type": "Premier Room",
-        "category": "Rooms",
-        "floor": "2nd Floor",
-        "roomNumber": "201",
-        "capacity": 2,
-        "bedType": "King Bed",
-        "size": "56 m²",
-        "price": 24000,
-        "status": "Available"
-    },
-    {
-        "id": "301",
-        "slug": "nova-suite",
-        "name": "Nova Suite 301",
-        "type": "Suite",
-        "category": "Suites",
-        "floor": "3rd Floor",
-        "roomNumber": "301",
-        "capacity": 3,
-        "bedType": "King Bed",
-        "size": "85 m²",
-        "price": 38000,
-        "status": "Available"
-    },
-    {
-        "id": "401",
-        "slug": "terrace-suite",
-        "name": "Terrace Garden Suite 401",
-        "type": "Suite",
-        "category": "Suites",
-        "floor": "4th Floor",
-        "roomNumber": "401",
-        "capacity": 3,
-        "bedType": "King Bed",
-        "size": "110 m²",
-        "price": 48000,
-        "status": "Available"
-    },
-    {
-        "id": "501",
-        "slug": "penthouse",
-        "name": "The Bengaluru Penthouse 501",
-        "type": "Penthouse",
-        "category": "Signature",
-        "floor": "5th Floor",
-        "roomNumber": "501",
-        "capacity": 4,
-        "bedType": "Presidential King",
-        "size": "195 m²",
-        "price": 85000,
-        "status": "Occupied"
-    }
-]
-
-@router.get("/api/rooms")
-@router.get("/api/v1/rooms")
-def get_rooms():
-    return ROOMS_LIST
-
-@router.get("/api/rooms/{room_id}")
-@router.get("/api/v1/rooms/{room_id}")
-def get_room(room_id: str):
-    r = next((
-        rm for rm in ROOMS_LIST 
-        if rm["id"] == room_id or rm.get("slug") == room_id or rm.get("roomNumber") == room_id
-    ), None)
-    return r
-
-@router.patch("/api/rooms/{room_id}")
-@router.patch("/api/v1/rooms/{room_id}")
-@router.put("/api/rooms/{room_id}")
-@router.put("/api/v1/rooms/{room_id}")
-def update_room(room_id: str, updates: Dict[str, Any], db: Session = Depends(get_db)):
-    r = next((
-        rm for rm in ROOMS_LIST 
-        if rm["id"] == room_id or rm.get("slug") == room_id or rm.get("roomNumber") == room_id
-    ), None)
-    if not r:
-        raise HTTPException(status_code=404, detail=f"Room '{room_id}' not found")
-        
-    for k, v in updates.items():
-        if k in r:
-            r[k] = v
-        elif k == "basePrice" or k == "price":
-            r["price"] = float(v)
-        elif k == "roomNumber":
-            r["roomNumber"] = str(v)
-            
-    # Also update database Room table if model exists
-    from ..models.room import Room as RoomModel
-    db_room = db.query(RoomModel).filter((RoomModel.id == room_id) | (RoomModel.room_number == room_id)).first()
-    if db_room:
-        if "status" in updates:
-            db_room.status = updates["status"]
-        if "price" in updates or "basePrice" in updates:
-            db_room.base_price = float(updates.get("price") or updates.get("basePrice"))
-        if "name" in updates or "title" in updates:
-            db_room.title = updates.get("name") or updates.get("title")
-        db.commit()
-        
-    return r
-
-@router.post("/api/rooms")
-@router.post("/api/v1/rooms")
-def create_room(payload: Dict[str, Any], db: Session = Depends(get_db)):
-    new_id = str(payload.get("id") or (len(ROOMS_LIST) + 101))
-    room_entry = {
-        "id": new_id,
-        "slug": payload.get("slug", f"room-{new_id}"),
-        "name": payload.get("name") or payload.get("title", f"Sanctuary {new_id}"),
-        "type": payload.get("type", "Deluxe Room"),
-        "category": payload.get("category", "Rooms"),
-        "floor": payload.get("floor", "1st Floor"),
-        "roomNumber": str(payload.get("roomNumber", new_id)),
-        "capacity": int(payload.get("capacity", 2)),
-        "bedType": payload.get("bedType", "King Bed"),
-        "size": payload.get("size", "45 m²"),
-        "price": float(payload.get("price") or payload.get("basePrice", 18500)),
-        "status": payload.get("status", "Available")
-    }
-    ROOMS_LIST.append(room_entry)
-    return room_entry
-
-@router.post("/api/availability/check")
-@router.post("/api/v1/availability/check")
-def check_availability(payload: AvailabilityCheckSchema, db: Session = Depends(get_db)):
-    effective_check_in = payload.checkIn or payload.check_in or "2026-10-18"
-    effective_check_out = payload.checkOut or payload.check_out or "2026-10-21"
-    requested_room = payload.roomId or payload.room_id
-    guest_count = payload.guests or 2
-
-    # Query active bookings from database
-    active_bookings = db.query(Booking).filter(Booking.booking_status != "Cancelled").all()
-
-    # Determine overlapping bookings: (StartA < EndB) and (EndA > StartB)
-    booked_room_identifiers = set()
-    for b in active_bookings:
-        if b.check_in < effective_check_out and b.check_out > effective_check_in:
-            if b.room_id:
-                booked_room_identifiers.add(b.room_id)
-            if b.room_number:
-                booked_room_identifiers.add(b.room_number)
-
-    # Process room catalog availability and calculate stay pricing
-    try:
-        d1 = datetime.strptime(effective_check_in, "%Y-%m-%d")
-        d2 = datetime.strptime(effective_check_out, "%Y-%m-%d")
-        nights = max(1, (d2 - d1).days)
-    except Exception:
-        nights = 1
-
-    rooms_status = []
-    for r in ROOMS_LIST:
-        is_booked = (
-            r["id"] in booked_room_identifiers or 
-            r.get("slug") in booked_room_identifiers or 
-            r.get("roomNumber") in booked_room_identifiers
-        )
-        
-        price_per_night = r.get("price", 18500)
-        subtotal = price_per_night * nights
-        taxes = round(subtotal * 0.18)
-        total = subtotal + taxes
-
-        room_data = {
-            **r,
-            "status": "Occupied" if is_booked else "Available",
-            "isAvailable": not is_booked,
-            "nights": nights,
-            "baseRate": price_per_night,
-            "subtotal": subtotal,
-            "taxes": taxes,
-            "totalAmount": total,
-        }
-        rooms_status.append(room_data)
-
-    available_rooms = [r for r in rooms_status if r["isAvailable"]]
-    booked_rooms = [r for r in rooms_status if not r["isAvailable"]]
-
-    # Check specific room if requested
-    is_requested_available = True
-    target_room_info = None
-    if requested_room:
-        match = next((
-            r for r in rooms_status 
-            if r["id"] == requested_room or r.get("slug") == requested_room or r.get("roomNumber") == requested_room
-        ), None)
-        if match:
-            is_requested_available = match["isAvailable"]
-            target_room_info = match
-        else:
-            is_booked = requested_room in booked_room_identifiers
-            is_requested_available = not is_booked
-
-    return {
-        "available": is_requested_available if requested_room else len(available_rooms) > 0,
-        "checkIn": effective_check_in,
-        "checkOut": effective_check_out,
-        "nights": nights,
-        "requestedRoomId": requested_room,
-        "room": target_room_info,
         "availableRooms": available_rooms,
-        "bookedRooms": booked_rooms,
-        "totalAvailableCount": len(available_rooms),
-        "totalRooms": len(rooms_status),
+        "occupiedRooms": occupied_count,
+        "occupancyRate": occupancy_rate,
+        "totalRooms": total_rooms_count
     }
-

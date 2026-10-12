@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base, SessionLocal, is_sqlite
 from .models import Booking, Payment, Room, Guest
-from .routes import payments, bookings, auth, guests, dashboard
+from .routes import payments, bookings, auth, guests, dashboard, rooms, availability
 from .services.booking_service import booking_service
 
 # Auto-create database tables on startup
@@ -22,7 +22,7 @@ app = FastAPI(
     description="Official REST API & Razorpay Payment Gateway integration for NOVA HOUSE Boutique Hotel."
 )
 
-# CORS Configuration
+# CORS Configuration - Explicit whitelist (No wildcards)
 origins = list(settings.ALLOWED_ORIGINS) if settings.ALLOWED_ORIGINS else []
 default_allowed = [
     "http://127.0.0.1:5173",
@@ -43,7 +43,6 @@ for d in default_allowed:
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
-    allow_origin_regex=r"^https:\/\/.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -53,6 +52,10 @@ app.add_middleware(
 app.include_router(payments.router, prefix="/api/payments")
 app.include_router(payments.router, prefix="/api/v1/payments")
 app.include_router(bookings.router)
+app.include_router(rooms.router)
+app.include_router(rooms.rooms_compat_router)
+app.include_router(availability.router)
+app.include_router(availability.availability_compat_router)
 app.include_router(auth.router)
 app.include_router(auth.auth_compat_router)
 app.include_router(guests.router)

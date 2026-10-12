@@ -6,7 +6,7 @@ import { loginDashboard } from '../services/authService';
 export default function DashboardLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('analyst@novahouse.com');
-  const [password, setPassword] = useState('Admin@Nova2026');
+  const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -31,7 +31,6 @@ export default function DashboardLogin() {
 
   const setDemoRole = (roleEmail) => {
     setEmail(roleEmail);
-    setPassword('Admin@Nova2026');
   };
 
   return (

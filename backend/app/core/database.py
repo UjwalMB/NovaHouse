@@ -83,7 +83,7 @@ try:
         with engine.connect() as _test_conn:
             pass
 except Exception as _conn_err:
-    print(f"⚠️ Warning: Remote database connection failed ({_conn_err}). Falling back to local novahouse.db")
+    print(f"⚠️ Warning: Remote database connection failed ({type(_conn_err).__name__}). Falling back to local novahouse.db")
     base_dir = Path(__file__).resolve().parent.parent.parent.parent
     fallback_url = f"sqlite:///{base_dir / 'novahouse.db'}"
     is_sqlite = True

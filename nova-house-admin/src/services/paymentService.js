@@ -8,7 +8,8 @@
  * - Payment dossiers linked to guest reservations
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE = RAW_API_BASE.replace(/\/+$/, '').replace(/\/api(\/v1)?$/, '');
 
 // Fallback demo transactions adhering to Awwwards luxury design system
 const FALLBACK_PAYMENTS = [
@@ -114,10 +115,23 @@ const FALLBACK_PAYMENTS = [
   },
 ];
 
+function getAuthHeaders() {
+  const token = localStorage.getItem('nova_admin_token');
+  const headers = {
+    'Accept': 'application/json',
+    'Content-Type': 'application/json',
+  };
+  if (token) {
+    headers['Authorization'] = `Bearer ${token}`;
+  }
+  return headers;
+}
+
 function fetchWithTimeout(url, options = {}, timeoutMs = 3500) {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  return fetch(url, { ...options, signal: controller.signal })
+  const mergedHeaders = { ...getAuthHeaders(), ...(options.headers || {}) };
+  return fetch(url, { ...options, headers: mergedHeaders, signal: controller.signal })
     .finally(() => clearTimeout(timeoutId));
 }
 

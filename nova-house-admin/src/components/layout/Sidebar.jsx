@@ -111,6 +111,7 @@ export default function Sidebar({ onCloseMobile }) {
         </nav>
       </div>
 
+      <div className="admin-sidebar-footer">
         {/* Independent Portals */}
         <a
           href={import.meta.env.VITE_DASHBOARD_URL || "http://127.0.0.1:5175"}

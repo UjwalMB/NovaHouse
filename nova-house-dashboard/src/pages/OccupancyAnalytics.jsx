@@ -44,10 +44,10 @@ export default function OccupancyAnalytics() {
           Inventory Management
         </span>
         <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', marginTop: '4px' }}>
-          Occupancy & Capacity Forecast
+          Occupancy & Capacity Trends
         </h1>
         <p style={{ fontSize: '13px', color: 'var(--text-muted)', marginTop: '4px' }}>
-          Predictive 7-day booking density curve and floor-by-floor architectural utilization.
+          7-day occupancy trends and floor-by-floor architectural utilization.
         </p>
       </div>
 
@@ -73,10 +73,10 @@ export default function OccupancyAnalytics() {
         />
       </div>
 
-      {/* 7-Day Occupancy Forecast Curve */}
+      {/* 7-Day Occupancy Trends Curve */}
       <ChartCard
-        title="7-Day Forward Occupancy Projection"
-        subtitle="Expected room utilization rate based on verified reservations"
+        title="7-Day Forward Occupancy Trends"
+        subtitle="Observed room utilization rate based on verified reservations"
       >
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart data={data?.occupancyTimeline || []} margin={{ top: 10, right: 10, left: 10, bottom: 0 }}>
@@ -91,7 +91,7 @@ export default function OccupancyAnalytics() {
             <YAxis stroke="#8E8A82" fontSize={11} fontFamily="var(--font-mono)" domain={[0, 100]} tickFormatter={(v) => `${v}%`} />
             <Tooltip
               contentStyle={{ background: '#18181D', border: '1px solid rgba(255, 255, 255, 0.15)', borderRadius: '4px', fontFamily: 'var(--font-mono)' }}
-              formatter={(val) => [`${val}% Occupancy`, 'Forecast Rate']}
+              formatter={(val) => [`${val}% Occupancy`, 'Occupancy Rate']}
             />
             <Area type="monotone" dataKey="rate" stroke="#22C55E" strokeWidth={2} fillOpacity={1} fill="url(#occGrad)" />
           </AreaChart>

@@ -25,11 +25,23 @@ dist-ssr
 
 # Environment & Secrets
 .env
-.env.local
-.env.*.local
+.env.*
+!.env.example
+backend/.env
+backend/.env.*
+!backend/.env.example
+nova-house-admin/.env
+nova-house-admin/.env.*
+!nova-house-admin/.env.example
+nova-house-dashboard/.env
+nova-house-dashboard/.env.*
+!nova-house-dashboard/.env.example
 *.pyc
 __pycache__/
 *.db
 *.sqlite
+*.sqlite3
 bookings.json
+server.py
+
 

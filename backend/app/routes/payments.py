@@ -15,6 +15,7 @@ from ..schemas.payment import (
 from ..services.payment_service import payment_service
 from ..models.payment import Payment
 from ..models.booking import Booking
+from .auth import require_roles
 
 router = APIRouter(tags=["Razorpay Payments"])
 
@@ -49,7 +50,11 @@ def verify_payment_signature(payload: VerifyPaymentRequest, db: Session = Depend
         raise HTTPException(status_code=500, detail=f"Payment verification failure: {str(e)}")
 
 @router.post("/refund", response_model=RefundResponse)
-def refund_payment(payload: RefundRequest, db: Session = Depends(get_db)):
+def refund_payment(
+    payload: RefundRequest,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     """
     Admin-authorized refund.
     Dispatches refund request to Razorpay and updates payment & booking status to REFUNDED.
@@ -113,7 +118,10 @@ async def razorpay_webhook(
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("/stats")
-def get_payment_stats(db: Session = Depends(get_db)):
+def get_payment_stats(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     """
     Payment Analytics KPI Card metrics for Admin Dashboard.
     Revenue calculations only count real captured / paid transactions.
@@ -146,7 +154,11 @@ def get_payment_stats(db: Session = Depends(get_db)):
     }
 
 @router.get("")
-def get_all_payments(status: Optional[str] = None, db: Session = Depends(get_db)):
+def get_all_payments(
+    status: Optional[str] = None,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     """
     List all payment transactions with linked booking details for the Admin Payments Table.
     """
@@ -288,7 +300,11 @@ def get_all_payments(status: Optional[str] = None, db: Session = Depends(get_db)
     return results
 
 @router.get("/{payment_id}")
-def get_payment_detail(payment_id: str, db: Session = Depends(get_db)):
+def get_payment_detail(
+    payment_id: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     """
     Get full dossier for a specific payment transaction.
     """

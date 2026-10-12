@@ -89,7 +89,7 @@ export default function MainDashboard() {
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '16px', borderBottom: '1px solid var(--border-light)', paddingBottom: '20px' }}>
         <div>
           <span style={{ fontFamily: 'var(--font-mono)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '0.2em', color: 'var(--gold-primary)' }}>
-            Real-Time Intelligence Platform
+            Live Database Analytics Platform
           </span>
           <h1 style={{ fontFamily: 'var(--font-serif)', fontSize: '32px', fontWeight: 500, letterSpacing: '0.04em', color: '#FFFFFF', marginTop: '4px' }}>
             Executive Performance Overview
@@ -225,7 +225,7 @@ export default function MainDashboard() {
 
         <ChartCard
           title="Booking Status Mix"
-          subtitle="Real-time distribution of reservations"
+          subtitle="Live distribution of reservations"
         >
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>

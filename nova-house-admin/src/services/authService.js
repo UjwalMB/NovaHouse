@@ -15,28 +15,10 @@ export async function loginStaff(email, password) {
       api.setToken(res.token);
       return { success: true, user: res.user, token: res.token };
     }
+    throw new Error('Authentication failed: no session token returned.');
   } catch (err) {
-    // If backend reports invalid credentials, throw error
-    if (err.status === 401) {
-      throw new Error(err.message || 'Invalid credentials');
-    }
+    throw new Error(err.message || 'Invalid executive credentials. Please verify your staff email and security key.');
   }
-
-  // Graceful offline/demo fallback if backend is unreachable
-  if (password === 'Admin@Nova2026') {
-    const fallbackUser = {
-      id: 'usr_mgr_02',
-      name: 'Ujwal Bilagi (Hotel Manager)',
-      email: email || 'manager@novahouse.example',
-      role: 'MANAGER',
-      permissions: ['all']
-    };
-    localStorage.setItem('nova_admin_logged_in', 'true');
-    localStorage.setItem(USER_KEY, JSON.stringify(fallbackUser));
-    return { success: true, user: fallbackUser };
-  }
-
-  throw new Error('Invalid executive credentials. Use registered staff email and security key.');
 }
 
 export function getCurrentUser() {

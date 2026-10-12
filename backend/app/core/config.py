@@ -20,9 +20,12 @@ class Settings:
     
     # Razorpay Credentials (TEST / LIVE)
     RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_novahouse2026")
-    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "rzp_sec_novahouse_test_secret_2026")
-    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "rzp_whsec_novahouse_test_2026")
+    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "")
+    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
     RAZORPAY_MODE: str = os.getenv("RAZORPAY_MODE", "TEST").upper()
+
+    # JWT Authentication Key (Loaded strictly from backend environment)
+    JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "nova-house-production-jwt-secure-key-default-2026")
     
     # Database
     DATABASE_URL: str = os.getenv("DATABASE_URL", "sqlite:///./novahouse.db")
@@ -32,7 +35,7 @@ class Settings:
         origin.strip()
         for origin in os.getenv(
             "ALLOWED_ORIGINS",
-            "http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174,https://nova-house-hotel.vercel.app,https://nova-house-hotel.onrender.com",
+            "http://127.0.0.1:5173,http://127.0.0.1:5174,http://127.0.0.1:5175,http://localhost:5173,http://localhost:5174,http://localhost:5175,https://nova-house-hotel.vercel.app,https://nova-house-admin.vercel.app,https://nova-house-dashboard.vercel.app,https://nova-house-hotel.onrender.com",
         ).split(",")
         if origin.strip()
     ]

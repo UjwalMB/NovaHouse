@@ -11,6 +11,7 @@ from sqlalchemy.orm import Session
 from ..core.database import get_db
 from ..models.guest import Guest
 from ..models.booking import Booking
+from .auth import require_roles
 
 router = APIRouter(prefix="/api/v1/guests", tags=["Guests"])
 guests_compat_router = APIRouter(prefix="/api/guests", tags=["Guests"])
@@ -71,7 +72,8 @@ def serialize_guest(g: Guest, db: Session) -> dict:
 def list_guests(
     search: Optional[str] = None,
     vip_tier: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
 ):
     if db.query(Guest).count() == 0:
         bookings = db.query(Booking).all()
@@ -116,7 +118,11 @@ def list_guests(
 
 @router.get("/{guest_id}")
 @guests_compat_router.get("/{guest_id}")
-def get_guest(guest_id: str, db: Session = Depends(get_db)):
+def get_guest(
+    guest_id: str,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     guest = db.query(Guest).filter(
         (Guest.id == guest_id) | (Guest.email == guest_id)
     ).first()
@@ -128,7 +134,11 @@ def get_guest(guest_id: str, db: Session = Depends(get_db)):
 
 @router.post("")
 @guests_compat_router.post("")
-def create_guest(payload: GuestCreateSchema, db: Session = Depends(get_db)):
+def create_guest(
+    payload: GuestCreateSchema,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     existing = db.query(Guest).filter(Guest.email == payload.email).first()
     if existing:
         raise HTTPException(status_code=400, detail="Guest with this email already exists")
@@ -153,7 +163,12 @@ def create_guest(payload: GuestCreateSchema, db: Session = Depends(get_db)):
 @router.put("/{guest_id}")
 @guests_compat_router.patch("/{guest_id}")
 @guests_compat_router.put("/{guest_id}")
-def update_guest(guest_id: str, payload: GuestUpdateSchema, db: Session = Depends(get_db)):
+def update_guest(
+    guest_id: str,
+    payload: GuestUpdateSchema,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER"]))
+):
     guest = db.query(Guest).filter(Guest.id == guest_id).first()
     if not guest:
         raise HTTPException(status_code=404, detail="Guest profile not found")

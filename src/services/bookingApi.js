@@ -3,7 +3,8 @@
  * Interacts with FastAPI (http://127.0.0.1:8000) for database-backed reservations.
  */
 
-const API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
+const API_BASE = RAW_API_BASE.replace(/\/+$/, '').replace(/\/api(\/v1)?$/, '');
 
 export async function checkAvailability({ checkIn, checkOut, roomId = null, guests = 2 }) {
   try {

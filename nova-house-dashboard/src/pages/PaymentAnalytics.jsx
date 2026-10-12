@@ -141,7 +141,7 @@ export default function PaymentAnalytics() {
             <div style={{ padding: '14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>
               <div style={{ fontSize: '11px', fontFamily: 'var(--font-mono)', color: 'var(--text-muted)' }}>DATABASE SYNCHRONIZATION</div>
               <div style={{ fontSize: '14px', color: '#FFFFFF', fontWeight: 600, marginTop: '2px' }}>Supabase PostgreSQL (Shared Cluster)</div>
-              <div style={{ fontSize: '11px', color: 'var(--metric-positive)', fontFamily: 'var(--font-mono)', marginTop: '4px' }}>● Real-time ACID Compliant Double-Entry Ledger</div>
+              <div style={{ fontSize: '11px', color: 'var(--metric-positive)', fontFamily: 'var(--font-mono)', marginTop: '4px' }}>● Live Database Double-Entry Ledger</div>
             </div>
 
             <div style={{ padding: '14px', background: 'rgba(255, 255, 255, 0.02)', border: '1px solid var(--border-light)', borderRadius: '4px' }}>

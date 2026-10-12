@@ -14,14 +14,18 @@ from ..models.booking import Booking
 from ..models.payment import Payment
 from ..models.guest import Guest
 from ..models.room import Room
-from .bookings import ROOMS_LIST
+from .rooms import ROOMS_LIST
+from .auth import require_roles
 
 router = APIRouter(prefix="/api/v1/dashboard", tags=["Executive Dashboard"])
 dashboard_compat_router = APIRouter(prefix="/api/dashboard", tags=["Executive Dashboard"])
 
 @router.get("/overview")
 @dashboard_compat_router.get("/overview")
-def get_dashboard_overview(db: Session = Depends(get_db)):
+def get_dashboard_overview(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     bookings = db.query(Booking).all()
     payments = db.query(Payment).all()
     guests_count = db.query(Guest).count() or len({b.guest_email for b in bookings if b.guest_email})
@@ -103,7 +107,11 @@ def get_dashboard_overview(db: Session = Depends(get_db)):
 
 @router.get("/revenue")
 @dashboard_compat_router.get("/revenue")
-def get_dashboard_revenue(days: int = 14, db: Session = Depends(get_db)):
+def get_dashboard_revenue(
+    days: int = 14,
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     payments = db.query(Payment).all()
     bookings = db.query(Booking).all()
 
@@ -176,7 +184,10 @@ def get_dashboard_revenue(days: int = 14, db: Session = Depends(get_db)):
 
 @router.get("/bookings")
 @dashboard_compat_router.get("/bookings")
-def get_dashboard_bookings(db: Session = Depends(get_db)):
+def get_dashboard_bookings(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     bookings = db.query(Booking).all()
 
     # Status distribution
@@ -244,7 +255,10 @@ def get_dashboard_bookings(db: Session = Depends(get_db)):
 
 @router.get("/occupancy")
 @dashboard_compat_router.get("/occupancy")
-def get_dashboard_occupancy(db: Session = Depends(get_db)):
+def get_dashboard_occupancy(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     bookings = db.query(Booking).all()
     today_str = datetime.utcnow().strftime("%Y-%m-%d")
     total_rooms = len(ROOMS_LIST)
@@ -296,7 +310,10 @@ def get_dashboard_occupancy(db: Session = Depends(get_db)):
 
 @router.get("/rooms")
 @dashboard_compat_router.get("/rooms")
-def get_dashboard_rooms_performance(db: Session = Depends(get_db)):
+def get_dashboard_rooms_performance(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     bookings = db.query(Booking).all()
     payments = db.query(Payment).all()
 
@@ -345,7 +362,10 @@ def get_dashboard_rooms_performance(db: Session = Depends(get_db)):
 
 @router.get("/guests")
 @dashboard_compat_router.get("/guests")
-def get_dashboard_guests(db: Session = Depends(get_db)):
+def get_dashboard_guests(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     guests = db.query(Guest).all()
     bookings = db.query(Booking).all()
 
@@ -384,7 +404,10 @@ def get_dashboard_guests(db: Session = Depends(get_db)):
 
 @router.get("/payments")
 @dashboard_compat_router.get("/payments")
-def get_dashboard_payments_analytics(db: Session = Depends(get_db)):
+def get_dashboard_payments_analytics(
+    db: Session = Depends(get_db),
+    user: dict = Depends(require_roles(["ADMIN", "MANAGER", "ANALYST"]))
+):
     payments = db.query(Payment).all()
     total_volume = sum(p.amount for p in payments)
     paid_volume = sum(p.amount for p in payments if p.status == "PAID")

@@ -6,7 +6,7 @@ import { loginStaff } from '../services/authService';
 export default function Login() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('manager@novahouse.example');
-  const [password, setPassword] = useState('Admin@Nova2026');
+  const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -33,7 +33,6 @@ export default function Login() {
 
   const handleFillDemo = () => {
     setEmail('manager@novahouse.example');
-    setPassword('Admin@Nova2026');
   };
 
   return (
