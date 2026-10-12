@@ -47,7 +47,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
   };
   const [guests, setGuests] = useState('2 Guests');
   const [roomId, setRoomId] = useState(defaultRoomId || 'deluxe-room');
-  const [guestName, setGuestName] = useState('');
+  const [guestName, setGuestName] = useState('Ujwal');
   const [guestEmail, setGuestEmail] = useState('');
   const [guestPhone, setGuestPhone] = useState('');
 
@@ -139,26 +139,29 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
   const estimatedTotal = roomSubtotal + estimatedTaxes;
 
   const handleStartPayment = async (e) => {
-    e.preventDefault();
+    if (e && e.preventDefault) e.preventDefault();
     setErrorMessage('');
 
     if (availabilityResult && availabilityResult.available === false) {
-      setPaymentState('idle');
-      setErrorMessage('Selected room sanctuary is already reserved for these dates in the database. Please select alternate dates or another suite.');
+      setErrorMessage('Selected room sanctuary is already reserved for these dates. Please select alternate dates or choose another suite.');
       return;
     }
 
     setPaymentState('preparing'); // "Preparing secure payment..."
 
     try {
+      const resolvedGuestName = guestName.trim() || (guestEmail && guestEmail.includes('@') ? guestEmail.split('@')[0] : 'Ujwal');
+      const resolvedGuestEmail = guestEmail.trim() || 'guest@novahouse.example';
+      const resolvedGuestPhone = guestPhone.trim() || '+91 98450 12345';
+
       // 1. Authoritative Server-Side Calculation and Razorpay Order Creation
       const orderPayload = {
         roomId: selectedRoom.id,
         checkIn,
         checkOut,
-        guestName: guestName.trim() || 'Valued Guest',
-        guestEmail: guestEmail.trim() || 'guest@novahouse.example',
-        guestPhone: guestPhone.trim() || '+91 98450 12345',
+        guestName: resolvedGuestName,
+        guestEmail: resolvedGuestEmail,
+        guestPhone: resolvedGuestPhone,
         guestCountry: 'India',
         guests: parseInt(guests) || 2,
         specialRequests: 'Online reservation via NOVA HOUSE booking drawer',
@@ -687,7 +690,6 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                   onChange={(e) => setGuestName(e.target.value)}
                   className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
-                  required
                 />
               </div>
 
@@ -830,6 +832,14 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 </div>
               </div>
 
+              {/* Error Message Notice if any */}
+              {errorMessage && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono rounded-xs flex items-center gap-2">
+                  <AlertCircle size={14} className="shrink-0 text-red-600" />
+                  <span>{errorMessage}</span>
+                </div>
+              )}
+
               {/* Razorpay Security Assurance */}
               <div className="flex items-center gap-2 text-[11px] font-mono text-[#77736C]">
                 <Shield size={14} className="text-[#A58A5C]" />
@@ -838,12 +848,21 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
 
               {/* Action Button: PAY ₹XX,XXX */}
               <button
-                type="submit"
-                className="w-full btn-luxury-primary !py-4 text-xs tracking-widest font-semibold shadow-md flex items-center justify-center gap-2"
-                style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
+                type="button"
+                onClick={handleStartPayment}
+                disabled={availabilityResult && availabilityResult.available === false}
+                className={`w-full !py-4 text-xs tracking-widest font-semibold shadow-md flex items-center justify-center gap-2 transition-all rounded-xs font-mono uppercase ${
+                  availabilityResult && availabilityResult.available === false
+                    ? 'bg-stone-300 text-stone-500 cursor-not-allowed border border-stone-300'
+                    : 'bg-[#111111] hover:bg-black text-[#F4F1EB] cursor-pointer'
+                }`}
               >
                 <CreditCard size={15} className="text-[#A58A5C]" />
-                <span>PAY ₹ {estimatedTotal.toLocaleString()}</span>
+                <span>
+                  {availabilityResult && availabilityResult.available === false
+                    ? 'Room Booked for Selected Dates'
+                    : `PAY ₹ ${estimatedTotal.toLocaleString()}`}
+                </span>
               </button>
             </form>
           )}

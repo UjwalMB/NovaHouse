@@ -31,8 +31,10 @@ def check_availability(payload: AvailabilityCheckSchema, db: Session = Depends(g
     requested_room = payload.roomId or payload.room_id
     guest_count = payload.guests or 2
 
-    # Query active bookings from database
-    active_bookings = db.query(Booking).filter(Booking.booking_status != "Cancelled").all()
+    # Query active confirmed reservations (only Confirmed and Checked In block inventory)
+    active_bookings = db.query(Booking).filter(
+        Booking.booking_status.in_(["Confirmed", "Checked In"])
+    ).all()
 
     # Determine overlapping bookings: (StartA < EndB) and (EndA > StartB)
     booked_room_identifiers = set()
