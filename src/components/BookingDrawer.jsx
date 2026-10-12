@@ -23,6 +23,7 @@ import {
   createRazorpayOrder,
   verifyPaymentOnServer,
   retryPaymentOrder,
+  authorizeTestPayment,
 } from '../services/paymentService';
 import { checkAvailability } from '../services/bookingApi';
 
@@ -182,20 +183,18 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
     }, 400);
 
     setTimeout(async () => {
-      const simulatedPaymentId = `pay_test_${Math.random().toString(36).substring(2, 10)}`;
-      const simulatedSignature = `test_sig_${Math.random().toString(36).substring(2, 18)}`;
-
       setPaymentState('verifying');
       setIsAuthorizing(false);
 
       try {
-        // 2. Server-Side Cryptographic Signature Verification
-        const verifyResult = await verifyPaymentOnServer({
-          razorpay_order_id: activeOrderData.orderId,
-          razorpay_payment_id: simulatedPaymentId,
-          razorpay_signature: simulatedSignature,
-          booking_id: activeOrderData.bookingId,
+        // 1. Authorize Test Payment with Authentic Cryptographic Signature from Server
+        const authData = await authorizeTestPayment({
+          bookingId: activeOrderData.bookingId,
+          orderId: activeOrderData.orderId,
         });
+
+        // 2. Server-Side Cryptographic Signature Verification
+        const verifyResult = await verifyPaymentOnServer(authData);
 
         setConfirmedBooking({
           bookingId: verifyResult.bookingId,

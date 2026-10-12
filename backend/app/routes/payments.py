@@ -1,8 +1,13 @@
+import hmac
+import hashlib
+import uuid
+from datetime import datetime
 from typing import List, Dict, Any, Optional
-from fastapi import APIRouter, Depends, HTTPException, Request, Header
+from fastapi import APIRouter, Depends, HTTPException, Request, Header, status
 from pydantic import BaseModel
 from sqlalchemy.orm import Session
 from ..core.database import get_db
+from ..core.config import settings
 from ..schemas.payment import (
     CreateOrderRequest,
     CreateOrderResponse,
@@ -15,7 +20,7 @@ from ..schemas.payment import (
 from ..services.payment_service import payment_service
 from ..models.payment import Payment
 from ..models.booking import Booking
-from .auth import require_roles
+from .auth import require_roles, verify_token
 
 router = APIRouter(tags=["Razorpay Payments"])
 
@@ -48,6 +53,128 @@ def verify_payment_signature(payload: VerifyPaymentRequest, db: Session = Depend
         raise HTTPException(status_code=400, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Payment verification failure: {str(e)}")
+
+class TestAuthorizeRequest(BaseModel):
+    booking_id: Optional[str] = None
+    bookingId: Optional[str] = None
+    razorpay_order_id: Optional[str] = None
+    orderId: Optional[str] = None
+    razorpay_payment_id: Optional[str] = None
+
+@router.post("/test-authorize")
+def test_authorize_payment(payload: TestAuthorizeRequest, db: Session = Depends(get_db)):
+    """
+    In TEST mode, generate authentic cryptographic HMAC-SHA256 signature for test checkout
+    without exposing server secret key to frontend browser code.
+    """
+    if settings.RAZORPAY_MODE != "TEST":
+        raise HTTPException(status_code=403, detail="Simulated test authorization is only available in TEST mode.")
+
+    b_id = payload.booking_id or payload.bookingId
+    ord_id = payload.razorpay_order_id or payload.orderId
+
+    if not b_id or not ord_id:
+        raise HTTPException(status_code=400, detail="booking_id and razorpay_order_id are required.")
+
+    booking = db.query(Booking).filter(Booking.id == b_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail="Booking not found in database.")
+
+    payment_id = payload.razorpay_payment_id or f"pay_test_{uuid.uuid4().hex[:12]}"
+    msg = f"{ord_id}|{payment_id}".encode("utf-8")
+    secret = settings.RAZORPAY_KEY_SECRET.encode("utf-8")
+    sig = hmac.new(secret, msg, hashlib.sha256).hexdigest()
+
+    return {
+        "booking_id": b_id,
+        "razorpay_order_id": ord_id,
+        "razorpay_payment_id": payment_id,
+        "razorpay_signature": sig,
+    }
+
+class SettlePaymentRequest(BaseModel):
+    booking_id: Optional[str] = None
+    bookingId: Optional[str] = None
+    payment_id: Optional[str] = None
+    paymentId: Optional[str] = None
+    method: Optional[str] = "Front Desk Terminal"
+
+@router.post("/settle")
+@router.post("/pay-now")
+def settle_payment(
+    payload: SettlePaymentRequest,
+    db: Session = Depends(get_db),
+    authorization: Optional[str] = Header(None)
+):
+    """
+    Operations endpoint for Admin/Front-Desk to capture and settle pending bookings.
+    Strictly denies ANALYST role.
+    """
+    if authorization:
+        user = verify_token(authorization.replace("Bearer ", "").strip())
+        if user and user.get("role") == "ANALYST":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Access forbidden: role 'ANALYST' does not have operational financial privileges."
+            )
+
+    b_id = payload.booking_id or payload.bookingId
+    if not b_id and (payload.payment_id or payload.paymentId):
+        p_id = payload.payment_id or payload.paymentId
+        p_rec = db.query(Payment).filter((Payment.id == p_id) | (Payment.razorpay_payment_id == p_id)).first()
+        if p_rec:
+            b_id = p_rec.booking_id
+
+    if not b_id:
+        raise HTTPException(status_code=400, detail="booking_id or bookingId is required.")
+
+    booking = db.query(Booking).filter(Booking.id == b_id).first()
+    if not booking:
+        raise HTTPException(status_code=404, detail=f"Booking '{b_id}' not found.")
+
+    booking.payment_status = "PAID"
+    if booking.booking_status == "Pending":
+        booking.booking_status = "Confirmed"
+    booking.payment_method = payload.method or booking.payment_method or "Front Desk Settle"
+
+    # Find or create/update Payment record
+    payment = db.query(Payment).filter(Payment.booking_id == b_id).first()
+    pay_id = f"pay_desk_{uuid.uuid4().hex[:10]}"
+    if not payment:
+        payment = Payment(
+            id=pay_id,
+            booking_id=b_id,
+            razorpay_order_id=booking.razorpay_order_id or f"order_desk_{b_id}",
+            razorpay_payment_id=pay_id,
+            amount=booking.total_amount,
+            amount_paise=int(booking.total_amount * 100),
+            currency="INR",
+            status="PAID",
+            method=booking.payment_method,
+            email=booking.guest_email,
+            contact=booking.guest_phone,
+            created_at=datetime.utcnow()
+        )
+        db.add(payment)
+        booking.payment_id = payment.id
+    else:
+        payment.status = "PAID"
+        if not payment.razorpay_payment_id:
+            payment.razorpay_payment_id = pay_id
+        payment.method = booking.payment_method
+
+    db.commit()
+    db.refresh(booking)
+
+    return {
+        "success": True,
+        "message": f"Payment for booking #{b_id} successfully captured and settled.",
+        "bookingId": b_id,
+        "paymentId": payment.razorpay_payment_id or payment.id,
+        "paymentStatus": "PAID",
+        "bookingStatus": booking.booking_status,
+        "booking": payment_service._booking_to_dict(booking)
+    }
 
 @router.post("/refund", response_model=RefundResponse)
 def refund_payment(

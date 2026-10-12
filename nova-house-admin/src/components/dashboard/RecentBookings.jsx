@@ -1,10 +1,13 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Eye } from 'lucide-react';
+import { ArrowUpRight, Eye, CreditCard } from 'lucide-react';
 import StatusBadge from '../ui/StatusBadge';
+import { settlePayment } from '../../services/paymentService';
+import { useToast } from '../ui/Toast';
 
-export default function RecentBookings({ bookings = [] }) {
+export default function RecentBookings({ bookings = [], onRefresh }) {
   const navigate = useNavigate();
+  const { addToast } = useToast();
   const recent = bookings.slice(0, 6);
 
   const formatShortDate = (dateStr) => {
@@ -86,16 +89,37 @@ export default function RecentBookings({ bookings = [] }) {
                   <StatusBadge status={b.bookingStatus || b.booking_status || 'Confirmed'} />
                 </td>
                 <td style={{ textAlign: 'right' }}>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      navigate(`/admin/bookings/${b.id}`);
-                    }}
-                    className="p-1.5 text-[#77736C] hover:text-[#111111] hover:bg-[#F4F1EB] rounded-xs transition-colors"
-                    title="View Booking Dossier"
-                  >
-                    <Eye size={15} />
-                  </button>
+                  <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+                    {(b.paymentStatus === 'Pending' || b.paymentStatus === 'PENDING' || b.payment_status === 'Pending') && (
+                      <button
+                        onClick={async (e) => {
+                          e.stopPropagation();
+                          try {
+                            await settlePayment({ bookingId: b.id });
+                            addToast(`Payment for #${b.id} marked as PAID.`);
+                            if (onRefresh) onRefresh();
+                          } catch (err) {
+                            navigate(`/admin/bookings/${b.id}`);
+                          }
+                        }}
+                        className="px-2 py-1 text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xs transition-colors flex items-center gap-1"
+                        title="Collect & Settle Payment"
+                      >
+                        <CreditCard size={11} />
+                        <span>Pay Now</span>
+                      </button>
+                    )}
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        navigate(`/admin/bookings/${b.id}`);
+                      }}
+                      className="p-1.5 text-[#77736C] hover:text-[#111111] hover:bg-[#F4F1EB] rounded-xs transition-colors"
+                      title="View Booking Dossier"
+                    >
+                      <Eye size={15} />
+                    </button>
+                  </div>
                 </td>
               </tr>
             ))}

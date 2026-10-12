@@ -8,7 +8,9 @@ import {
   Calendar,
   Filter,
   CheckCircle,
+  CreditCard,
 } from 'lucide-react';
+import { settlePayment } from '../services/paymentService';
 import { useBookings } from '../hooks/useBookings';
 import { useRooms } from '../hooks/useRooms';
 import { useToast } from '../components/ui/Toast';
@@ -31,6 +33,7 @@ export default function Bookings() {
     createBooking,
     updateStatus,
     deleteBooking,
+    refresh,
   } = useBookings();
   const { rooms } = useRooms();
 
@@ -217,6 +220,25 @@ export default function Bookings() {
       align: 'right',
       render: (b) => (
         <div className="flex items-center justify-end gap-1.5" onClick={(e) => e.stopPropagation()}>
+          {(b.paymentStatus === 'Pending' || b.paymentStatus === 'PENDING' || b.paymentStatus === 'UNPAID') && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await settlePayment({ bookingId: b.id });
+                  addToast(`Payment for #${b.id} marked as PAID.`);
+                  refresh();
+                } catch (err) {
+                  navigate(`/admin/bookings/${b.id}`);
+                }
+              }}
+              className="px-2 py-1 text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xs transition-colors flex items-center gap-1"
+              title="Collect & Settle Payment"
+            >
+              <CreditCard size={11} />
+              <span>Pay Now</span>
+            </button>
+          )}
           <button
             onClick={() => navigate(`/admin/bookings/${b.id}`)}
             className="p-1.5 text-[#77736C] hover:text-[#111111] hover:bg-[#F4F1EB] rounded-xs transition-colors"

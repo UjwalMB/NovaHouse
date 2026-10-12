@@ -19,7 +19,7 @@ import {
   ShieldCheck,
 } from 'lucide-react';
 import { getBookingById, updateBookingStatus } from '../services/bookingService';
-import { fetchPaymentByBooking, processPaymentRefund } from '../services/paymentService';
+import { fetchPaymentByBooking, processPaymentRefund, settlePayment } from '../services/paymentService';
 import { useToast } from '../components/ui/Toast';
 import StatusBadge from '../components/ui/StatusBadge';
 import Button from '../components/ui/Button';
@@ -57,6 +57,26 @@ export default function BookingDetails() {
     setPayment(updatedPayment);
     if (booking) {
       setBooking({ ...booking, paymentStatus: 'REFUNDED' });
+    }
+  };
+
+  const handleSettlePayment = async () => {
+    try {
+      await settlePayment({
+        bookingId: booking.id,
+        paymentId: payment?.paymentId || payment?.id,
+        method: 'POS Card Terminal',
+      });
+      addToast(`Payment of ₹ ${booking.totalAmount.toLocaleString()} successfully captured and marked as PAID.`);
+      setBooking((prev) => ({
+        ...prev,
+        paymentStatus: 'PAID',
+        bookingStatus: prev.bookingStatus === 'Pending' ? 'Confirmed' : prev.bookingStatus,
+      }));
+      const updatedPayment = await fetchPaymentByBooking(id);
+      setPayment(updatedPayment);
+    } catch (err) {
+      addToast(err.message || 'Failed to settle payment.', 'error');
     }
   };
 
@@ -120,8 +140,19 @@ export default function BookingDetails() {
           </div>
         </div>
 
-        {/* Action Buttons: Confirm, Check In, Check Out, Cancel */}
+        {/* Action Buttons: Confirm, Check In, Check Out, Cancel, Pay Now */}
         <div className="flex flex-wrap items-center gap-2">
+          {(booking.paymentStatus === 'Pending' || booking.paymentStatus === 'UNPAID' || payment?.status === 'PENDING') && (
+            <Button
+              variant="primary"
+              size="sm"
+              icon={CreditCard}
+              onClick={handleSettlePayment}
+            >
+              Pay Now
+            </Button>
+          )}
+
           {booking.bookingStatus === 'Pending' && (
             <Button
               variant="primary"
@@ -415,7 +446,7 @@ export default function BookingDetails() {
                   </span>
                 </div>
 
-                {(payment?.status === 'PAID' || booking.paymentStatus === 'Paid') && (
+                {(payment?.status === 'PAID' || booking.paymentStatus === 'Paid' || booking.paymentStatus === 'PAID') ? (
                   <Button
                     variant="secondary"
                     size="sm"
@@ -423,6 +454,15 @@ export default function BookingDetails() {
                     onClick={() => setIsRefundOpen(true)}
                   >
                     Issue Refund
+                  </Button>
+                ) : (
+                  <Button
+                    variant="primary"
+                    size="sm"
+                    icon={CreditCard}
+                    onClick={handleSettlePayment}
+                  >
+                    Pay Now / Settle
                   </Button>
                 )}
               </div>

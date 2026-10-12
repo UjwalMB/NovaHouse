@@ -11,6 +11,7 @@ import {
   Smartphone,
   Lock,
 } from 'lucide-react';
+import { authorizeTestPayment } from '../services/paymentService';
 
 export default function RazorpayModal({
   isOpen,
@@ -32,28 +33,30 @@ export default function RazorpayModal({
 
   if (!isOpen || !orderData) return null;
 
-  const handleSimulateSuccess = () => {
+  const handleSimulateSuccess = async () => {
     setIsProcessing(true);
     setProcessingStatus('Connecting to secure payment gateway...');
 
     setTimeout(() => {
       setProcessingStatus('Cryptographically signing test transaction...');
-    }, 500);
+    }, 400);
 
-    setTimeout(() => {
+    try {
+      const authData = await authorizeTestPayment({
+        bookingId: orderData.bookingId,
+        orderId: orderData.orderId,
+      });
+
       setIsProcessing(false);
-      const simulatedPaymentId = `pay_test_${Math.random().toString(36).substring(2, 10)}`;
-      const simulatedSignature = `test_sig_${Math.random().toString(36).substring(2, 18)}`;
-
       if (onSuccess) {
-        onSuccess({
-          razorpay_order_id: orderData.orderId,
-          razorpay_payment_id: simulatedPaymentId,
-          razorpay_signature: simulatedSignature,
-          booking_id: orderData.bookingId,
-        });
+        onSuccess(authData);
       }
-    }, 1100);
+    } catch (err) {
+      setIsProcessing(false);
+      if (onError) {
+        onError(err.message || 'Signature authorization failed.');
+      }
+    }
   };
 
   const handleSimulateDecline = () => {

@@ -173,21 +173,43 @@ export async function launchRazorpayCheckout({
 }
 
 /**
+ * 2B. Request Cryptographic Test Signature from Server for Test Mode Checkout
+ */
+export async function authorizeTestPayment({ bookingId, orderId, paymentId }) {
+  const response = await fetch(`${API_BASE}/api/payments/test-authorize`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'Accept': 'application/json',
+    },
+    body: JSON.stringify({
+      booking_id: bookingId,
+      razorpay_order_id: orderId,
+      razorpay_payment_id: paymentId,
+    }),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || 'Failed to authorize test payment with server.');
+  }
+
+  return await response.json();
+}
+
+/**
  * Clean simulation for when Razorpay CDN is not reachable or in automated test environments
  */
-function simulateTestPayment(orderData, guestName, guestEmail, onSuccess, onError) {
-  const simulatedPaymentId = `pay_test_${Math.random().toString(36).substring(2, 10)}`;
-  const simulatedSignature = `test_sig_${Math.random().toString(36).substring(2, 16)}`;
-
-  // Slight realistic network delay
-  setTimeout(() => {
+async function simulateTestPayment(orderData, guestName, guestEmail, onSuccess, onError) {
+  try {
+    const authData = await authorizeTestPayment({
+      bookingId: orderData.bookingId,
+      orderId: orderData.orderId,
+    });
     if (onSuccess) {
-      onSuccess({
-        razorpay_order_id: orderData.orderId,
-        razorpay_payment_id: simulatedPaymentId,
-        razorpay_signature: simulatedSignature,
-        booking_id: orderData.bookingId,
-      });
+      onSuccess(authData);
     }
-  }, 1000);
+  } catch (err) {
+    if (onError) onError(err.message || 'Payment simulation authorization failed.');
+  }
 }

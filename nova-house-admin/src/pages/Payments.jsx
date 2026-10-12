@@ -17,6 +17,7 @@ import {
   fetchPayments,
   fetchPaymentStats,
   processPaymentRefund,
+  settlePayment,
 } from '../services/paymentService';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
@@ -220,6 +221,26 @@ export default function Payments() {
             <Eye size={15} />
           </button>
 
+          {p.status === 'PENDING' && (
+            <button
+              onClick={async (e) => {
+                e.stopPropagation();
+                try {
+                  await settlePayment({ bookingId: p.bookingId, paymentId: p.paymentId });
+                  addToast(`Payment #${p.paymentId} settled and captured.`);
+                  loadData();
+                } catch (err) {
+                  addToast(err.message || 'Failed to settle payment.', 'error');
+                }
+              }}
+              className="px-2 py-1 text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xs transition-colors flex items-center gap-1"
+              title="Settle Payment"
+            >
+              <CreditCard size={11} />
+              <span>Pay Now</span>
+            </button>
+          )}
+
           {p.status === 'PAID' && (
             <button
               onClick={() => handleOpenRefund(p)}
@@ -332,6 +353,7 @@ export default function Payments() {
         onClose={() => setIsDossierOpen(false)}
         payment={selectedPayment}
         onOpenRefund={handleOpenRefund}
+        onSettleSuccess={loadData}
       />
 
       {/* Refund Authorization Modal */}

@@ -15,8 +15,9 @@ import Modal from '../ui/Modal';
 import StatusBadge from '../ui/StatusBadge';
 import Button from '../ui/Button';
 import { useToast } from '../ui/Toast';
+import { settlePayment } from '../../services/paymentService';
 
-export default function PaymentDossierModal({ isOpen, onClose, payment, onOpenRefund }) {
+export default function PaymentDossierModal({ isOpen, onClose, payment, onOpenRefund, onSettleSuccess }) {
   const { addToast } = useToast();
 
   if (!payment) return null;
@@ -50,6 +51,29 @@ export default function PaymentDossierModal({ isOpen, onClose, payment, onOpenRe
           </div>
 
           <div className="flex items-center gap-2">
+            {payment.status === 'PENDING' && (
+              <Button
+                variant="primary"
+                size="sm"
+                icon={CreditCard}
+                onClick={async () => {
+                  try {
+                    await settlePayment({
+                      bookingId: payment.bookingId,
+                      paymentId: payment.paymentId,
+                    });
+                    addToast(`Payment #${payment.paymentId} marked as PAID.`);
+                    onClose();
+                    if (onSettleSuccess) onSettleSuccess(payment);
+                  } catch (err) {
+                    addToast(err.message || 'Failed to settle payment.', 'error');
+                  }
+                }}
+              >
+                Pay Now / Settle
+              </Button>
+            )}
+
             {payment.status === 'PAID' && (
               <Button
                 variant="secondary"

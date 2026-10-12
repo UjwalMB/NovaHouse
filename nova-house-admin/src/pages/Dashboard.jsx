@@ -27,7 +27,7 @@ import { fetchPaymentStats, fetchPayments } from '../services/paymentService';
 
 export default function Dashboard() {
   const navigate = useNavigate();
-  const { bookings, loading: bookingsLoading } = useBookings();
+  const { bookings, loading: bookingsLoading, refresh: refreshBookings } = useBookings();
   const { rooms } = useRooms();
   const [stats, setStats] = useState(null);
   const [paymentStats, setPaymentStats] = useState(null);
@@ -206,7 +206,7 @@ export default function Dashboard() {
 
       {/* Recent Reservations Table Section */}
       <div>
-        <RecentBookings bookings={bookings} />
+        <RecentBookings bookings={bookings} onRefresh={refreshBookings} />
       </div>
     </div>
   );
