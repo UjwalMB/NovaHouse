@@ -8,7 +8,7 @@ backend_env = Path(__file__).resolve().parent.parent.parent / ".env"
 root_env = Path(__file__).resolve().parent.parent.parent.parent / ".env"
 
 if backend_env.exists():
-    load_dotenv(dotenv_path=backend_env)
+    load_dotenv(dotenv_path=backend_env, override=True)
 if root_env.exists():
     load_dotenv(dotenv_path=root_env, override=False)
 load_dotenv()
@@ -32,7 +32,7 @@ class Settings:
         origin.strip()
         for origin in os.getenv(
             "ALLOWED_ORIGINS",
-            "http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174",
+            "http://127.0.0.1:5173,http://127.0.0.1:5174,http://localhost:5173,http://localhost:5174,https://nova-house-hotel.vercel.app,https://nova-house-hotel.onrender.com",
         ).split(",")
         if origin.strip()
     ]

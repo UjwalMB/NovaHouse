@@ -21,18 +21,23 @@ app = FastAPI(
 )
 
 # CORS Configuration
-origins = settings.ALLOWED_ORIGINS
-if not origins:
-    origins = [
-        "http://127.0.0.1:5173",
-        "http://127.0.0.1:5174",
-        "http://localhost:5173",
-        "http://localhost:5174",
-    ]
+origins = list(settings.ALLOWED_ORIGINS) if settings.ALLOWED_ORIGINS else []
+default_allowed = [
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:5174",
+    "http://localhost:5173",
+    "http://localhost:5174",
+    "https://nova-house-hotel.vercel.app",
+    "https://nova-house-hotel.onrender.com",
+]
+for d in default_allowed:
+    if d not in origins:
+        origins.append(d)
 
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
+    allow_origin_regex=r"^https:\/\/.*\.vercel\.app$",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
