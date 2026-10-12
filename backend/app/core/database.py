@@ -10,8 +10,11 @@ def get_normalized_database_url(raw_url: str):
     import re
     url_str = raw_url.strip() if raw_url else "sqlite:///./novahouse.db"
     url_str = re.sub(r'^(DATABASE_URL\s*=\s*)+', '', url_str).strip()
+    # Enforce postgresql+psycopg2 driver dialect for PostgreSQL connections
     if url_str.startswith("postgres://"):
-        url_str = url_str.replace("postgres://", "postgresql://", 1)
+        url_str = url_str.replace("postgres://", "postgresql+psycopg2://", 1)
+    elif url_str.startswith("postgresql://"):
+        url_str = url_str.replace("postgresql://", "postgresql+psycopg2://", 1)
 
     if url_str.startswith("sqlite"):
         if url_str.startswith("sqlite:///./") or url_str == "sqlite:///novahouse.db":
@@ -20,9 +23,9 @@ def get_normalized_database_url(raw_url: str):
         return url_str
 
     # Robust parsing for PostgreSQL URLs handling special characters (e.g. @, #, $) in password
-    if (url_str.startswith("postgresql://") or url_str.startswith("postgres://")) and "@" in url_str:
+    if (url_str.startswith("postgresql+psycopg2://") or url_str.startswith("postgresql://") or url_str.startswith("postgres://")) and "@" in url_str:
         scheme, rest = url_str.split("://", 1)
-        driver = "postgresql"
+        driver = "postgresql+psycopg2"
         creds, host_part = rest.rsplit("@", 1)
         user, pwd = creds.split(":", 1) if ":" in creds else (creds, None)
 
