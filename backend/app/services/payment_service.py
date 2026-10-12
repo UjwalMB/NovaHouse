@@ -199,15 +199,15 @@ class PaymentService:
         razorpay_signature = payload.get("razorpay_signature")
         booking_id = payload.get("booking_id")
 
-        if not razorpay_order_id or not razorpay_payment_id or not booking_id:
+        if not razorpay_order_id or not razorpay_payment_id or not razorpay_signature or not booking_id:
             raise ValueError("Missing critical Razorpay verification parameters.")
 
-        # Check booking
+        # 1. Booking Integrity Verification
         booking = db.query(Booking).filter(Booking.id == booking_id).first()
         if not booking:
-            raise ValueError(f"Booking {booking_id} not found in registry.")
+            raise ValueError(f"Booking '{booking_id}' not found in registry.")
 
-        # Guard: If already paid, return idempotent success
+        # 2. Guard: If already paid, return idempotent success
         if booking.payment_status == "PAID":
             return {
                 "success": True,
@@ -219,40 +219,30 @@ class PaymentService:
                 "booking": self._booking_to_dict(booking)
             }
 
-        # Verify signature
-        # 1. Try Razorpay SDK verify if live credentials
-        is_valid = False
-        if self.client and not self.key_secret.startswith("rzp_sec_novahouse_test"):
-            try:
-                self.client.utility.verify_payment_signature({
-                    "razorpay_order_id": razorpay_order_id,
-                    "razorpay_payment_id": razorpay_payment_id,
-                    "razorpay_signature": razorpay_signature
-                })
-                is_valid = True
-            except Exception:
-                is_valid = False
+        # 3. Consistency Checks: Order & Payment Binding
+        if booking.razorpay_order_id and booking.razorpay_order_id != razorpay_order_id:
+            raise ValueError(f"Security mismatch: Razorpay order '{razorpay_order_id}' does not match registered order for booking '{booking_id}'.")
+
+        payment = db.query(Payment).filter(Payment.razorpay_order_id == razorpay_order_id).first()
+        if not payment:
+            raise ValueError(f"No payment record found corresponding to Razorpay order '{razorpay_order_id}'.")
+
+        if payment.booking_id and payment.booking_id != booking_id:
+            raise ValueError(f"Security mismatch: Payment record is bound to booking '{payment.booking_id}', not '{booking_id}'.")
+
+        if payment.amount != booking.total_amount:
+            raise ValueError(f"Amount mismatch: Payment record amount ₹{payment.amount} does not match authoritative booking amount ₹{booking.total_amount}.")
+
+        # 4. Authoritative Cryptographic Signature Verification (HMAC-SHA256)
+        # Never bypass signature verification based on TEST mode or mock headers.
+        is_valid = verify_razorpay_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature)
 
         if not is_valid:
-            # 2. Verify with standard HMAC-SHA256
-            is_valid = verify_razorpay_signature(razorpay_order_id, razorpay_payment_id, razorpay_signature)
-
-        # 3. Test mode simulation allowance
-        if not is_valid and self.mode == "TEST" and (
-            razorpay_signature.startswith("test_sig_") or 
-            razorpay_payment_id.startswith("pay_test_") or
-            razorpay_signature == "mock_signature_approved"
-        ):
-            is_valid = True
-
-        if not is_valid:
-            # Mark payment as FAILED
-            payment = db.query(Payment).filter(Payment.razorpay_order_id == razorpay_order_id).first()
-            if payment:
-                payment.status = "FAILED"
-                payment.error_code = "BAD_SIGNATURE"
-                payment.error_description = "Server-side Razorpay signature mismatch."
-                db.commit()
+            # Mark payment record as FAILED while keeping booking PENDING
+            payment.status = "FAILED"
+            payment.error_code = "BAD_SIGNATURE"
+            payment.error_description = "Server-side Razorpay cryptographic signature mismatch."
+            db.commit()
             raise ValueError("Cryptographic payment signature verification failed.")
 
         # Determine real payment method if available
