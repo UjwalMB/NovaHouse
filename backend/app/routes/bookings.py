@@ -277,9 +277,62 @@ def get_room(room_id: str):
         rm for rm in ROOMS_LIST 
         if rm["id"] == room_id or rm.get("slug") == room_id or rm.get("roomNumber") == room_id
     ), None)
+    return r
+
+@router.patch("/api/rooms/{room_id}")
+@router.patch("/api/v1/rooms/{room_id}")
+@router.put("/api/rooms/{room_id}")
+@router.put("/api/v1/rooms/{room_id}")
+def update_room(room_id: str, updates: Dict[str, Any], db: Session = Depends(get_db)):
+    r = next((
+        rm for rm in ROOMS_LIST 
+        if rm["id"] == room_id or rm.get("slug") == room_id or rm.get("roomNumber") == room_id
+    ), None)
     if not r:
         raise HTTPException(status_code=404, detail=f"Room '{room_id}' not found")
+        
+    for k, v in updates.items():
+        if k in r:
+            r[k] = v
+        elif k == "basePrice" or k == "price":
+            r["price"] = float(v)
+        elif k == "roomNumber":
+            r["roomNumber"] = str(v)
+            
+    # Also update database Room table if model exists
+    from ..models.room import Room as RoomModel
+    db_room = db.query(RoomModel).filter((RoomModel.id == room_id) | (RoomModel.room_number == room_id)).first()
+    if db_room:
+        if "status" in updates:
+            db_room.status = updates["status"]
+        if "price" in updates or "basePrice" in updates:
+            db_room.base_price = float(updates.get("price") or updates.get("basePrice"))
+        if "name" in updates or "title" in updates:
+            db_room.title = updates.get("name") or updates.get("title")
+        db.commit()
+        
     return r
+
+@router.post("/api/rooms")
+@router.post("/api/v1/rooms")
+def create_room(payload: Dict[str, Any], db: Session = Depends(get_db)):
+    new_id = str(payload.get("id") or (len(ROOMS_LIST) + 101))
+    room_entry = {
+        "id": new_id,
+        "slug": payload.get("slug", f"room-{new_id}"),
+        "name": payload.get("name") or payload.get("title", f"Sanctuary {new_id}"),
+        "type": payload.get("type", "Deluxe Room"),
+        "category": payload.get("category", "Rooms"),
+        "floor": payload.get("floor", "1st Floor"),
+        "roomNumber": str(payload.get("roomNumber", new_id)),
+        "capacity": int(payload.get("capacity", 2)),
+        "bedType": payload.get("bedType", "King Bed"),
+        "size": payload.get("size", "45 m²"),
+        "price": float(payload.get("price") or payload.get("basePrice", 18500)),
+        "status": payload.get("status", "Available")
+    }
+    ROOMS_LIST.append(room_entry)
+    return room_entry
 
 @router.post("/api/availability/check")
 @router.post("/api/v1/availability/check")

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Lock, Mail, ArrowRight, ShieldCheck, Eye, EyeOff, Sparkles } from 'lucide-react';
+import { loginStaff } from '../services/authService';
 
 export default function Login() {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     if (!email.trim() || !password.trim()) {
       setError('Please provide authorized staff email and credentials.');
@@ -20,11 +21,14 @@ export default function Login() {
     setLoading(true);
     setError('');
 
-    setTimeout(() => {
+    try {
+      await loginStaff(email.trim(), password.trim());
       setLoading(false);
-      localStorage.setItem('nova_admin_logged_in', 'true');
       navigate('/admin');
-    }, 450);
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || 'Invalid credentials. Please verify your email and password.');
+    }
   };
 
   const handleFillDemo = () => {

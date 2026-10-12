@@ -4,7 +4,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base, SessionLocal, is_sqlite
 from .models import Booking, Payment, Room, Guest
-from .routes import payments, bookings
+from .routes import payments, bookings, auth, guests, dashboard
 from .services.booking_service import booking_service
 
 # Auto-create database tables on startup
@@ -27,9 +27,13 @@ origins = list(settings.ALLOWED_ORIGINS) if settings.ALLOWED_ORIGINS else []
 default_allowed = [
     "http://127.0.0.1:5173",
     "http://127.0.0.1:5174",
+    "http://127.0.0.1:5175",
     "http://localhost:5173",
     "http://localhost:5174",
+    "http://localhost:5175",
     "https://nova-house-hotel.vercel.app",
+    "https://nova-house-admin.vercel.app",
+    "https://nova-house-dashboard.vercel.app",
     "https://nova-house-hotel.onrender.com",
 ]
 for d in default_allowed:
@@ -49,6 +53,12 @@ app.add_middleware(
 app.include_router(payments.router, prefix="/api/payments")
 app.include_router(payments.router, prefix="/api/v1/payments")
 app.include_router(bookings.router)
+app.include_router(auth.router)
+app.include_router(auth.auth_compat_router)
+app.include_router(guests.router)
+app.include_router(guests.guests_compat_router)
+app.include_router(dashboard.router)
+app.include_router(dashboard.dashboard_compat_router)
 
 @app.get("/")
 @app.get("/health")

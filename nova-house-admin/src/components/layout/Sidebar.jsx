@@ -18,8 +18,10 @@ import {
   Settings,
   CreditCard,
   ExternalLink,
+  BarChart3,
   LogOut,
 } from 'lucide-react';
+import { logoutStaff } from '../../services/authService';
 
 const navSections = [
   {
@@ -64,7 +66,7 @@ export default function Sidebar({ onCloseMobile }) {
   const navigate = useNavigate();
 
   const handleLogout = () => {
-    localStorage.removeItem('nova_admin_logged_in');
+    logoutStaff();
     navigate('/admin/login');
   };
 
@@ -109,8 +111,21 @@ export default function Sidebar({ onCloseMobile }) {
         </nav>
       </div>
 
-      {/* Bottom Footer Actions */}
-      <div className="admin-sidebar-footer">
+        {/* Independent Portals */}
+        <a
+          href={import.meta.env.VITE_DASHBOARD_URL || "http://127.0.0.1:5175"}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="admin-footer-link"
+          style={{ borderColor: 'rgba(165, 138, 92, 0.4)', background: 'rgba(165, 138, 92, 0.08)' }}
+        >
+          <span className="admin-footer-left">
+            <BarChart3 size={14} className="admin-footer-gold-icon" style={{ color: '#A58A5C' }} />
+            <span style={{ fontWeight: 600, color: '#A58A5C' }}>Analytics Dashboard</span>
+          </span>
+          <span className="admin-footer-arrow">↗</span>
+        </a>
+
         <a
           href={import.meta.env.VITE_PUBLIC_WEBSITE_URL || "http://127.0.0.1:5173"}
           target="_blank"
