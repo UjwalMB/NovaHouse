@@ -1,0 +1,62 @@
+export const initialOffers = [
+  {
+    id: 'OFF-01',
+    name: 'Weekend Urban Sanctuary Escape',
+    tagline: 'Two Nights of Restorative Calm',
+    description: 'Reserve two consecutive weekend nights (Friday through Sunday) and receive daily breakfast for two at EMBER, late check-out until 4:00 PM, and a complimentary 60-minute Kaya Spa restoration ritual.',
+    discount: '15% Off Room Rate + Spa Inclusion',
+    code: 'SANCTUARY15',
+    validFrom: '2026-10-01',
+    validUntil: '2026-12-20',
+    applicableRooms: ['Nova Suite', 'Executive Corner Suite', 'Residency Terrace Suite'],
+    terms: 'Valid for stays including Friday or Saturday nights. Subject to availability at time of reservation.',
+    image: 'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=1000&q=80',
+    status: 'Active',
+    claimedCount: 28
+  },
+  {
+    id: 'OFF-02',
+    name: 'Architectural Long Stay Residency',
+    tagline: 'Extended Productivity & Solitude',
+    description: 'Designed for executive researchers, creative directors, and founders staying 5 nights or more. Includes dedicated airport transfer, laundry valet, daily pressings, and high-speed enterprise Wi-Fi.',
+    discount: '25% Off Stays of 5+ Nights',
+    code: 'RESIDENCY25',
+    validFrom: '2026-09-15',
+    validUntil: '2026-11-30',
+    applicableRooms: ['Deluxe Courtyard', 'Premier Garden Room', 'Deluxe Studio'],
+    terms: 'Minimum stay of 5 nights required. Non-refundable 48 hours prior to arrival.',
+    image: 'https://images.unsplash.com/photo-1590490360182-c33d57733427?auto=format&fit=crop&w=1000&q=80',
+    status: 'Active',
+    claimedCount: 14
+  },
+  {
+    id: 'OFF-03',
+    name: 'The Gastronomic Hearth Experience',
+    tagline: 'A Five-Course Culinary Journey',
+    description: 'Stay in any of our suites and enjoy a curated five-course charcoal degustation dinner for two at EMBER, complemented by sommelier-curated biodynamic wine pairings.',
+    discount: 'Complimentary Degustation Dinner (Value ₹ 9,500)',
+    code: 'EMBERHEARTH',
+    validFrom: '2026-10-15',
+    validUntil: '2026-11-15',
+    applicableRooms: ['Nova Suite', 'The Bengaluru Penthouse', 'The Skyline Penthouse'],
+    terms: 'Advance table reservation required upon booking confirmation.',
+    image: 'https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1000&q=80',
+    status: 'Scheduled',
+    claimedCount: 6
+  },
+  {
+    id: 'OFF-04',
+    name: 'Monsoon Retreat Special',
+    tagline: 'Comfort within the Southern Rains',
+    description: 'Seasonal celebratory package with hot botanical tisanes, bespoke warm stone therapies, and evening cocktail hours in our lobby gallery.',
+    discount: '20% Seasonal Reduction',
+    code: 'MONSOONPAUSE',
+    validFrom: '2026-06-01',
+    validUntil: '2026-09-15',
+    applicableRooms: ['All Rooms'],
+    terms: 'Seasonal promotion ended.',
+    image: 'https://images.unsplash.com/photo-1576013551627-0cc20b96c2a7?auto=format&fit=crop&w=1000&q=80',
+    status: 'Expired',
+    claimedCount: 42
+  }
+];

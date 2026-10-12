@@ -1,0 +1,169 @@
+import React, { useState } from 'react';
+import { ArrowUpRight, BedDouble, Maximize2, Sparkles, ArrowRight } from 'lucide-react';
+import { ROOMS_DATA } from '../data/hotelData';
+
+export default function Rooms({ onViewRoom, onBookRoom }) {
+  const [activeFilter, setActiveFilter] = useState('All');
+
+  const filteredRooms = activeFilter === 'All'
+    ? ROOMS_DATA
+    : ROOMS_DATA.filter((r) => r.category === activeFilter);
+
+  return (
+    <section id="stay" className="section-spacing bg-[#F4F1EB] text-[#171717] relative">
+      <div className="container-luxury">
+        {/* Section Header */}
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#171717]/10 pb-8 mb-16">
+          <div>
+            <span className="editorial-tag mb-4">02 / Stay</span>
+            <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
+              Rooms made for <br />
+              <span className="italic font-normal text-[#A58A5C]">slow mornings.</span>
+            </h2>
+          </div>
+
+          <div className="flex flex-col md:items-end gap-4">
+            <p className="text-sm font-sans text-[#77736C] max-w-sm md:text-right">
+              Four distinct architectural expressions of quiet luxury, crafted with acoustic insulation and honest natural textures.
+            </p>
+
+            {/* Filter Pills with Tactile Luxury Tabs */}
+            <div className="filter-tabs-container shadow-sm">
+              {['All', 'Rooms', 'Suites'].map((filter) => {
+                const isActive = activeFilter === filter;
+                return (
+                  <button
+                    key={filter}
+                    type="button"
+                    onClick={() => setActiveFilter(filter)}
+                    className={`filter-tab-btn ${isActive ? 'is-active' : ''}`}
+                    aria-pressed={isActive}
+                  >
+                    {filter}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        {/* Editorial Rooms Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          {filteredRooms.map((room, index) => (
+            <div
+              key={room.id}
+              className="group flex flex-col bg-[#ECE8E0]/40 border border-[#D8D0C3] overflow-hidden hover:border-[#111111] transition-all duration-500 shadow-sm"
+            >
+              {/* Room Image Container with High Contrast Badges */}
+              <div className="relative aspect-[16/10] overflow-hidden bg-[#D8D0C3]">
+                <img
+                  src={room.images.primary}
+                  alt={room.title}
+                  className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                />
+
+                {/* Permanent subtle gradient vignette so badges and text pop */}
+                <div
+                  className="absolute inset-0 pointer-events-none"
+                  style={{
+                    background: 'linear-gradient(to top, rgba(17, 17, 17, 0.75) 0%, rgba(17, 17, 17, 0.2) 35%, transparent 70%)',
+                  }}
+                />
+
+                {/* Top Floating Badge with High Contrast */}
+                <div className="absolute top-4 left-4 flex items-center gap-2">
+                  <span
+                    className="text-[10px] font-mono uppercase tracking-[0.2em] px-3 py-1 font-medium shadow-sm"
+                    style={{
+                      backgroundColor: 'rgba(17, 17, 17, 0.92)',
+                      color: '#F4F1EB',
+                      border: '1px solid rgba(244, 241, 235, 0.25)',
+                    }}
+                  >
+                    {room.tag}
+                  </span>
+                </div>
+
+                {/* Price pill with Guaranteed High Contrast */}
+                <div
+                  className="absolute bottom-4 left-4 flex items-baseline gap-1 px-3 py-1.5 shadow-md"
+                  style={{
+                    backgroundColor: 'rgba(17, 17, 17, 0.92)',
+                    color: '#FFFFFF',
+                    border: '1px solid rgba(244, 241, 235, 0.25)',
+                  }}
+                >
+                  <span className="font-serif text-lg font-light text-[#FFFFFF]">{room.pricePerNight}</span>
+                  <span className="font-mono text-[10px] text-[#D8D0C3]">/ night</span>
+                </div>
+
+                <div
+                  className="absolute bottom-4 right-4 font-mono text-[10px] tracking-widest px-2.5 py-1"
+                  style={{
+                    backgroundColor: 'rgba(17, 17, 17, 0.85)',
+                    color: '#D8D0C3',
+                    border: '1px solid rgba(255, 255, 255, 0.15)',
+                  }}
+                >
+                  0{index + 1}
+                </div>
+              </div>
+
+              {/* Room Content */}
+              <div className="p-6 sm:p-8 flex flex-col flex-grow justify-between space-y-6">
+                <div>
+                  <div className="flex items-center justify-between text-xs font-mono text-[#77736C] mb-2">
+                    <span>{room.category}</span>
+                    <div className="flex items-center gap-3">
+                      <span>{room.size}</span>
+                      <span>·</span>
+                      <span>{room.bed}</span>
+                    </div>
+                  </div>
+
+                  <h3 className="font-serif text-3xl font-light uppercase tracking-tight text-[#171717] group-hover:text-[#A58A5C] transition-colors">
+                    {room.title}
+                  </h3>
+
+                  <p className="text-sm text-[#77736C] font-sans mt-2 line-clamp-2">
+                    {room.description}
+                  </p>
+
+                  {/* Highlights Bullet List */}
+                  <ul className="mt-4 space-y-1.5 text-xs text-[#171717]/85 border-t border-[#171717]/10 pt-4">
+                    {room.highlights.slice(0, 3).map((hl, i) => (
+                      <li key={i} className="flex items-center gap-2">
+                        <span className="w-1.5 h-1.5 rounded-full bg-[#A58A5C]" />
+                        <span>{hl}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+
+                {/* Actions Bar */}
+                <div className="flex items-center justify-between pt-6 border-t border-[#171717]/10">
+                  <button
+                    onClick={() => onViewRoom(room)}
+                    className="editorial-link text-xs font-mono tracking-widest"
+                  >
+                    <span>View Room</span>
+                    <ArrowRight size={14} />
+                  </button>
+
+                  <button
+                    onClick={() => onBookRoom(room.id)}
+                    className="btn-luxury-primary !py-2.5 !px-5 text-[11px]"
+                    style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
+                  >
+                    <span>Reserve</span>
+                    <ArrowUpRight size={13} />
+                  </button>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
