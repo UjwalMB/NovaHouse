@@ -8,11 +8,13 @@ from .routes import payments, bookings
 from .services.booking_service import booking_service
 
 # Auto-create database tables on startup
-Base.metadata.create_all(bind=engine)
-
-# Seed database with realistic initial bookings & payment records
-with SessionLocal() as db:
-    booking_service.seed_initial_bookings(db)
+try:
+    Base.metadata.create_all(bind=engine)
+    # Seed database with realistic initial bookings & payment records
+    with SessionLocal() as db:
+        booking_service.seed_initial_bookings(db)
+except Exception as e:
+    print(f"⚠️ Notice during schema/seed initialization: {e}")
 
 app = FastAPI(
     title=settings.PROJECT_NAME,

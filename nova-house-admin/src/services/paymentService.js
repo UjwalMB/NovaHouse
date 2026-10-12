@@ -114,6 +114,13 @@ const FALLBACK_PAYMENTS = [
   },
 ];
 
+function fetchWithTimeout(url, options = {}, timeoutMs = 3500) {
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
+  return fetch(url, { ...options, signal: controller.signal })
+    .finally(() => clearTimeout(timeoutId));
+}
+
 let localPaymentsState = [...FALLBACK_PAYMENTS];
 
 export async function fetchPayments(status = null) {
@@ -122,7 +129,7 @@ export async function fetchPayments(status = null) {
       ? `${API_BASE}/api/payments?status=${encodeURIComponent(status)}`
       : `${API_BASE}/api/payments`;
     
-    const res = await fetch(url);
+    const res = await fetchWithTimeout(url, {}, 3500);
     if (res.ok) {
       const data = await res.json();
       if (Array.isArray(data)) {
@@ -131,7 +138,7 @@ export async function fetchPayments(status = null) {
       }
     }
   } catch (err) {
-    console.warn('Backend payments endpoint unreachable, using state cache:', err);
+    console.warn('Backend payments endpoint unreachable or timed out, using state cache:', err);
   }
 
   if (status && status !== 'all') {
@@ -144,12 +151,12 @@ export async function fetchPayments(status = null) {
 
 export async function fetchPaymentStats() {
   try {
-    const res = await fetch(`${API_BASE}/api/payments/stats`);
+    const res = await fetchWithTimeout(`${API_BASE}/api/payments/stats`, {}, 3500);
     if (res.ok) {
       return await res.json();
     }
   } catch (err) {
-    console.warn('Backend payment stats unreachable, computing locally:', err);
+    console.warn('Backend payment stats unreachable or timed out, computing locally:', err);
   }
 
   // Local calculation based on payments

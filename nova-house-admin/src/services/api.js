@@ -54,8 +54,12 @@ class ApiClient {
 
   async request(endpoint, options = {}) {
     const url = this.buildUrl(endpoint);
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 3500);
+
     const config = {
       ...options,
+      signal: controller.signal,
       headers: {
         ...this.getHeaders(),
         ...options.headers,
@@ -64,12 +68,14 @@ class ApiClient {
 
     try {
       const response = await fetch(url, config);
+      clearTimeout(timeoutId);
       if (!response.ok) {
         return null;
       }
       return await response.json();
     } catch (err) {
-      // Backend offline or unreachable; return null to trigger mock/local fallback
+      clearTimeout(timeoutId);
+      // Backend offline, unreachable or timed out; return null to trigger mock/local fallback
       return null;
     }
   }

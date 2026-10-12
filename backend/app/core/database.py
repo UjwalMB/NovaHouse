@@ -75,8 +75,19 @@ else:
     engine_kwargs["pool_pre_ping"] = True
     engine_kwargs["pool_size"] = 10
     engine_kwargs["max_overflow"] = 20
+    engine_kwargs["connect_args"] = {"connect_timeout": 3}
 
-engine = create_engine(DATABASE_URL, **engine_kwargs)
+try:
+    engine = create_engine(DATABASE_URL, **engine_kwargs)
+    if not is_sqlite:
+        with engine.connect() as _test_conn:
+            pass
+except Exception as _conn_err:
+    print(f"⚠️ Warning: Remote database connection failed ({_conn_err}). Falling back to local novahouse.db")
+    base_dir = Path(__file__).resolve().parent.parent.parent.parent
+    fallback_url = f"sqlite:///{base_dir / 'novahouse.db'}"
+    is_sqlite = True
+    engine = create_engine(fallback_url, echo=False, connect_args={"check_same_thread": False})
 
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
