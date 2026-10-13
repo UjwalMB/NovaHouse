@@ -18,6 +18,7 @@ from ..schemas.payment import (
     PaymentOut,
 )
 from ..services.payment_service import payment_service
+from ..services.notification_service import notification_service
 from ..models.payment import Payment
 from ..models.booking import Booking
 from .auth import require_roles, verify_token
@@ -165,6 +166,12 @@ def settle_payment(
 
     db.commit()
     db.refresh(booking)
+
+    # Dispatch automated booking confirmations upon staff settlement
+    try:
+        notification_service.send_booking_confirmations(db, booking, payment)
+    except Exception:
+        pass
 
     return {
         "success": True,

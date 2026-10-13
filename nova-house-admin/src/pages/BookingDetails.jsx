@@ -17,8 +17,18 @@ import {
   FileText,
   RotateCcw,
   ShieldCheck,
+  Send,
+  AlertCircle,
+  Smartphone,
+  RefreshCw,
 } from 'lucide-react';
-import { getBookingById, updateBookingStatus } from '../services/bookingService';
+import {
+  getBookingById,
+  updateBookingStatus,
+  getBookingNotifications,
+  retryNotification,
+  resendBookingNotifications,
+} from '../services/bookingService';
 import { fetchPaymentByBooking, processPaymentRefund, settlePayment } from '../services/paymentService';
 import { useToast } from '../components/ui/Toast';
 import StatusBadge from '../components/ui/StatusBadge';
@@ -33,22 +43,60 @@ export default function BookingDetails() {
 
   const [booking, setBooking] = useState(null);
   const [payment, setPayment] = useState(null);
+  const [notifications, setNotifications] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isRetrying, setIsRetrying] = useState(false);
   const [isRefundOpen, setIsRefundOpen] = useState(false);
 
   useEffect(() => {
     async function load() {
       setLoading(true);
-      const [bookingData, paymentData] = await Promise.all([
+      const [bookingData, paymentData, notifs] = await Promise.all([
         getBookingById(id),
         fetchPaymentByBooking(id),
+        getBookingNotifications(id),
       ]);
       setBooking(bookingData);
       setPayment(paymentData);
+      setNotifications(notifs || bookingData?.notifications || []);
       setLoading(false);
     }
     load();
   }, [id]);
+
+  const handleRetryNotification = async (notificationId) => {
+    setIsRetrying(true);
+    try {
+      const res = await retryNotification(notificationId);
+      if (res?.success) {
+        addToast(res.message || 'Notification retried successfully.');
+        const updated = await getBookingNotifications(id);
+        setNotifications(updated);
+      } else {
+        addToast(res?.detail || 'Notification retry failed.', 'error');
+      }
+    } catch (err) {
+      addToast(err.message || 'Notification retry failed.', 'error');
+    } finally {
+      setIsRetrying(false);
+    }
+  };
+
+  const handleSendConfirmations = async () => {
+    setIsRetrying(true);
+    try {
+      const res = await resendBookingNotifications(booking.id);
+      if (res?.success) {
+        addToast('Booking confirmation notifications dispatched.');
+        const updated = await getBookingNotifications(id);
+        setNotifications(updated);
+      }
+    } catch (err) {
+      addToast(err.message || 'Failed to dispatch notifications.', 'error');
+    } finally {
+      setIsRetrying(false);
+    }
+  };
 
   const handleRefundSuccess = async (refundPayload) => {
     await processPaymentRefund(refundPayload);
@@ -258,6 +306,150 @@ export default function BookingDetails() {
                   <span>{booking.guestCountry}</span>
                 </span>
               </div>
+            </div>
+          </div>
+
+          {/* Guest Confirmation Notifications (Email & SMS) Card */}
+          <div className="admin-card">
+            <div className="admin-card-header flex items-center justify-between">
+              <h3 className="font-serif text-base font-light uppercase text-[#111111] flex items-center gap-2">
+                <ShieldCheck size={16} className="text-[#A58A5C]" />
+                <span>Guest Confirmations</span>
+              </h3>
+              {booking.paymentStatus === 'PAID' && (
+                <button
+                  type="button"
+                  onClick={handleSendConfirmations}
+                  disabled={isRetrying}
+                  className="text-[10px] font-mono text-[#A58A5C] hover:text-[#111111] flex items-center gap-1 hover:underline"
+                >
+                  <RefreshCw size={11} className={isRetrying ? 'animate-spin' : ''} />
+                  <span>Resend All</span>
+                </button>
+              )}
+            </div>
+            <div className="p-6 space-y-4 text-xs font-mono">
+              {/* Email Status Item */}
+              {(() => {
+                const emailNotif = notifications.find((n) => (n.type || n.notification_type) === 'EMAIL');
+                const isSent = emailNotif?.status === 'SENT';
+                const isFailed = emailNotif?.status === 'FAILED';
+                return (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Mail size={14} className="text-[#A58A5C]" />
+                        <span className="font-semibold text-[#111111]">Email Confirmation</span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 text-[10px] font-bold rounded-xs ${
+                          isSent
+                            ? 'bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1]'
+                            : isFailed
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-[#F4F1EB] text-[#77736C] border border-[#E2DDD5]'
+                        }`}
+                      >
+                        {emailNotif ? emailNotif.status : 'PENDING'}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-[#77736C] space-y-0.5">
+                      <div className="truncate">To: {booking.guestEmail}</div>
+                      {emailNotif?.providerMessageId && (
+                        <div className="text-[10px] text-[#A58A5C]">
+                          Ref: {emailNotif.providerMessageId}
+                        </div>
+                      )}
+                      {emailNotif?.sentAt && (
+                        <div className="text-[10px] text-[#77736C]">
+                          Sent: {new Date(emailNotif.sentAt).toLocaleString('en-GB')}
+                        </div>
+                      )}
+                      {isFailed && (emailNotif?.error || emailNotif?.errorMessage) && (
+                        <div className="text-[10px] text-rose-600 mt-1">
+                          {emailNotif.errorMessage || emailNotif.error}
+                        </div>
+                      )}
+                    </div>
+
+                    {isFailed && (
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleRetryNotification(emailNotif.id)}
+                          disabled={isRetrying}
+                          className="px-2.5 py-1 text-[10px] font-medium bg-[#111111] text-[#FFFFFF] rounded-xs hover:bg-[#333333] flex items-center gap-1 transition-colors"
+                        >
+                          <RefreshCw size={10} className={isRetrying ? 'animate-spin' : ''} />
+                          <span>Retry Email</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
+
+              {/* SMS Status Item */}
+              {(() => {
+                const smsNotif = notifications.find((n) => (n.type || n.notification_type) === 'SMS');
+                const isSent = smsNotif?.status === 'SENT';
+                const isFailed = smsNotif?.status === 'FAILED';
+                return (
+                  <div className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2">
+                    <div className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Smartphone size={14} className="text-[#A58A5C]" />
+                        <span className="font-semibold text-[#111111]">SMS Confirmation</span>
+                      </div>
+                      <span
+                        className={`px-2 py-0.5 text-[10px] font-bold rounded-xs ${
+                          isSent
+                            ? 'bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1]'
+                            : isFailed
+                            ? 'bg-rose-50 text-rose-700 border border-rose-200'
+                            : 'bg-[#F4F1EB] text-[#77736C] border border-[#E2DDD5]'
+                        }`}
+                      >
+                        {smsNotif ? smsNotif.status : 'PENDING'}
+                      </span>
+                    </div>
+
+                    <div className="text-[11px] text-[#77736C] space-y-0.5">
+                      <div className="truncate">To: {booking.guestPhone}</div>
+                      {smsNotif?.providerMessageId && (
+                        <div className="text-[10px] text-[#A58A5C]">
+                          Ref: {smsNotif.providerMessageId}
+                        </div>
+                      )}
+                      {smsNotif?.sentAt && (
+                        <div className="text-[10px] text-[#77736C]">
+                          Sent: {new Date(smsNotif.sentAt).toLocaleString('en-GB')}
+                        </div>
+                      )}
+                      {isFailed && (smsNotif?.error || smsNotif?.errorMessage) && (
+                        <div className="text-[10px] text-rose-600 mt-1">
+                          {smsNotif.errorMessage || smsNotif.error}
+                        </div>
+                      )}
+                    </div>
+
+                    {isFailed && (
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={() => handleRetryNotification(smsNotif.id)}
+                          disabled={isRetrying}
+                          className="px-2.5 py-1 text-[10px] font-medium bg-[#111111] text-[#FFFFFF] rounded-xs hover:bg-[#333333] flex items-center gap-1 transition-colors"
+                        >
+                          <RefreshCw size={10} className={isRetrying ? 'animate-spin' : ''} />
+                          <span>Retry SMS</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                );
+              })()}
             </div>
           </div>
 

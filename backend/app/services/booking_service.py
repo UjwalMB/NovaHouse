@@ -224,6 +224,18 @@ class BookingService:
             "createdAt": b.created_at.strftime("%Y-%m-%d") if b.created_at else str(date.today()),
             "created_at": b.created_at.isoformat() if b.created_at else datetime.utcnow().isoformat(),
             "updated_at": b.updated_at.isoformat() if b.updated_at else datetime.utcnow().isoformat(),
+            "notifications": [
+                {
+                    "id": n.id,
+                    "type": n.notification_type,
+                    "recipient": n.recipient,
+                    "status": n.status,
+                    "sentAt": n.sent_at.isoformat() if n.sent_at else None,
+                    "messageId": n.provider_message_id,
+                    "error": n.error_message,
+                }
+                for n in (b.notifications if hasattr(b, "notifications") and b.notifications else [])
+            ],
         }
 
     @staticmethod

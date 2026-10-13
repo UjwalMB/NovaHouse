@@ -3,8 +3,8 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from .core.config import settings
 from .core.database import engine, Base, SessionLocal, is_sqlite
-from .models import Booking, Payment, Room, Guest
-from .routes import payments, bookings, auth, guests, dashboard, rooms, availability
+from .models import Booking, Payment, Room, Guest, BookingNotification
+from .routes import payments, bookings, auth, guests, dashboard, rooms, availability, notifications
 from .services.booking_service import booking_service
 
 # Auto-create database tables on startup
@@ -62,6 +62,8 @@ app.include_router(guests.router)
 app.include_router(guests.guests_compat_router)
 app.include_router(dashboard.router)
 app.include_router(dashboard.dashboard_compat_router)
+app.include_router(notifications.router)
+app.include_router(notifications.notifications_compat_router)
 
 @app.get("/")
 @app.get("/health")

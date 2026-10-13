@@ -87,3 +87,19 @@ export async function deleteBooking(id) {
   saveStoredBookings(bookingsState);
   return true;
 }
+
+export async function getBookingNotifications(bookingId) {
+  try {
+    const data = await api.get(`/bookings/${bookingId}/notifications`);
+    if (data && Array.isArray(data)) return data;
+  } catch (err) {}
+  return [];
+}
+
+export async function retryNotification(notificationId) {
+  return await api.post(`/notifications/${notificationId}/retry`);
+}
+
+export async function resendBookingNotifications(bookingId) {
+  return await api.post(`/bookings/${bookingId}/notifications/dispatch`);
+}

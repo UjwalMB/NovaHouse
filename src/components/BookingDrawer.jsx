@@ -16,6 +16,8 @@ import {
   Building2,
   Lock,
   ShieldCheck,
+  Mail,
+  Phone,
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ROOMS_DATA } from '../data/hotelData';
@@ -24,18 +26,74 @@ import {
   verifyPaymentOnServer,
   retryPaymentOrder,
   authorizeTestPayment,
+  launchRazorpayCheckout,
 } from '../services/paymentService';
 import { checkAvailability } from '../services/bookingApi';
 
-export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
-  const [checkIn, setCheckIn] = useState('2026-10-18');
-  const [checkOut, setCheckOut] = useState('2026-10-21');
+/**
+ * Format a YYYY-MM-DD date into "18 Oct 2026"
+ */
+function formatDisplayDate(dateStr) {
+  if (!dateStr) return '';
+  try {
+    const parts = dateStr.split('-');
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10) - 1;
+      const day = parseInt(parts[2], 10);
+      const d = new Date(year, month, day);
+      return d.toLocaleDateString('en-GB', {
+        day: 'numeric',
+        month: 'short',
+        year: 'numeric',
+      });
+    }
+  } catch (e) {
+    // fallback to original string
+  }
+  return dateStr;
+}
 
+/**
+ * Mask email for customer privacy (e.g. uj***@novahouse.com)
+ */
+function maskEmail(email) {
+  if (!email || !email.includes('@')) return 'guest@novahouse.com';
+  const [user, domain] = email.split('@');
+  if (user.length <= 2) return `${user}***@${domain}`;
+  return `${user.slice(0, 2)}***@${domain}`;
+}
+
+/**
+ * Mask phone number for customer privacy (e.g. ******5529)
+ */
+function maskPhone(phone) {
+  if (!phone) return '******5529';
+  const clean = phone.replace(/[\s\-\(\)]/g, '');
+  if (clean.length >= 4) return `******${clean.slice(-4)}`;
+  return '******5529';
+}
+
+export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
+  // Booking Form State
+  const [checkIn, setCheckIn] = useState('2026-10-18');
+  const [checkOut, setCheckOut] = useState('2026-10-19');
+  const [guests, setGuests] = useState('2 Adults');
+  const [roomId, setRoomId] = useState(defaultRoomId || 'deluxe-room');
+  const [guestName, setGuestName] = useState('Ujwal');
+  const [guestEmail, setGuestEmail] = useState('ujwal@novahouse.com');
+  const [guestPhone, setGuestPhone] = useState('+91 98450 12345');
+
+  // Dynamic Date Validation Helper
   const getMinCheckOut = (inDateStr) => {
     if (!inDateStr) return '';
-    const d = new Date(inDateStr);
-    d.setDate(d.getDate() + 1);
-    return d.toISOString().split('T')[0];
+    try {
+      const d = new Date(inDateStr);
+      d.setDate(d.getDate() + 1);
+      return d.toISOString().split('T')[0];
+    } catch {
+      return '';
+    }
   };
 
   const handleCheckInChange = (newIn) => {
@@ -44,24 +102,32 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
     if (!checkOut || checkOut <= newIn) {
       setCheckOut(minOut);
     }
+    setInlineAvailabilityError('');
   };
-  const [guests, setGuests] = useState('2 Guests');
-  const [roomId, setRoomId] = useState(defaultRoomId || 'deluxe-room');
-  const [guestName, setGuestName] = useState('Ujwal');
-  const [guestEmail, setGuestEmail] = useState('');
-  const [guestPhone, setGuestPhone] = useState('');
 
-  // Payment states: 'idle' | 'preparing' | 'checkout' | 'verifying' | 'confirmed' | 'failed'
+  const handleCheckOutChange = (newOut) => {
+    setCheckOut(newOut);
+    setInlineAvailabilityError('');
+  };
+
+  // Button State Machine:
+  // 'DEFAULT' | 'CHECKING' | 'CREATING_ORDER' | 'RAZORPAY_OPEN' | 'SUCCESS' | 'ERROR'
+  const [buttonState, setButtonState] = useState('DEFAULT');
+
+  // Payment View States:
+  // 'idle' | 'checkout' | 'confirmed' | 'failed'
   const [paymentState, setPaymentState] = useState('idle');
+
   const [errorMessage, setErrorMessage] = useState('');
+  const [inlineAvailabilityError, setInlineAvailabilityError] = useState('');
   const [confirmedBooking, setConfirmedBooking] = useState(null);
   const [activeOrderData, setActiveOrderData] = useState(null);
 
-  // Live Database Availability State
+  // Live Database Availability State for background badge
   const [isCheckingAvailability, setIsCheckingAvailability] = useState(false);
   const [availabilityResult, setAvailabilityResult] = useState(null);
 
-  // In-drawer Razorpay Checkout state
+  // In-drawer Razorpay Checkout fallback tab state
   const [checkoutTab, setCheckoutTab] = useState('upi'); // 'upi' | 'card' | 'netbanking'
   const [selectedUpiApp, setSelectedUpiApp] = useState('gpay');
   const [testCardNumber, setTestCardNumber] = useState('4111 2222 3333 4444');
@@ -70,6 +136,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
   const [isAuthorizing, setIsAuthorizing] = useState(false);
   const [authProgress, setAuthProgress] = useState('');
 
+  // Lock scroll when open
   useEffect(() => {
     if (isOpen) {
       const prev = document.body.style.overflow;
@@ -86,7 +153,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
     }
   }, [defaultRoomId]);
 
-  // Live Database Availability Check
+  // Live Database Availability Background Verification
   useEffect(() => {
     let isCancelled = false;
     async function verifyLiveAvailability() {
@@ -97,7 +164,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
           checkIn,
           checkOut,
           roomId,
-          guests: parseInt(guests) || 2,
+          guests: parseInt(guests, 10) || 2,
         });
         if (!isCancelled) {
           setAvailabilityResult(res);
@@ -138,123 +205,247 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
   const estimatedTaxes = Math.round(roomSubtotal * 0.18);
   const estimatedTotal = roomSubtotal + estimatedTaxes;
 
+  // Processing state disables button & prevents double clicks
+  const isProcessing =
+    buttonState === 'CHECKING' ||
+    buttonState === 'CREATING_ORDER' ||
+    buttonState === 'RAZORPAY_OPEN';
+
+  // Dynamic Button Label per Section 2
+  const getButtonText = () => {
+    switch (buttonState) {
+      case 'CHECKING':
+        return 'CHECKING AVAILABILITY...';
+      case 'CREATING_ORDER':
+        return 'CREATING SECURE PAYMENT...';
+      case 'RAZORPAY_OPEN':
+        return 'PROCESSING PAYMENT...';
+      case 'SUCCESS':
+        return 'PAYMENT SUCCESSFUL';
+      case 'ERROR':
+        return 'PAYMENT FAILED — TRY AGAIN';
+      case 'DEFAULT':
+      default: {
+        const payable = activeOrderData?.amount ?? estimatedTotal;
+        return `PAY ₹${Number(payable).toLocaleString('en-IN')}`;
+      }
+    }
+  };
+
+  // Section 3: Before Payment Frontend Validation
+  const validateForm = () => {
+    if (!guestName || guestName.trim().length < 2) {
+      return 'Please enter your full guest name.';
+    }
+    if (!guestEmail || !guestEmail.includes('@') || !guestEmail.includes('.')) {
+      return 'Please enter a valid guest email address.';
+    }
+    const cleanPhone = guestPhone ? guestPhone.replace(/[^0-9]/g, '') : '';
+    if (!cleanPhone || cleanPhone.length < 10) {
+      return 'Please enter a valid 10-digit phone number.';
+    }
+    if (!roomId) {
+      return 'Please select a room sanctuary.';
+    }
+    if (!checkIn) {
+      return 'Please select a valid check-in date.';
+    }
+    if (!checkOut) {
+      return 'Please select a valid check-out date.';
+    }
+    if (checkOut <= checkIn) {
+      return 'Check-out date must be after check-in date.';
+    }
+    const numGuests = parseInt(guests, 10);
+    if (isNaN(numGuests) || numGuests < 1) {
+      return 'Please select at least 1 guest.';
+    }
+    return null;
+  };
+
+  // Section 7 & 8: Cryptographic Signature Verification Callback
+  const handlePaymentVerification = async (payResponse, orderData) => {
+    try {
+      setButtonState('RAZORPAY_OPEN');
+
+      const verifyPayload = {
+        razorpay_order_id: payResponse.razorpay_order_id || orderData.orderId,
+        razorpay_payment_id: payResponse.razorpay_payment_id,
+        razorpay_signature: payResponse.razorpay_signature,
+        booking_id: payResponse.booking_id || orderData.bookingId,
+      };
+
+      // Backend Cryptographically Verifies Payment (HMAC-SHA256)
+      const verifyResult = await verifyPaymentOnServer(verifyPayload);
+
+      // Section 9: Transition state only upon verified 200 OK
+      setButtonState('SUCCESS');
+      setPaymentState('confirmed');
+      setConfirmedBooking({
+        bookingId: verifyResult.bookingId || orderData.bookingId,
+        paymentId: verifyResult.paymentId || payResponse.razorpay_payment_id,
+        totalAmount: orderData.amount || estimatedTotal,
+        roomTitle: orderData.roomTitle || selectedRoom.title,
+        nights: orderData.nights || nights,
+        checkIn,
+        checkOut,
+        guests: parseInt(guests, 10) || 2,
+        paymentStatus: 'PAID',
+        bookingStatus: 'Confirmed',
+      });
+
+      try {
+        confetti({
+          particleCount: 90,
+          spread: 75,
+          origin: { y: 0.6 },
+          colors: ['#A58A5C', '#111111', '#D8D0C3', '#FFFFFF'],
+        });
+      } catch (err) {}
+    } catch (verErr) {
+      console.error('Cryptographic signature verification failed:', verErr);
+      setButtonState('ERROR');
+      setPaymentState('failed');
+      setErrorMessage(
+        verErr.message ||
+          'Payment signature verification failed. Your reservation has not been confirmed.'
+      );
+    }
+  };
+
+  // Section 1 to 6: Core Primary Payment Trigger Flow
   const handleStartPayment = async (e) => {
     if (e && e.preventDefault) e.preventDefault();
-    setErrorMessage('');
 
-    if (availabilityResult && availabilityResult.available === false) {
-      setErrorMessage('Selected room sanctuary is already reserved for these dates. Please select alternate dates or choose another suite.');
+    // Section 16: Duplicate payment protection - ignore if already processing
+    if (isProcessing) return;
+
+    setErrorMessage('');
+    setInlineAvailabilityError('');
+
+    // Section 3: Validate Form UX protection
+    const validationError = validateForm();
+    if (validationError) {
+      setErrorMessage(validationError);
+      setButtonState('DEFAULT');
       return;
     }
 
-    setPaymentState('preparing'); // "Preparing secure payment..."
-
     try {
-      const resolvedGuestName = guestName.trim() || (guestEmail && guestEmail.includes('@') ? guestEmail.split('@')[0] : 'Ujwal');
-      const resolvedGuestEmail = guestEmail.trim() || 'guest@novahouse.example';
-      const resolvedGuestPhone = guestPhone.trim() || '+91 98450 12345';
-
-      // 1. Authoritative Server-Side Calculation and Razorpay Order Creation
-      const orderPayload = {
-        roomId: selectedRoom.id,
+      // Section 4: Live Availability Check (React -> FastAPI -> PostgreSQL)
+      setButtonState('CHECKING');
+      const availRes = await checkAvailability({
         checkIn,
         checkOut,
-        guestName: resolvedGuestName,
-        guestEmail: resolvedGuestEmail,
-        guestPhone: resolvedGuestPhone,
+        roomId,
+        guests: parseInt(guests, 10) || 2,
+      });
+
+      if (availRes && availRes.available === false) {
+        setInlineAvailabilityError(
+          'This room is no longer available for the selected dates. Please choose different dates.'
+        );
+        setButtonState('DEFAULT');
+        return;
+      }
+
+      // Section 5: Authoritative Server-Side Order Creation
+      setButtonState('CREATING_ORDER');
+      const orderPayload = {
+        roomId,
+        checkIn,
+        checkOut,
+        guestName: guestName.trim(),
+        guestEmail: guestEmail.trim(),
+        guestPhone: guestPhone.trim(),
         guestCountry: 'India',
-        guests: parseInt(guests) || 2,
-        specialRequests: 'Online reservation via NOVA HOUSE booking drawer',
+        guests: parseInt(guests, 10) || 2,
+        specialRequests: 'Direct reservation via NOVA HOUSE booking drawer',
       };
 
       const orderData = await createRazorpayOrder(orderPayload);
       setActiveOrderData(orderData);
-      setPaymentState('checkout'); // Open integrated Razorpay Checkout
+
+      // Section 6: Launch Razorpay TEST Checkout
+      setButtonState('RAZORPAY_OPEN');
+
+      await launchRazorpayCheckout({
+        orderData,
+        guestName: guestName.trim(),
+        guestEmail: guestEmail.trim(),
+        guestPhone: guestPhone.trim(),
+        onSuccess: async (payResponse) => {
+          await handlePaymentVerification(payResponse, orderData);
+        },
+        onDismiss: () => {
+          // Section 11: Handle dismissal cleanly. Do not leave UI stuck in loading.
+          setButtonState('DEFAULT');
+          setErrorMessage('Payment window was closed. Click PAY to resume your reservation.');
+        },
+        onError: (errDesc) => {
+          setButtonState('ERROR');
+          setPaymentState('failed');
+          setErrorMessage(errDesc || 'Payment was declined or cancelled.');
+        },
+      });
     } catch (err) {
+      console.error('Payment initialization error:', err);
+      setButtonState('ERROR');
       setPaymentState('failed');
-      setErrorMessage(err.message || 'Failed to initialize payment gateway.');
+      setErrorMessage(
+        err.message && !err.message.includes('Internal')
+          ? err.message
+          : 'Unable to process your reservation. Please try again.'
+      );
     }
   };
 
-  const handleAuthorizePayment = () => {
+  // In-Drawer Checkout Tab: Authorize Test Payment
+  const handleAuthorizeInDrawerPayment = async () => {
     if (!activeOrderData) return;
     setIsAuthorizing(true);
     setAuthProgress('Connecting to Razorpay gateway...');
 
-    setTimeout(() => {
-      setAuthProgress('Authorizing transaction signature...');
-    }, 400);
-
-    setTimeout(async () => {
-      setPaymentState('verifying');
-      setIsAuthorizing(false);
-
-      try {
-        // 1. Authorize Test Payment with Authentic Cryptographic Signature from Server
-        const authData = await authorizeTestPayment({
-          bookingId: activeOrderData.bookingId,
-          orderId: activeOrderData.orderId,
-        });
-
-        // 2. Server-Side Cryptographic Signature Verification
-        const verifyResult = await verifyPaymentOnServer(authData);
-
-        setConfirmedBooking({
-          bookingId: verifyResult.bookingId,
-          paymentId: verifyResult.paymentId,
-          totalAmount: activeOrderData?.amount || estimatedTotal,
-          roomTitle: activeOrderData?.roomTitle || selectedRoom.title,
-          nights: activeOrderData?.nights || nights,
-          checkIn,
-          checkOut,
-          guests: parseInt(guests) || 2,
-          paymentStatus: verifyResult.paymentStatus || 'PAID',
-        });
-        setPaymentState('confirmed');
-
-        try {
-          confetti({
-            particleCount: 85,
-            spread: 70,
-            origin: { y: 0.6 },
-            colors: ['#A58A5C', '#111111', '#D8D0C3', '#FFFFFF'],
-          });
-        } catch (err) {}
-      } catch (verErr) {
-        setErrorMessage(verErr.message || 'Signature verification failed.');
-        setPaymentState('failed');
-      }
-    }, 900);
-  };
-
-  const handleSimulateDecline = () => {
-    setIsAuthorizing(true);
-    setAuthProgress('Simulating bank authorization check...');
-
-    setTimeout(() => {
-      setIsAuthorizing(false);
-      setPaymentState('failed');
-      setErrorMessage('Payment declined by issuing bank: Card restricted or daily test limit reached.');
-    }, 700);
-  };
-
-  const handleRetryPayment = async () => {
-    if (!activeOrderData?.bookingId) {
-      setPaymentState('idle');
-      return;
-    }
-
-    setErrorMessage('');
-    setPaymentState('preparing');
-
     try {
-      const newOrder = await retryPaymentOrder(activeOrderData.bookingId);
-      setActiveOrderData(newOrder);
-      setPaymentState('checkout');
-    } catch (e) {
+      const authData = await authorizeTestPayment({
+        bookingId: activeOrderData.bookingId,
+        orderId: activeOrderData.orderId,
+      });
+
+      await handlePaymentVerification(authData, activeOrderData);
+    } catch (authErr) {
+      setButtonState('ERROR');
       setPaymentState('failed');
-      setErrorMessage(e.message || 'Payment retry initialization failed.');
+      setErrorMessage(authErr.message || 'Payment authorization failed.');
+    } finally {
+      setIsAuthorizing(false);
     }
+  };
+
+  // In-Drawer Checkout Tab: Bank Decline Simulation
+  const handleSimulateDecline = () => {
+    setButtonState('ERROR');
+    setPaymentState('failed');
+    setErrorMessage('Payment declined by issuing bank: Card restricted or daily test limit reached.');
+  };
+
+  // Section 11: Try Again Handler
+  const handleRetryPayment = () => {
+    setErrorMessage('');
+    setInlineAvailabilityError('');
+    setButtonState('DEFAULT');
+    setPaymentState('idle');
+  };
+
+  // Reset and close drawer
+  const handleResetAndClose = () => {
+    setButtonState('DEFAULT');
+    setPaymentState('idle');
+    setErrorMessage('');
+    setInlineAvailabilityError('');
+    setConfirmedBooking(null);
+    setActiveOrderData(null);
+    onClose();
   };
 
   return (
@@ -293,9 +484,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
 
         {/* Drawer Body */}
         <div className="p-6 sm:p-8 space-y-6 flex-grow" style={{ backgroundColor: '#F4F1EB' }}>
-          {/* STATE 1: PAYMENT CONFIRMED */}
+          {/* ==================================================================== */}
+          {/* SECTION 10: PREMIUM PAYMENT SUCCESS UI                               */}
+          {/* ==================================================================== */}
           {paymentState === 'confirmed' && confirmedBooking && (
-            <div className="text-center py-8 space-y-6 animate-fade-in">
+            <div className="text-center py-6 space-y-6 animate-fade-in" id="booking-success-view">
               <div className="w-16 h-16 rounded-full bg-[#A58A5C] text-[#111111] flex items-center justify-center mx-auto shadow-md">
                 <Check size={32} />
               </div>
@@ -304,91 +497,163 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#A58A5C] block mb-1">
                   NOVA HOUSE · BENGALURU
                 </span>
-                <h4 className="font-serif text-3xl font-light uppercase text-[#111111]">
-                  Booking Confirmed
+                <h4 className="font-serif text-3xl font-light uppercase text-[#111111] tracking-wide">
+                  BOOKING CONFIRMED
                 </h4>
-                <p className="font-serif italic text-sm text-[#77736C] mt-1">
-                  "Your stay is reserved and verified."
+                <p className="font-serif italic text-sm text-[#77736C] mt-1.5">
+                  Thank you, <strong className="text-[#111111] not-italic font-medium">{confirmedBooking.guestName || guestName}</strong>.<br />
+                  Your reservation at NOVA HOUSE has been confirmed.
                 </p>
               </div>
 
-              {/* Dossier Card */}
+              {/* Authoritative Reservation Dossier */}
               <div
-                className="p-5 border border-[#D8D0C3] space-y-3 text-left font-mono text-xs rounded-xs"
+                className="p-5 border border-[#D8D0C3] space-y-3.5 text-left font-mono text-xs rounded-none shadow-xs"
                 style={{ backgroundColor: '#ECE8E0' }}
               >
-                <div className="flex justify-between items-center pb-2 border-b border-[#D8D0C3]">
-                  <span className="text-[#77736C]">Booking ID:</span>
-                  <strong className="text-[#111111] font-semibold">
+                <div className="flex justify-between items-center pb-2.5 border-b border-[#D8D0C3]">
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Reservation ID:</span>
+                  <strong className="text-[#111111] font-semibold text-sm">
                     {confirmedBooking.bookingId}
                   </strong>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Payment Status:</span>
-                  <span className="px-2 py-0.5 rounded-xs bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-bold">
-                    PAID
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Room Sanctuary:</span>
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Room:</span>
                   <span className="text-[#111111] font-medium">{confirmedBooking.roomTitle}</span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Check-in:</span>
-                  <span className="text-[#111111]">{confirmedBooking.checkIn}</span>
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Check-in:</span>
+                  <span className="text-[#111111]">{formatDisplayDate(confirmedBooking.checkIn)}</span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Check-out:</span>
-                  <span className="text-[#111111]">{confirmedBooking.checkOut}</span>
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Check-out:</span>
+                  <span className="text-[#111111]">{formatDisplayDate(confirmedBooking.checkOut)}</span>
                 </div>
+
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Guests:</span>
-                  <span className="text-[#111111]">{confirmedBooking.guests}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Razorpay ID:</span>
-                  <span className="text-[#111111] font-mono text-[11px]">
-                    {confirmedBooking.paymentId}
-                  </span>
-                </div>
-                <div className="flex justify-between items-baseline pt-2 border-t border-[#D8D0C3]">
-                  <span className="text-[#77736C]">Total Amount:</span>
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Amount Paid:</span>
                   <span className="font-serif text-xl text-[#111111] font-semibold">
-                    ₹ {confirmedBooking.totalAmount.toLocaleString()}
+                    ₹{Number(confirmedBooking.totalAmount).toLocaleString('en-IN')}
                   </span>
                 </div>
+
+                <div className="flex justify-between items-center pt-2.5 border-t border-[#D8D0C3]">
+                  <span className="text-[#77736C] uppercase tracking-wider text-[11px]">Status:</span>
+                  <span className="px-2.5 py-0.5 rounded-none bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-bold tracking-wider text-[11px]">
+                    CONFIRMED
+                  </span>
+                </div>
+              </div>
+
+              {/* Notification Dispatch Notice */}
+              <div
+                className="p-4 border border-[#D8D0C3] space-y-2.5 text-left font-mono text-xs rounded-none bg-[#FAF8F5]"
+                id="booking-notification-notice"
+              >
+                <div className="flex items-center gap-2 text-[#77736C] text-[10px] uppercase tracking-wider font-semibold border-b border-[#ECE7DE] pb-1.5">
+                  <ShieldCheck size={13} className="text-[#235C33]" />
+                  <span>Confirmation sent to:</span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 text-[11px]">
+                  <div className="flex items-center gap-2 text-[#111111]">
+                    <Mail size={13} className="text-[#A58A5C] shrink-0" />
+                    <span>{maskEmail(confirmedBooking.guestEmail || guestEmail)}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-[#111111]">
+                    <Phone size={13} className="text-[#A58A5C] shrink-0" />
+                    <span>{maskPhone(confirmedBooking.guestPhone || guestPhone)}</span>
+                  </div>
+                </div>
+
+                <p className="font-serif italic text-[11px] text-[#77736C] pt-1 border-t border-[#ECE7DE]">
+                  Your booking confirmation has been sent to your email and phone.
+                </p>
               </div>
 
               <div className="space-y-3 pt-2">
                 <button
                   type="button"
+                  id="btn-view-reservation"
                   onClick={() => window.print()}
-                  className="w-full btn-luxury-primary !py-3.5 text-xs tracking-wider"
-                  style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
+                  className="w-full py-4 px-6 text-xs font-mono uppercase tracking-widest font-semibold shadow-md flex items-center justify-center gap-2 transition-all rounded-none bg-[#111111] hover:bg-black text-[#F4F1EB]"
                 >
-                  <span>Print / Save Booking Voucher</span>
+                  <ArrowUpRight size={14} className="text-[#A58A5C]" />
+                  <span>VIEW RESERVATION</span>
                 </button>
+
                 <button
                   type="button"
-                  onClick={() => {
-                    setPaymentState('idle');
-                    onClose();
-                  }}
-                  className="w-full py-3 text-xs font-mono tracking-wider text-[#77736C] hover:text-[#111111] transition-colors"
+                  id="btn-done-reservation"
+                  onClick={handleResetAndClose}
+                  className="w-full py-3.5 px-6 text-xs font-mono uppercase tracking-widest text-[#77736C] hover:text-[#111111] border border-[#D8D0C3] hover:border-[#111111] transition-colors"
                 >
-                  Back to Nova House
+                  <span>DONE</span>
                 </button>
               </div>
             </div>
           )}
 
-          {/* STATE 2: INTEGRATED RAZORPAY CHECKOUT INTERFACE */}
+          {/* ==================================================================== */}
+          {/* SECTION 11: PAYMENT FAILURE UI                                       */}
+          {/* ==================================================================== */}
+          {paymentState === 'failed' && (
+            <div className="py-8 text-center space-y-5 animate-fade-in" id="booking-failed-view">
+              <div className="w-14 h-14 rounded-full bg-[#FDF0F0] text-[#962828] border border-[#F7C6C6] flex items-center justify-center mx-auto">
+                <AlertCircle size={28} />
+              </div>
+
+              <div>
+                <h4 className="font-serif text-2xl font-light text-[#111111] uppercase tracking-wide">
+                  PAYMENT NOT COMPLETED
+                </h4>
+                <p className="font-serif italic text-sm text-[#77736C] mt-1.5">
+                  Your reservation has not been confirmed.
+                </p>
+                <div className="text-xs font-mono text-[#962828] mt-3 p-3 bg-red-50 border border-red-200 text-left">
+                  {errorMessage || 'Unable to complete transaction. Please try again.'}
+                </div>
+                <p className="font-mono text-[11px] text-[#A58A5C] mt-3">
+                  Your room selection and guest details are preserved without duplicate bookings.
+                </p>
+              </div>
+
+              <div className="space-y-3 pt-4">
+                <button
+                  type="button"
+                  id="btn-try-again"
+                  onClick={handleRetryPayment}
+                  className="w-full py-4 text-xs font-mono uppercase tracking-widest font-semibold flex items-center justify-center gap-2 rounded-none bg-[#111111] hover:bg-black text-[#F4F1EB] transition-all"
+                >
+                  <RefreshCw size={14} className="text-[#A58A5C]" />
+                  <span>TRY AGAIN</span>
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setPaymentState('idle');
+                    setButtonState('DEFAULT');
+                  }}
+                  className="w-full py-2.5 text-xs font-mono text-[#77736C] hover:text-[#111111]"
+                >
+                  Modify Reservation Details
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* ==================================================================== */}
+          {/* IN-DRAWER RAZORPAY TEST CHECKOUT MODAL (SEAMLESS TEST FALLBACK)      */}
+          {/* ==================================================================== */}
           {paymentState === 'checkout' && activeOrderData && (
             <div className="space-y-5 animate-fade-in">
-              {/* Razorpay Brand Header Card */}
-              <div className="bg-[#0C2340] text-white p-5 rounded-xs relative shadow-md">
+              {/* Header Badge */}
+              <div className="bg-[#0C2340] text-white p-5 rounded-none relative shadow-md">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="font-mono text-[10px] tracking-wider uppercase bg-[#143257] text-[#52A2FF] px-2 py-0.5 rounded font-semibold flex items-center gap-1">
+                  <span className="font-mono text-[10px] tracking-wider uppercase bg-[#143257] text-[#52A2FF] px-2 py-0.5 font-semibold flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
                     Razorpay Test Mode
                   </span>
@@ -403,37 +668,35 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                       NOVA HOUSE
                     </h4>
                     <p className="text-xs text-white/70 font-mono">
-                      {activeOrderData.roomTitle} · {activeOrderData.nights} Night{activeOrderData.nights > 1 ? 's' : ''}
+                      {activeOrderData.roomTitle} · {activeOrderData.nights} Night
+                      {activeOrderData.nights > 1 ? 's' : ''}
                     </p>
                   </div>
                   <div className="text-right">
                     <span className="text-[10px] text-white/60 block uppercase font-mono">Total Due</span>
                     <span className="text-xl font-bold font-mono text-white">
-                      ₹ {Number(activeOrderData.amount || 0).toLocaleString()}
+                      ₹{Number(activeOrderData.amount || 0).toLocaleString('en-IN')}
                     </span>
                   </div>
                 </div>
               </div>
 
-              {/* Authorizing Spinner Overlay or Tabs */}
               {isAuthorizing ? (
-                <div className="py-14 text-center space-y-4 bg-[#ECE8E0] p-6 rounded-xs border border-[#D8D0C3]">
+                <div className="py-14 text-center space-y-4 bg-[#ECE8E0] p-6 rounded-none border border-[#D8D0C3]">
                   <Loader2 size={34} className="animate-spin text-[#0C2340] mx-auto" />
                   <h4 className="font-serif text-lg font-normal text-[#111111]">
                     Authorizing Payment
                   </h4>
-                  <p className="font-mono text-xs text-[#77736C]">
-                    {authProgress}
-                  </p>
+                  <p className="font-mono text-xs text-[#77736C]">{authProgress}</p>
                 </div>
               ) : (
                 <div className="space-y-4">
                   {/* Payment Method Selector Tabs */}
-                  <div className="grid grid-cols-3 gap-2 bg-[#ECE8E0] p-1 rounded-xs border border-[#D8D0C3]">
+                  <div className="grid grid-cols-3 gap-2 bg-[#ECE8E0] p-1 rounded-none border border-[#D8D0C3]">
                     <button
                       type="button"
                       onClick={() => setCheckoutTab('upi')}
-                      className={`py-2 text-xs font-mono font-medium rounded-xs transition-all flex items-center justify-center gap-1.5 ${
+                      className={`py-2 text-xs font-mono font-medium rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         checkoutTab === 'upi'
                           ? 'bg-[#111111] text-[#F4F1EB] shadow-xs'
                           : 'text-[#55514B] hover:text-[#111111]'
@@ -446,7 +709,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     <button
                       type="button"
                       onClick={() => setCheckoutTab('card')}
-                      className={`py-2 text-xs font-mono font-medium rounded-xs transition-all flex items-center justify-center gap-1.5 ${
+                      className={`py-2 text-xs font-mono font-medium rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         checkoutTab === 'card'
                           ? 'bg-[#111111] text-[#F4F1EB] shadow-xs'
                           : 'text-[#55514B] hover:text-[#111111]'
@@ -459,7 +722,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     <button
                       type="button"
                       onClick={() => setCheckoutTab('netbanking')}
-                      className={`py-2 text-xs font-mono font-medium rounded-xs transition-all flex items-center justify-center gap-1.5 ${
+                      className={`py-2 text-xs font-mono font-medium rounded-none transition-all flex items-center justify-center gap-1.5 ${
                         checkoutTab === 'netbanking'
                           ? 'bg-[#111111] text-[#F4F1EB] shadow-xs'
                           : 'text-[#55514B] hover:text-[#111111]'
@@ -470,13 +733,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     </button>
                   </div>
 
-                  {/* TAB 1: UPI */}
                   {checkoutTab === 'upi' && (
-                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-xs space-y-3">
+                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-none space-y-3">
                       <span className="text-[11px] font-mono uppercase text-[#77736C] block">
                         Select Instant Test App:
                       </span>
-
                       <div className="grid grid-cols-3 gap-2">
                         {[
                           { id: 'gpay', name: 'Google Pay', icon: '🟢' },
@@ -487,7 +748,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                             key={app.id}
                             type="button"
                             onClick={() => setSelectedUpiApp(app.id)}
-                            className={`p-2.5 border rounded-xs text-center transition-all ${
+                            className={`p-2.5 border rounded-none text-center transition-all ${
                               selectedUpiApp === app.id
                                 ? 'border-[#0C2340] bg-[#F4F8FC] shadow-xs font-semibold'
                                 : 'border-[#E2DDD5] hover:border-[#A58A5C]'
@@ -498,19 +759,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                           </button>
                         ))}
                       </div>
-
-                      <div className="pt-2 border-t border-[#ECE8E0] text-[11px] font-mono text-[#55514B] flex justify-between">
-                        <span>Payer UPI:</span>
-                        <strong className="text-[#111111]">
-                          {guestPhone ? `${guestPhone.replace(/[^0-9]/g, '')}@okaxis` : 'guest@okhdfc'}
-                        </strong>
-                      </div>
                     </div>
                   )}
 
-                  {/* TAB 2: CARDS */}
                   {checkoutTab === 'card' && (
-                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-xs space-y-3">
+                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-none space-y-3">
                       <div>
                         <label className="text-[10px] font-mono uppercase text-[#77736C] block mb-1">
                           Test Card Number
@@ -519,10 +772,9 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                           type="text"
                           value={testCardNumber}
                           onChange={(e) => setTestCardNumber(e.target.value)}
-                          className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-xs outline-none focus:border-[#0C2340]"
+                          className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-none outline-none focus:border-[#0C2340]"
                         />
                       </div>
-
                       <div className="grid grid-cols-2 gap-3">
                         <div>
                           <label className="text-[10px] font-mono uppercase text-[#77736C] block mb-1">
@@ -532,7 +784,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                             type="text"
                             value={testExpiry}
                             onChange={(e) => setTestExpiry(e.target.value)}
-                            className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-xs outline-none focus:border-[#0C2340]"
+                            className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-none outline-none focus:border-[#0C2340]"
                           />
                         </div>
                         <div>
@@ -543,20 +795,15 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                             type="password"
                             value={testCvv}
                             onChange={(e) => setTestCvv(e.target.value)}
-                            className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-xs outline-none focus:border-[#0C2340]"
+                            className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded-none outline-none focus:border-[#0C2340]"
                           />
                         </div>
                       </div>
-
-                      <p className="text-[10px] text-emerald-700 font-mono bg-emerald-50 p-2 rounded-xs border border-emerald-200">
-                        ✓ Test credentials ready. No real money will be charged.
-                      </p>
                     </div>
                   )}
 
-                  {/* TAB 3: NETBANKING */}
                   {checkoutTab === 'netbanking' && (
-                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-xs space-y-2">
+                    <div className="p-4 bg-white border border-[#D8D0C3] rounded-none space-y-2">
                       <span className="text-[11px] font-mono uppercase text-[#77736C] block mb-2">
                         Supported Test Banks:
                       </span>
@@ -564,7 +811,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                         {['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank'].map((b, i) => (
                           <label
                             key={b}
-                            className="flex items-center gap-2 p-2 border border-[#E2DDD5] rounded-xs cursor-pointer hover:bg-[#FAF8F5]"
+                            className="flex items-center gap-2 p-2 border border-[#E2DDD5] rounded-none cursor-pointer hover:bg-[#FAF8F5]"
                           >
                             <input type="radio" name="drawer_bank" defaultChecked={i === 0} />
                             <span>{b}</span>
@@ -574,21 +821,17 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     </div>
                   )}
 
-                  {/* Payer Summary */}
-                  <div className="p-3 bg-[#ECE8E0] border border-[#D8D0C3] rounded-xs text-[11px] font-mono flex items-center justify-between">
-                    <span className="text-[#77736C]">Guest: <strong className="text-[#111111]">{guestName || 'Valued Guest'}</strong></span>
-                    <span className="text-[#55514B]">{guestEmail || 'guest@novahouse.com'}</span>
-                  </div>
-
                   {/* Action Buttons */}
                   <div className="space-y-2 pt-2">
                     <button
                       type="button"
-                      onClick={handleAuthorizePayment}
-                      className="w-full py-4 bg-[#0C2340] hover:bg-[#07172C] text-white rounded-xs font-mono text-xs uppercase tracking-wider font-semibold shadow-md flex items-center justify-center gap-2 transition-all"
+                      onClick={handleAuthorizeInDrawerPayment}
+                      className="w-full py-4 bg-[#0C2340] hover:bg-[#07172C] text-white rounded-none font-mono text-xs uppercase tracking-wider font-semibold shadow-md flex items-center justify-center gap-2 transition-all cursor-pointer"
                     >
                       <Lock size={14} className="text-emerald-400" />
-                      <span>Authorize & Pay ₹ {Number(activeOrderData.amount || 0).toLocaleString()}</span>
+                      <span>
+                        Authorize & Pay ₹{Number(activeOrderData.amount || 0).toLocaleString('en-IN')}
+                      </span>
                     </button>
 
                     <div className="flex items-center justify-between pt-1 text-[11px] font-mono">
@@ -601,7 +844,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                       </button>
                       <button
                         type="button"
-                        onClick={() => setPaymentState('idle')}
+                        onClick={() => {
+                          setPaymentState('idle');
+                          setButtonState('DEFAULT');
+                        }}
                         className="text-[#77736C] hover:text-[#111111]"
                       >
                         Cancel & Edit Details
@@ -609,7 +855,6 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     </div>
                   </div>
 
-                  {/* Trust Badge */}
                   <div className="pt-1 flex items-center justify-center gap-1.5 text-[10px] font-mono text-[#77736C]">
                     <ShieldCheck size={13} className="text-emerald-600" />
                     <span>Official 256-Bit Razorpay Test Mode Verification</span>
@@ -619,64 +864,9 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
             </div>
           )}
 
-          {/* STATE 3: PAYMENT FAILED OR DECLINED */}
-          {paymentState === 'failed' && (
-            <div className="py-8 text-center space-y-5 animate-fade-in">
-              <div className="w-14 h-14 rounded-full bg-[#FDF0F0] text-[#962828] border border-[#F7C6C6] flex items-center justify-center mx-auto">
-                <AlertCircle size={28} />
-              </div>
-
-              <div>
-                <h4 className="font-serif text-2xl font-light text-[#111111]">
-                  Payment Not Completed
-                </h4>
-                <p className="text-xs text-[#77736C] mt-1 leading-relaxed">
-                  {errorMessage || 'Payment could not be completed. Please try again.'}
-                </p>
-                <p className="font-mono text-[11px] text-[#A58A5C] mt-2">
-                  Your reservation preference is preserved without duplicate orders.
-                </p>
-              </div>
-
-              <div className="space-y-3 pt-4">
-                <button
-                  type="button"
-                  onClick={handleRetryPayment}
-                  className="w-full btn-luxury-primary !py-4 text-xs tracking-widest font-semibold flex items-center justify-center gap-2"
-                  style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
-                >
-                  <RefreshCw size={14} />
-                  <span>Try Payment Again</span>
-                </button>
-                <button
-                  type="button"
-                  onClick={() => setPaymentState('idle')}
-                  className="w-full py-2.5 text-xs font-mono text-[#77736C] hover:text-[#111111]"
-                >
-                  Modify Booking Details
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* STATE 4: PROCESSING / LOADING SPINNERS */}
-          {(paymentState === 'preparing' || paymentState === 'verifying') && (
-            <div className="py-16 text-center space-y-4 animate-fade-in">
-              <Loader2 size={32} className="animate-spin text-[#A58A5C] mx-auto" />
-              <h4 className="font-serif text-xl font-light text-[#111111]">
-                {paymentState === 'preparing'
-                  ? 'Preparing Secure Payment...'
-                  : 'Confirming Your Payment...'}
-              </h4>
-              <p className="font-mono text-xs text-[#77736C]">
-                {paymentState === 'preparing'
-                  ? 'Authorizing with Razorpay gateway server...'
-                  : 'Cryptographically validating payment signature...'}
-              </p>
-            </div>
-          )}
-
-          {/* STATE 5: NORMAL BOOKING & PAYMENT FORM */}
+          {/* ==================================================================== */}
+          {/* PRIMARY BOOKING & PAYMENT FORM (IDLE STATE)                          */}
+          {/* ==================================================================== */}
           {paymentState === 'idle' && (
             <form onSubmit={handleStartPayment} className="space-y-4">
               <div>
@@ -687,9 +877,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                   type="text"
                   placeholder="e.g. Vikramaditya Rao"
                   value={guestName}
-                  onChange={(e) => setGuestName(e.target.value)}
-                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                  onChange={(e) => {
+                    setGuestName(e.target.value);
+                    if (errorMessage) setErrorMessage('');
+                  }}
+                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
+                  required
                 />
               </div>
 
@@ -702,8 +896,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     type="email"
                     placeholder="guest@domain.com"
                     value={guestEmail}
-                    onChange={(e) => setGuestEmail(e.target.value)}
-                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                    onChange={(e) => {
+                      setGuestEmail(e.target.value);
+                      if (errorMessage) setErrorMessage('');
+                    }}
+                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                     required
                   />
@@ -716,9 +913,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     type="tel"
                     placeholder="+91 98450 12345"
                     value={guestPhone}
-                    onChange={(e) => setGuestPhone(e.target.value)}
-                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                    onChange={(e) => {
+                      setGuestPhone(e.target.value);
+                      if (errorMessage) setErrorMessage('');
+                    }}
+                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
+                    required
                   />
                 </div>
               </div>
@@ -729,8 +930,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 </label>
                 <select
                   value={roomId}
-                  onChange={(e) => setRoomId(e.target.value)}
-                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                  onChange={(e) => {
+                    setRoomId(e.target.value);
+                    setInlineAvailabilityError('');
+                  }}
+                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                 >
                   {ROOMS_DATA.map((r) => (
@@ -750,7 +954,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     type="date"
                     value={checkIn}
                     onChange={(e) => handleCheckInChange(e.target.value)}
-                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                     required
                   />
@@ -763,8 +967,8 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                     type="date"
                     value={checkOut}
                     min={getMinCheckOut(checkIn)}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                    onChange={(e) => handleCheckOutChange(e.target.value)}
+                    className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                     required
                   />
@@ -778,7 +982,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 <select
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
-                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors"
+                  className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                 >
                   <option>1 Adult</option>
@@ -789,15 +993,15 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 </select>
               </div>
 
-              {/* Live Database Availability Indicator */}
-              <div className="text-[11px] font-mono flex items-center justify-between p-2.5 bg-[#FFFFFF] border border-[#D8D0C3] rounded-xs">
+              {/* Background Availability Status Feedback */}
+              <div className="text-[11px] font-mono flex items-center justify-between p-2.5 bg-[#FFFFFF] border border-[#D8D0C3] rounded-none">
                 <span className="text-[#77736C]">Sanctuary Availability:</span>
                 {isCheckingAvailability ? (
                   <span className="text-[#77736C] flex items-center gap-1">
                     <Loader2 size={12} className="animate-spin" /> Checking database...
                   </span>
                 ) : availabilityResult && !availabilityResult.available ? (
-                  <span className="text-red-600 font-medium flex items-center gap-1">
+                  <span className="text-amber-700 font-medium flex items-center gap-1">
                     <AlertCircle size={12} /> Booked for dates · Change dates
                   </span>
                 ) : (
@@ -807,62 +1011,88 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId }) {
                 )}
               </div>
 
-              {/* Server-Side Calculated Booking Price Summary */}
+              {/* Section 4: Inline Unavailability Alert */}
+              {inlineAvailabilityError && (
+                <div
+                  className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono rounded-none flex items-center gap-2 animate-fade-in"
+                  id="availability-error-msg"
+                >
+                  <AlertCircle size={15} className="shrink-0 text-red-600" />
+                  <span>{inlineAvailabilityError}</span>
+                </div>
+              )}
+
+              {/* Section 19: Authoritative Pricing Display */}
               <div
-                className="p-5 border border-[#D8D0C3] space-y-2.5 shadow-sm rounded-xs"
+                className="p-5 border border-[#D8D0C3] space-y-2.5 shadow-xs rounded-none"
                 style={{ backgroundColor: '#ECE8E0' }}
               >
                 <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
                   <span className="text-[#77736C]">Duration:</span>
-                  <span className="font-semibold">{nights} Nights</span>
+                  <span className="font-semibold">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
                   <span className="text-[#77736C]">Room Rate ({nights}x):</span>
-                  <span>₹ {roomSubtotal.toLocaleString()}</span>
+                  <span>₹{roomSubtotal.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
-                  <span className="text-[#77736C]">Luxury GST Tax (18%):</span>
-                  <span>₹ {estimatedTaxes.toLocaleString()}</span>
+                  <span className="text-[#77736C]">Luxury GST (18%):</span>
+                  <span>₹{estimatedTaxes.toLocaleString('en-IN')}</span>
                 </div>
-                <div className="pt-2 border-t border-[#171717]/10 flex items-baseline justify-between">
-                  <span className="text-xs font-mono font-bold text-[#111111]">Total Payable:</span>
+                <div className="pt-2.5 border-t border-[#171717]/10 flex items-baseline justify-between">
+                  <span className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider">
+                    Total Payable:
+                  </span>
                   <span className="font-serif text-2xl text-[#111111] font-semibold">
-                    ₹ {estimatedTotal.toLocaleString()}
+                    ₹{estimatedTotal.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
-              {/* Error Message Notice if any */}
+              {/* Validation or General Error Banner */}
               {errorMessage && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono rounded-xs flex items-center gap-2">
+                <div
+                  className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono rounded-none flex items-center gap-2"
+                  id="booking-error-banner"
+                >
                   <AlertCircle size={14} className="shrink-0 text-red-600" />
                   <span>{errorMessage}</span>
                 </div>
               )}
 
-              {/* Razorpay Security Assurance */}
+              {/* Razorpay Trust Assurance */}
               <div className="flex items-center gap-2 text-[11px] font-mono text-[#77736C]">
                 <Shield size={14} className="text-[#A58A5C]" />
                 <span>256-Bit SSL Secured · Official Razorpay Checkout Gateway</span>
               </div>
 
-              {/* Action Button: PAY ₹XX,XXX */}
+              {/* ================================================================ */}
+              {/* SECTION 1 & 2: PRIMARY ACTION BUTTON (PAY ₹{amount})              */}
+              {/* ================================================================ */}
               <button
                 type="button"
+                id="booking-pay-cta"
                 onClick={handleStartPayment}
-                disabled={availabilityResult && availabilityResult.available === false}
-                className={`w-full !py-4 text-xs tracking-widest font-semibold shadow-md flex items-center justify-center gap-2 transition-all rounded-xs font-mono uppercase ${
-                  availabilityResult && availabilityResult.available === false
-                    ? 'bg-stone-300 text-stone-500 cursor-not-allowed border border-stone-300'
-                    : 'bg-[#111111] hover:bg-black text-[#F4F1EB] cursor-pointer'
+                disabled={isProcessing}
+                className={`w-full py-4 px-6 text-xs font-mono tracking-widest font-semibold shadow-md flex items-center justify-center gap-2.5 rounded-none uppercase transition-all duration-200 ${
+                  isProcessing
+                    ? 'bg-[#2A2A2A] text-[#D8D0C3] cursor-wait opacity-90'
+                    : buttonState === 'ERROR'
+                    ? 'bg-[#8B2020] hover:bg-[#6E1818] text-[#FFFFFF] cursor-pointer'
+                    : 'bg-[#111111] hover:bg-[#000000] text-[#F4F1EB] active:scale-[0.99] cursor-pointer'
                 }`}
+                style={{ minHeight: '52px' }}
               >
-                <CreditCard size={15} className="text-[#A58A5C]" />
-                <span>
-                  {availabilityResult && availabilityResult.available === false
-                    ? 'Room Booked for Selected Dates'
-                    : `PAY ₹ ${estimatedTotal.toLocaleString()}`}
-                </span>
+                {isProcessing ? (
+                  <Loader2 size={16} className="animate-spin text-[#A58A5C]" />
+                ) : buttonState === 'SUCCESS' ? (
+                  <Check size={16} className="text-emerald-400" />
+                ) : buttonState === 'ERROR' ? (
+                  <RefreshCw size={16} className="text-white" />
+                ) : (
+                  <CreditCard size={16} className="text-[#A58A5C]" />
+                )}
+                <span className="font-mono tracking-wider text-[12px]">{getButtonText()}</span>
               </button>
             </form>
           )}

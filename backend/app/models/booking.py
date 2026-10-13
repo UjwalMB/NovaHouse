@@ -63,3 +63,4 @@ class Booking(Base):
 
     # Relationships
     payments = relationship("Payment", back_populates="booking", cascade="all, delete-orphan")
+    notifications = relationship("BookingNotification", back_populates="booking", cascade="all, delete-orphan")

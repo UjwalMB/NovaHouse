@@ -24,6 +24,35 @@ class Settings:
     RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
     RAZORPAY_MODE: str = os.getenv("RAZORPAY_MODE", "TEST").upper()
 
+    # Notification System Configuration
+    NOTIFICATION_MODE: str = os.getenv("NOTIFICATION_MODE", "TEST").upper()
+    EMAIL_ENABLED: bool = os.getenv("EMAIL_ENABLED", "false").lower() in ("true", "1", "yes")
+    
+    EMAIL_FROM_ADDRESS: str = os.getenv("EMAIL_FROM_ADDRESS", "stay@novahouse.com")
+    EMAIL_FROM_NAME: str = os.getenv("EMAIL_FROM_NAME", "NOVA HOUSE")
+    EMAIL_PROVIDER_API_KEY: str = os.getenv("EMAIL_PROVIDER_API_KEY", "")
+    SMTP_HOST: str = os.getenv("SMTP_HOST", "")
+    SMTP_PORT: int = int(os.getenv("SMTP_PORT", "587"))
+    SMTP_USER: str = os.getenv("SMTP_USER", "")
+    SMTP_PASSWORD: str = os.getenv("SMTP_PASSWORD", "")
+    
+    # SMS Gateway Configuration
+    SMS_PROVIDER: str = os.getenv("SMS_PROVIDER", "TWILIO").upper()
+    SMS_ENABLED: bool = os.getenv("SMS_ENABLED", "false").lower() in ("true", "1", "yes")
+    SMS_TEST_MODE: bool = os.getenv("SMS_TEST_MODE", "false").lower() in ("true", "1", "yes")
+    SMS_PROVIDER_API_KEY: str = os.getenv("SMS_PROVIDER_API_KEY", "")
+    SMS_PROVIDER_ACCOUNT_ID: str = os.getenv("SMS_PROVIDER_ACCOUNT_ID", "")
+    SMS_FROM_NUMBER: str = os.getenv("SMS_FROM_NUMBER", "")
+    SMS_SENDER_ID: str = os.getenv("SMS_SENDER_ID", "NOVAHS")
+    SMS_TEMPLATE_ID: str = os.getenv("SMS_TEMPLATE_ID", "")
+
+    # Hotel Identity & Physical Location
+    HOTEL_NAME: str = "NOVA HOUSE"
+    HOTEL_ADDRESS: str = "84 Residency Road, Richmond Town, Bengaluru, Karnataka 560025, India"
+    HOTEL_LOCATION_SHORT: str = "Bengaluru, Karnataka, India"
+    HOTEL_PHONE: str = "+91 80 4920 8800"
+    HOTEL_EMAIL: str = "stay@novahouse.com"
+
     # JWT Authentication Key (Loaded strictly from backend environment)
     JWT_SECRET_KEY: str = os.getenv("JWT_SECRET_KEY", "nova-house-production-jwt-secure-key-default-2026")
     

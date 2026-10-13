@@ -12,6 +12,7 @@ import {
   Search,
   Filter,
   ExternalLink,
+  RefreshCw,
 } from 'lucide-react';
 import {
   fetchPayments,
@@ -50,25 +51,31 @@ export default function Payments() {
   const [isDossierOpen, setIsDossierOpen] = useState(false);
   const [isRefundModalOpen, setIsRefundModalOpen] = useState(false);
 
-  const loadData = async () => {
-    setLoading(true);
+  const loadData = async (silent = false) => {
+    if (!silent) setLoading(true);
     try {
       const [paymentsData, statsData] = await Promise.all([
-        fetchPayments(statusFilter),
+        fetchPayments(),
         fetchPaymentStats(),
       ]);
-      setPayments(paymentsData);
-      setStats(statsData);
+      if (Array.isArray(paymentsData)) {
+        setPayments(paymentsData);
+      }
+      if (statsData) {
+        setStats(statsData);
+      }
     } catch (err) {
       console.error('Error loading payments:', err);
     } finally {
-      setLoading(false);
+      if (!silent) setLoading(false);
     }
   };
 
   useEffect(() => {
-    loadData();
-  }, [statusFilter]);
+    loadData(false);
+    const interval = setInterval(() => loadData(true), 5000);
+    return () => clearInterval(interval);
+  }, []);
 
   // Filtering
   const filteredPayments = useMemo(() => {
@@ -278,6 +285,14 @@ export default function Payments() {
         </div>
 
         <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={RefreshCw}
+            onClick={loadData}
+          >
+            Refresh Feed
+          </Button>
           <Button
             variant="secondary"
             size="sm"

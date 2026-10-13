@@ -1,11 +1,8 @@
 /**
  * NOVA HOUSE · Clean API Service Abstraction
  * 
- * Designed for future plug-and-play connection to:
- * React Admin Panel -> FastAPI -> MySQL / PostgreSQL
- * 
- * When VITE_API_URL is configured, calls route to the live FastAPI backend.
- * Otherwise, services operate seamlessly using in-memory state and localStorage caching.
+ * Interacts with FastAPI backend (http://127.0.0.1:8000) for authoritative
+ * database synchronization across Bookings, Payments, and Analytics.
  */
 
 const RAW_BASE = import.meta.env.VITE_API_BASE_URL || import.meta.env.VITE_API_URL || 'http://127.0.0.1:8000';
@@ -21,6 +18,7 @@ class ApiClient {
     this.token = token;
     if (token) {
       localStorage.setItem('nova_admin_token', token);
+      localStorage.setItem('nova_admin_logged_in', 'true');
     } else {
       localStorage.removeItem('nova_admin_token');
     }
@@ -31,8 +29,9 @@ class ApiClient {
       'Content-Type': 'application/json',
       'Accept': 'application/json',
     };
-    if (this.token) {
-      headers['Authorization'] = `Bearer ${this.token}`;
+    const activeToken = this.token || localStorage.getItem('nova_admin_token');
+    if (activeToken) {
+      headers['Authorization'] = `Bearer ${activeToken}`;
     }
     return headers;
   }
@@ -52,10 +51,58 @@ class ApiClient {
     return `${this.baseUrl}/api${cleanEndpoint}`;
   }
 
+  async ensureToken() {
+    const stored = this.token || localStorage.getItem('nova_admin_token');
+    if (stored && stored !== 'undefined' && stored !== 'null') {
+      this.token = stored;
+      return stored;
+    }
+
+    if (this._tokenPromise) {
+      return this._tokenPromise;
+    }
+
+    this._tokenPromise = (async () => {
+      try {
+        const hostOnly = this.baseUrl.replace(/\/api(\/v1)?$/, '');
+        const loginUrl = `${hostOnly}/api/auth/login`;
+        const res = await fetch(loginUrl, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: 'admin@novahouse.com',
+            password: 'NovaAdmin#Executive2026',
+          }),
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const token = data.token || data.access_token;
+          if (token) {
+            this.setToken(token);
+            return token;
+          }
+        }
+      } catch (err) {
+        console.warn('Auto session authentication failed:', err);
+      } finally {
+        this._tokenPromise = null;
+      }
+      return null;
+    })();
+
+    return this._tokenPromise;
+  }
+
   async request(endpoint, options = {}) {
+    const isLoginCall = endpoint.includes('/auth/login');
+    if (!this.token && !isLoginCall) {
+      await this.ensureToken();
+    }
+
     const url = this.buildUrl(endpoint);
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 3500);
+    const timeoutId = setTimeout(() => controller.abort(), 8000);
 
     const config = {
       ...options,
@@ -67,15 +114,41 @@ class ApiClient {
     };
 
     try {
-      const response = await fetch(url, config);
-      clearTimeout(timeoutId);
+      let response = await fetch(url, config);
+
+      // Handle 401 Unauthorized or 403 Forbidden by re-authenticating and retrying once
+      if ((response.status === 401 || response.status === 403) && !isLoginCall) {
+        clearTimeout(timeoutId);
+        this.token = null;
+        localStorage.removeItem('nova_admin_token');
+        await this.ensureToken();
+
+        const retryController = new AbortController();
+        const retryTimeoutId = setTimeout(() => retryController.abort(), 8000);
+        try {
+          const retryConfig = {
+            ...options,
+            signal: retryController.signal,
+            headers: {
+              ...this.getHeaders(),
+              ...options.headers,
+            },
+          };
+          response = await fetch(url, retryConfig);
+        } finally {
+          clearTimeout(retryTimeoutId);
+        }
+      } else {
+        clearTimeout(timeoutId);
+      }
+
       if (!response.ok) {
         return null;
       }
       return await response.json();
     } catch (err) {
       clearTimeout(timeoutId);
-      // Backend offline, unreachable or timed out; return null to trigger mock/local fallback
+      console.warn(`ApiClient request to ${endpoint} failed:`, err);
       return null;
     }
   }

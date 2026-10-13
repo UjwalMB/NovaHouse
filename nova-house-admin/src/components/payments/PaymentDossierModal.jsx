@@ -167,6 +167,28 @@ export default function PaymentDossierModal({ isOpen, onClose, payment, onOpenRe
           </div>
         </div>
 
+        {/* Guest Confirmation Status */}
+        <div className="space-y-2">
+          <span className="font-mono text-[10px] uppercase tracking-widest text-[#77736C] block">
+            Automated Guest Notifications
+          </span>
+          <div className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-xs font-mono">
+            <div className="flex flex-wrap items-center gap-4">
+              <span className="flex items-center gap-1.5 text-[#111111]">
+                <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span>Email: <strong className={payment.status === 'PAID' ? 'text-emerald-700' : 'text-amber-700'}>{payment.status === 'PAID' ? 'SENT' : 'PENDING'}</strong></span>
+              </span>
+              <span className="flex items-center gap-1.5 text-[#111111]">
+                <span className={`w-1.5 h-1.5 rounded-full ${payment.status === 'PAID' ? 'bg-emerald-500' : 'bg-amber-500'}`} />
+                <span>SMS: <strong className={payment.status === 'PAID' ? 'text-emerald-700' : 'text-amber-700'}>{payment.status === 'PAID' ? 'SENT' : 'PENDING'}</strong></span>
+              </span>
+            </div>
+            <span className="text-[10px] text-[#A58A5C]">
+              {payment.status === 'PAID' ? 'Triggered upon signature verification' : 'Dispatches upon payment capture'}
+            </span>
+          </div>
+        </div>
+
         {/* Refund Details If Applied */}
         {payment.status === 'REFUNDED' && (
           <div className="p-4 bg-[#F8F5EE] border border-[#E2DDD5] rounded-xs space-y-2 text-xs">

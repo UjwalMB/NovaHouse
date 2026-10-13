@@ -86,7 +86,13 @@ class PaymentService:
         total_amount = calc["totalAmount"]
 
         # 2. Generate or identify booking ID
-        booking_id = f"NH-{int(time.time()) % 10000 + 1020}"
+        booking_id = payload.get("bookingId") or payload.get("booking_id")
+        if not booking_id:
+            base_num = int(time.time() * 1000) % 9000 + 1000
+            booking_id = f"NH-{base_num}"
+            while db.query(Booking).filter(Booking.id == booking_id).first():
+                base_num = (base_num + random.randint(1, 99)) % 9000 + 1000
+                booking_id = f"NH-{base_num}"
 
         # 3. Check for double payment protection
         existing_booking = db.query(Booking).filter(Booking.id == booking_id).first()
@@ -159,7 +165,7 @@ class PaymentService:
             amount=total_amount,
             amount_paise=amount_paise,
             currency="INR",
-            status="CREATED",
+            status="PENDING",
             email=guest_email,
             contact=guest_phone,
             created_at=datetime.utcnow()
@@ -209,6 +215,11 @@ class PaymentService:
 
         # 2. Guard: If already paid, return idempotent success
         if booking.payment_status == "PAID":
+            try:
+                payment_rec = db.query(Payment).filter(Payment.razorpay_order_id == razorpay_order_id).first()
+                notification_service.send_booking_confirmations(db, booking, payment_rec)
+            except Exception:
+                pass
             return {
                 "success": True,
                 "bookingId": booking_id,
@@ -282,11 +293,12 @@ class PaymentService:
 
         db.commit()
 
-        # Dispatch confirmation notification email
-        notification_service.send_booking_confirmation(
-            self._booking_to_dict(booking),
-            {"payment_id": razorpay_payment_id, "method": payment_method}
-        )
+        # Dispatch automated booking confirmations (Email + SMS)
+        # Transactional isolation: notification issues never rollback confirmed payment
+        try:
+            notification_service.send_booking_confirmations(db, booking, payment)
+        except Exception as e:
+            logger.error(f"Notification dispatch failure for #{booking_id}: {e}")
 
         return {
             "success": True,

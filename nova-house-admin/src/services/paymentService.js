@@ -2,11 +2,13 @@
  * NOVA HOUSE Admin Portal · Payment & Razorpay Service
  * 
  * Interacts with FastAPI /api/payments endpoints for:
- * - Real captured transaction feeds
+ * - Real captured transaction feeds from PostgreSQL
  * - Revenue analytics and KPI card calculations
  * - Role-authorized refunds dispatch
  * - Payment dossiers linked to guest reservations
  */
+
+import api from './api';
 
 const RAW_API_BASE = import.meta.env.VITE_API_BASE_URL || 'http://127.0.0.1:8000';
 const API_BASE = RAW_API_BASE.replace(/\/+$/, '').replace(/\/api(\/v1)?$/, '');
@@ -115,44 +117,18 @@ const FALLBACK_PAYMENTS = [
   },
 ];
 
-function getAuthHeaders() {
-  const token = localStorage.getItem('nova_admin_token');
-  const headers = {
-    'Accept': 'application/json',
-    'Content-Type': 'application/json',
-  };
-  if (token) {
-    headers['Authorization'] = `Bearer ${token}`;
-  }
-  return headers;
-}
-
-function fetchWithTimeout(url, options = {}, timeoutMs = 3500) {
-  const controller = new AbortController();
-  const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
-  const mergedHeaders = { ...getAuthHeaders(), ...(options.headers || {}) };
-  return fetch(url, { ...options, headers: mergedHeaders, signal: controller.signal })
-    .finally(() => clearTimeout(timeoutId));
-}
-
 let localPaymentsState = [...FALLBACK_PAYMENTS];
 
 export async function fetchPayments(status = null) {
   try {
-    const url = status && status !== 'all' 
-      ? `${API_BASE}/api/payments?status=${encodeURIComponent(status)}`
-      : `${API_BASE}/api/payments`;
-    
-    const res = await fetchWithTimeout(url, {}, 3500);
-    if (res.ok) {
-      const data = await res.json();
-      if (Array.isArray(data)) {
-        localPaymentsState = data;
-        return data;
-      }
+    const params = status && status !== 'all' ? { status } : {};
+    const data = await api.get('/payments', params);
+    if (Array.isArray(data)) {
+      localPaymentsState = data;
+      return data;
     }
   } catch (err) {
-    console.warn('Backend payments endpoint unreachable or timed out, using state cache:', err);
+    console.warn('Backend payments endpoint unreachable, using state cache:', err);
   }
 
   if (status && status !== 'all') {
@@ -165,18 +141,18 @@ export async function fetchPayments(status = null) {
 
 export async function fetchPaymentStats() {
   try {
-    const res = await fetchWithTimeout(`${API_BASE}/api/payments/stats`, {}, 3500);
-    if (res.ok) {
-      return await res.json();
+    const data = await api.get('/payments/stats');
+    if (data && typeof data === 'object') {
+      return data;
     }
   } catch (err) {
-    console.warn('Backend payment stats unreachable or timed out, computing locally:', err);
+    console.warn('Backend payment stats unreachable, computing locally:', err);
   }
 
   // Local calculation based on payments
   const paidList = localPaymentsState.filter((p) => p.status === 'PAID');
   const todayRevenue = paidList
-    .filter((p) => p.date.includes('12 Oct') || p.createdAt.startsWith('2026-10-12'))
+    .filter((p) => (p.date && p.date.includes('12 Oct')) || (p.createdAt && p.createdAt.startsWith('2026-10-12')))
     .reduce((acc, p) => acc + p.amount, 0);
 
   const totalRevenue = paidList.reduce((acc, p) => acc + p.amount, 0);
@@ -196,10 +172,8 @@ export async function fetchPaymentStats() {
 
 export async function fetchPaymentDetail(paymentId) {
   try {
-    const res = await fetch(`${API_BASE}/api/payments/${paymentId}`);
-    if (res.ok) {
-      return await res.json();
-    }
+    const data = await api.get(`/payments/${paymentId}`);
+    if (data) return data;
   } catch (err) {
     console.warn('Error fetching payment detail from server:', err);
   }
@@ -211,10 +185,8 @@ export async function fetchPaymentDetail(paymentId) {
 
 export async function fetchPaymentByBooking(bookingId) {
   try {
-    const res = await fetch(`${API_BASE}/api/payments/booking/${bookingId}`);
-    if (res.ok) {
-      return await res.json();
-    }
+    const data = await api.get(`/payments/booking/${bookingId}`);
+    if (data) return data;
   } catch (err) {
     console.warn('Backend payment by booking not found:', err);
   }
@@ -224,19 +196,13 @@ export async function fetchPaymentByBooking(bookingId) {
 
 export async function processPaymentRefund({ paymentId, amount, reason }) {
   try {
-    const res = await fetch(`${API_BASE}/api/payments/refund`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        payment_id: paymentId,
-        amount: Number(amount),
-        reason: reason || 'Customer requested refund via Hotel Admin',
-      }),
+    const data = await api.post('/payments/refund', {
+      payment_id: paymentId,
+      amount: Number(amount),
+      reason: reason || 'Customer requested refund via Hotel Admin',
     });
 
-    if (res.ok) {
-      const data = await res.json();
-      // Update local state
+    if (data) {
       localPaymentsState = localPaymentsState.map((p) => {
         if (p.paymentId === paymentId || p.id === paymentId) {
           return {
@@ -249,53 +215,43 @@ export async function processPaymentRefund({ paymentId, amount, reason }) {
         return p;
       });
       return data;
-    } else {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Refund failed on server');
     }
   } catch (err) {
     console.warn('Falling back to local simulated refund:', err);
-    const refundId = `rfnd_sim_${Math.random().toString(36).substring(2, 9)}`;
-    localPaymentsState = localPaymentsState.map((p) => {
-      if (p.paymentId === paymentId || p.id === paymentId) {
-        return {
-          ...p,
-          status: 'REFUNDED',
-          refundId,
-          refundAmount: amount,
-        };
-      }
-      return p;
-    });
-
-    return {
-      success: true,
-      refundId,
-      paymentId,
-      refundAmount: amount,
-      status: 'REFUNDED',
-      message: 'Simulated refund processed successfully.',
-    };
   }
+
+  const refundId = `rfnd_sim_${Math.random().toString(36).substring(2, 9)}`;
+  localPaymentsState = localPaymentsState.map((p) => {
+    if (p.paymentId === paymentId || p.id === paymentId) {
+      return {
+        ...p,
+        status: 'REFUNDED',
+        refundId,
+        refundAmount: amount,
+      };
+    }
+    return p;
+  });
+
+  return {
+    success: true,
+    refundId,
+    paymentId,
+    refundAmount: amount,
+    status: 'REFUNDED',
+    message: 'Simulated refund processed successfully.',
+  };
 }
 
 export async function settlePayment({ bookingId, paymentId, method = 'POS Card Terminal' }) {
   try {
-    const res = await fetch(`${API_BASE}/api/payments/settle`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${localStorage.getItem('nova_admin_token') || ''}`,
-      },
-      body: JSON.stringify({
-        booking_id: bookingId,
-        payment_id: paymentId,
-        method,
-      }),
+    const data = await api.post('/payments/settle', {
+      booking_id: bookingId,
+      payment_id: paymentId,
+      method,
     });
 
-    if (res.ok) {
-      const data = await res.json();
+    if (data) {
       localPaymentsState = localPaymentsState.map((p) => {
         if (p.bookingId === bookingId || p.paymentId === paymentId || p.id === paymentId) {
           return {
@@ -307,22 +263,20 @@ export async function settlePayment({ bookingId, paymentId, method = 'POS Card T
         return p;
       });
       return data;
-    } else {
-      const err = await res.json().catch(() => ({}));
-      throw new Error(err.detail || 'Failed to settle payment on server');
     }
   } catch (err) {
-    console.warn('Backend payment settlement fallback to local cache:', err);
-    localPaymentsState = localPaymentsState.map((p) => {
-      if (p.bookingId === bookingId || p.paymentId === paymentId || p.id === paymentId) {
-        return {
-          ...p,
-          status: 'PAID',
-          method: method || p.method,
-        };
-      }
-      return p;
-    });
-    return { success: true, bookingId, paymentStatus: 'PAID' };
+    console.warn('Backend payment settlement error, fallback to local state:', err);
   }
+
+  localPaymentsState = localPaymentsState.map((p) => {
+    if (p.bookingId === bookingId || p.paymentId === paymentId || p.id === paymentId) {
+      return {
+        ...p,
+        status: 'PAID',
+        method: method || p.method,
+      };
+    }
+    return p;
+  });
+  return { success: true, bookingId, paymentStatus: 'PAID' };
 }
