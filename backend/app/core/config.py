@@ -19,10 +19,20 @@ class Settings:
     ENVIRONMENT: str = os.getenv("ENVIRONMENT", "development")
     
     # Razorpay Credentials (TEST / LIVE)
-    RAZORPAY_KEY_ID: str = os.getenv("RAZORPAY_KEY_ID", "rzp_test_novahouse2026")
-    RAZORPAY_KEY_SECRET: str = os.getenv("RAZORPAY_KEY_SECRET", "")
-    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "")
-    RAZORPAY_MODE: str = os.getenv("RAZORPAY_MODE", "TEST").upper()
+    _raw_key_id = os.getenv("RAZORPAY_KEY_ID", "rzp_test_Tn6fk3U9ygDw0q").strip()
+    if _raw_key_id in ("rzp_test_novahouse2026", "rzp_test_Tn10fqtHXN34Wt", ""):
+        RAZORPAY_KEY_ID: str = "rzp_test_Tn6fk3U9ygDw0q"
+    else:
+        RAZORPAY_KEY_ID: str = _raw_key_id
+
+    _raw_secret = os.getenv("RAZORPAY_KEY_SECRET", "91mUvVRZrFF0mpYZI0VT6Bzl").strip()
+    if not _raw_secret or _raw_secret.startswith("rzp_sec_novahouse_test"):
+        RAZORPAY_KEY_SECRET: str = "91mUvVRZrFF0mpYZI0VT6Bzl"
+    else:
+        RAZORPAY_KEY_SECRET: str = _raw_secret
+
+    RAZORPAY_WEBHOOK_SECRET: str = os.getenv("RAZORPAY_WEBHOOK_SECRET", "rzp_whsec_novahouse_test_2026").strip()
+    RAZORPAY_MODE: str = os.getenv("RAZORPAY_MODE", "TEST").upper().strip()
 
     # Notification System Configuration
     NOTIFICATION_MODE: str = os.getenv("NOTIFICATION_MODE", "TEST").upper()

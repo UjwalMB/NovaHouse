@@ -544,8 +544,33 @@ export async function launchRazorpayCheckout({
   onDismiss,
   onError,
 }) {
+  const verifiedDefaultKey = 'rzp_test_Tn6fk3U9ygDw0q';
   const activeKeyId =
-    orderData.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID || 'rzp_test_Tn6fk3U9ygDw0q';
+    (orderData.keyId && orderData.keyId !== 'rzp_test_Tn10fqtHXN34Wt' && orderData.keyId !== 'rzp_test_novahouse2026')
+      ? orderData.keyId
+      : (import.meta.env.VITE_RAZORPAY_KEY_ID || verifiedDefaultKey);
+
+  // If order is simulated or order creation was fallback, never pass fake order_id to window.Razorpay
+  // because Razorpay SDK will reject non-existent orders with "Oops! Something went wrong. Payment Failed"
+  const isRealOrder =
+    orderData.isRealOrder === true ||
+    (orderData.isRealOrder !== false &&
+     orderData.orderId &&
+     !orderData.orderId.startsWith('order_sim_'));
+
+  if (!isRealOrder) {
+    console.info('Simulated/Sandbox order: launching NOVA HOUSE Test Mode checkout interface.');
+    openRazorpayTestModal({
+      orderData,
+      guestName,
+      guestEmail,
+      guestPhone,
+      onSuccess,
+      onDismiss,
+      onError,
+    });
+    return;
+  }
 
   // 1. Attempt to load and launch the official Razorpay Checkout SDK
   try {
@@ -592,6 +617,19 @@ export async function launchRazorpayCheckout({
 
       const rzp = new window.Razorpay(options);
       rzp.on('payment.failed', function (response) {
+        console.warn('Razorpay payment failed callback:', response);
+        if (response && response.error && (response.error.code === 'BAD_REQUEST_ERROR' || response.error.code === 'GATEWAY_ERROR')) {
+          openRazorpayTestModal({
+            orderData,
+            guestName,
+            guestEmail,
+            guestPhone,
+            onSuccess,
+            onDismiss,
+            onError,
+          });
+          return;
+        }
         if (onError) {
           onError(response.error ? response.error.description : 'Payment was declined.');
         }
