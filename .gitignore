@@ -1,3 +1,12 @@
+# Dependencies
+node_modules
+*/node_modules
+
+# Build artifacts
+dist
+dist-ssr
+*/dist
+
 # Logs
 logs
 *.log
@@ -5,43 +14,21 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-lerna-debug.log*
-
-node_modules
-dist
-dist-ssr
-*.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
 
 # Environment & Secrets
 .env
 .env.*
 !.env.example
-backend/.env
-backend/.env.*
-!backend/.env.example
-nova-house-admin/.env
-nova-house-admin/.env.*
-!nova-house-admin/.env.example
-nova-house-dashboard/.env
-nova-house-dashboard/.env.*
-!nova-house-dashboard/.env.example
-*.pyc
-__pycache__/
-*.db
-*.sqlite
-*.sqlite3
-bookings.json
-server.py
+admin/.env
+admin/.env.*
+!admin/.env.example
+customer/.env
+customer/.env.*
+!customer/.env.example
 
-
+# OS & Editor Files
+.DS_Store
+.idea
+.vscode/*
+!.vscode/extensions.json
+*.sw?
