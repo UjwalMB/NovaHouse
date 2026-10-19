@@ -27,8 +27,15 @@ import { fetchLiveRoomsCatalog } from '../services/roomsService';
 import RazorpayModal from './RazorpayModal';
 
 export default function Booking({ preselectedRoomId, onBookingSuccess }) {
-  const [checkIn, setCheckIn] = useState('2026-10-18');
-  const [checkOut, setCheckOut] = useState('2026-10-21');
+  const todayStr = new Date().toISOString().split('T')[0];
+  const defaultCheckOut = (() => {
+    const d = new Date();
+    d.setDate(d.getDate() + 3);
+    return d.toISOString().split('T')[0];
+  })();
+
+  const [checkIn, setCheckIn] = useState(todayStr);
+  const [checkOut, setCheckOut] = useState(defaultCheckOut);
   const [guests, setGuests] = useState('2 Guests');
   const [roomsList, setRoomsList] = useState(ROOMS_DATA);
   const [selectedRoomId, setSelectedRoomId] = useState(preselectedRoomId || 'nova-suite');
@@ -112,16 +119,32 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
     // Guest details validation
     if (!guestName || guestName.trim().length < 2) {
-      setFormError('Please enter your full guest name.');
+      setFormError('Please enter your full name.');
       return;
     }
-    if (!guestEmail || !guestEmail.includes('@') || !guestEmail.includes('.')) {
-      setFormError('Please enter a valid guest email address.');
+    if (!guestEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(guestEmail.trim())) {
+      setFormError('Please enter a valid email address.');
       return;
     }
     const cleanPhone = guestPhone ? guestPhone.replace(/[^0-9]/g, '') : '';
     if (!cleanPhone || cleanPhone.length < 10) {
-      setFormError('Please enter a valid 10-digit phone number.');
+      setFormError('Please enter a valid phone number.');
+      return;
+    }
+    if (!checkIn) {
+      setFormError('Please select check-in date.');
+      return;
+    }
+    if (checkIn < todayStr) {
+      setFormError('Check-in date cannot be in the past.');
+      return;
+    }
+    if (!checkOut) {
+      setFormError('Please select check-out date.');
+      return;
+    }
+    if (checkOut <= checkIn) {
+      setFormError('Check-out must be after check-in.');
       return;
     }
 
@@ -226,7 +249,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#171717]/10 pb-8 mb-16">
           <div>
-            <span className="editorial-tag mb-4">07 / Reservations</span>
+            <span className="editorial-tag mb-4">Reservations</span>
             <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
               Your stay <br />
               <span className="italic font-normal text-[#A58A5C]">starts here.</span>
@@ -353,6 +376,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                     </label>
                     <input
                       type="date"
+                      min={todayStr}
                       value={checkIn}
                       onChange={(e) => handleCheckInChange(e.target.value)}
                       className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
@@ -424,13 +448,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   {/* Guest Full Name */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                    <label htmlFor="booking-guest-name" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
                       <User size={13} className="text-[#A58A5C]" />
-                      <span>Full Name</span>
+                      <span>GUEST NAME</span>
                     </label>
                     <input
+                      id="booking-guest-name"
                       type="text"
-                      placeholder="e.g. Vikramaditya Rao"
+                      placeholder="Enter your full name"
                       value={guestName}
                       onChange={(e) => {
                         setGuestName(e.target.value);
@@ -443,13 +468,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
                   {/* Phone / WhatsApp */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                    <label htmlFor="booking-guest-phone" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
                       <Phone size={13} className="text-[#A58A5C]" />
-                      <span>Phone / WhatsApp</span>
+                      <span>PHONE / WHATSAPP</span>
                     </label>
                     <input
+                      id="booking-guest-phone"
                       type="tel"
-                      placeholder="e.g. +91 98450 12345"
+                      placeholder="Enter your phone number"
                       value={guestPhone}
                       onChange={(e) => {
                         setGuestPhone(e.target.value);
@@ -462,13 +488,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
                   {/* Email Address */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                    <label htmlFor="booking-guest-email" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
                       <Mail size={13} className="text-[#A58A5C]" />
-                      <span>Email Address</span>
+                      <span>EMAIL ADDRESS</span>
                     </label>
                     <input
+                      id="booking-guest-email"
                       type="email"
-                      placeholder="e.g. patron@domain.com"
+                      placeholder="Enter your email address"
                       value={guestEmail}
                       onChange={(e) => {
                         setGuestEmail(e.target.value);

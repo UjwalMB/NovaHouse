@@ -11,7 +11,7 @@ export default function Location() {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-white/10 pb-8 mb-16">
           <div>
-            <span className="editorial-tag text-[#A58A5C] mb-4">06 / Location & Neighborhood</span>
+            <span className="editorial-tag text-[#A58A5C] mb-4">Location & Neighborhood</span>
             <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight text-[#FFFFFF]">
               Bengaluru, <br />
               <span className="italic font-normal text-[#E8E2D8]">at your doorstep.</span>

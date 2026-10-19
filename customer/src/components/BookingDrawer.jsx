@@ -58,34 +58,34 @@ function formatDisplayDate(dateStr) {
 }
 
 /**
- * Mask email for customer privacy (e.g. uj***@novahouse.com)
+ * Mask email for customer privacy (e.g. vi***@enterprise.in)
  */
 function maskEmail(email) {
-  if (!email || !email.includes('@')) return 'guest@novahouse.com';
+  if (!email || !email.includes('@')) return 'your email';
   const [user, domain] = email.split('@');
   if (user.length <= 2) return `${user}***@${domain}`;
   return `${user.slice(0, 2)}***@${domain}`;
 }
 
 /**
- * Mask phone number for customer privacy (e.g. ******5529)
+ * Mask phone number for customer privacy (e.g. •••• •••• 1234)
  */
 function maskPhone(phone) {
-  if (!phone) return '******5529';
+  if (!phone) return 'your phone';
   const clean = phone.replace(/[\s\-\(\)]/g, '');
-  if (clean.length >= 4) return `******${clean.slice(-4)}`;
-  return '******5529';
+  if (clean.length >= 4) return `•••• •••• ${clean.slice(-4)}`;
+  return phone;
 }
 
 export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialPromoCode }) {
-  // Booking Form State
-  const [checkIn, setCheckIn] = useState('2026-10-18');
-  const [checkOut, setCheckOut] = useState('2026-10-19');
-  const [guests, setGuests] = useState('2 Adults');
-  const [roomId, setRoomId] = useState(defaultRoomId || 'deluxe-room');
-  const [guestName, setGuestName] = useState('Ujwal');
-  const [guestEmail, setGuestEmail] = useState('ujwal@novahouse.com');
-  const [guestPhone, setGuestPhone] = useState('+91 98450 12345');
+  // Booking Form State - Initialized clean and empty (no fake data)
+  const [checkIn, setCheckIn] = useState('');
+  const [checkOut, setCheckOut] = useState('');
+  const [guests, setGuests] = useState('');
+  const [roomId, setRoomId] = useState(defaultRoomId || '');
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
   const [specialRequests, setSpecialRequests] = useState('');
 
   // Live Room Catalog and Promo State
@@ -95,15 +95,17 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
   const [promoError, setPromoError] = useState('');
   const [isApplyingPromo, setIsApplyingPromo] = useState(false);
 
+  const todayStr = new Date().toISOString().split('T')[0];
+
   // Dynamic Date Validation Helper
   const getMinCheckOut = (inDateStr) => {
-    if (!inDateStr) return '';
+    if (!inDateStr) return todayStr;
     try {
       const d = new Date(inDateStr);
       d.setDate(d.getDate() + 1);
       return d.toISOString().split('T')[0];
     } catch {
-      return '';
+      return todayStr;
     }
   };
 
@@ -266,21 +268,23 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
   if (!isOpen) return null;
 
-  const selectedRoom = roomsList.find((r) => r.id === roomId) || roomsList[0];
+  const selectedRoom = roomsList.find((r) => r.id === roomId) || null;
 
   const calculateNights = () => {
+    if (!checkIn || !checkOut) return 0;
     try {
       const d1 = new Date(checkIn);
       const d2 = new Date(checkOut);
       const diff = Math.ceil((d2 - d1) / (1000 * 60 * 60 * 24));
-      return isNaN(diff) || diff <= 0 ? 1 : diff;
+      return isNaN(diff) || diff <= 0 ? 0 : diff;
     } catch {
-      return 1;
+      return 0;
     }
   };
 
   const nights = calculateNights();
-  const roomSubtotal = selectedRoom.numericPrice * nights;
+  const roomPrice = selectedRoom?.numericPrice || 0;
+  const roomSubtotal = roomPrice * nights;
   const promoDiscount = appliedOffer
     ? appliedOffer.fixedDiscount
       ? appliedOffer.fixedDiscount
@@ -288,7 +292,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
     : 0;
   const discountedSubtotal = Math.max(0, roomSubtotal - promoDiscount);
   const estimatedTaxes = Math.round(discountedSubtotal * 0.18);
-  const estimatedTotal = discountedSubtotal + estimatedTaxes;
+  const estimatedTotal = discountedSubtotal > 0 ? discountedSubtotal + estimatedTaxes : 0;
 
   // Processing state disables button & prevents double clicks
   const isProcessing =
@@ -312,7 +316,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
       case 'DEFAULT':
       default: {
         const payable = activeOrderData?.amount ?? estimatedTotal;
-        return `PAY ₹${Number(payable).toLocaleString('en-IN')}`;
+        if (payable > 0) {
+          return `PAY ₹${Number(payable).toLocaleString('en-IN')}`;
+        }
+        return 'PROCEED TO PAYMENT';
       }
     }
   };
@@ -320,30 +327,34 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
   // Section 3: Before Payment Frontend Validation
   const validateForm = () => {
     if (!guestName || guestName.trim().length < 2) {
-      return 'Please enter your full guest name.';
+      return 'Please enter your full name.';
     }
-    if (!guestEmail || !guestEmail.includes('@') || !guestEmail.includes('.')) {
-      return 'Please enter a valid guest email address.';
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!guestEmail || !emailRegex.test(guestEmail.trim())) {
+      return 'Please enter a valid email address.';
     }
     const cleanPhone = guestPhone ? guestPhone.replace(/[^0-9]/g, '') : '';
     if (!cleanPhone || cleanPhone.length < 10) {
-      return 'Please enter a valid 10-digit phone number.';
+      return 'Please enter a valid phone number.';
     }
     if (!roomId) {
-      return 'Please select a room sanctuary.';
+      return 'Please select a room.';
     }
     if (!checkIn) {
-      return 'Please select a valid check-in date.';
+      return 'Please select check-in date.';
+    }
+    if (checkIn < todayStr) {
+      return 'Check-in date cannot be in the past.';
     }
     if (!checkOut) {
-      return 'Please select a valid check-out date.';
+      return 'Please select check-out date.';
     }
     if (checkOut <= checkIn) {
-      return 'Check-out date must be after check-in date.';
+      return 'Check-out must be after check-in.';
     }
     const numGuests = parseInt(guests, 10);
-    if (isNaN(numGuests) || numGuests < 1) {
-      return 'Please select at least 1 guest.';
+    if (!guests || isNaN(numGuests) || numGuests < 1) {
+      return 'Please select number of guests.';
     }
     return null;
   };
@@ -374,7 +385,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
         bookingId: verifyResult.bookingId || orderData.bookingId,
         paymentId: verifyResult.paymentId || payResponse.razorpay_payment_id,
         totalAmount: orderData.amount || estimatedTotal,
-        roomTitle: orderData.roomTitle || selectedRoom.title,
+        roomTitle: orderData.roomTitle || selectedRoom?.title || 'Sanctuary Suite',
         nights: orderData.nights || nights,
         checkIn,
         checkOut,
@@ -448,9 +459,9 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
       setButtonState('CREATING_ORDER');
       const orderPayload = {
         roomId: actualRoomId,
-        roomNumber: selectedRoom.roomNumber || selectedRoom.id || '101',
-        roomType: selectedRoom.title,
-        baseRate: selectedRoom.numericPrice,
+        roomNumber: selectedRoom?.roomNumber || selectedRoom?.id || '101',
+        roomType: selectedRoom?.title || 'Sanctuary Suite',
+        baseRate: selectedRoom?.numericPrice || 0,
         nights,
         discount: promoDiscount,
         taxes: estimatedTaxes,
@@ -976,12 +987,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
           {paymentState === 'idle' && (
             <form onSubmit={handleStartPayment} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                  Guest Name
+                <label htmlFor="drawer-guest-name" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                  GUEST NAME
                 </label>
                 <input
+                  id="drawer-guest-name"
                   type="text"
-                  placeholder="e.g. Vikramaditya Rao"
+                  placeholder="Enter your full name"
                   value={guestName}
                   onChange={(e) => {
                     setGuestName(e.target.value);
@@ -995,12 +1007,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                    Email Address
+                  <label htmlFor="drawer-guest-email" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                    EMAIL ADDRESS
                   </label>
                   <input
+                    id="drawer-guest-email"
                     type="email"
-                    placeholder="guest@domain.com"
+                    placeholder="Enter your email address"
                     value={guestEmail}
                     onChange={(e) => {
                       setGuestEmail(e.target.value);
@@ -1012,12 +1025,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                    Phone / WhatsApp
+                  <label htmlFor="drawer-guest-phone" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                    PHONE / WHATSAPP
                   </label>
                   <input
+                    id="drawer-guest-phone"
                     type="tel"
-                    placeholder="+91 98450 12345"
+                    placeholder="Enter your phone number"
                     value={guestPhone}
                     onChange={(e) => {
                       setGuestPhone(e.target.value);
@@ -1031,10 +1045,11 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                  Select Room Sanctuary
+                <label htmlFor="drawer-select-room" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                  SELECT ROOM
                 </label>
                 <select
+                  id="drawer-select-room"
                   value={roomId}
                   onChange={(e) => {
                     setRoomId(e.target.value);
@@ -1043,6 +1058,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                   className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                 >
+                  <option value="">Select a room</option>
                   {roomsList.map((r) => (
                     <option key={r.id} value={r.id}>
                       {r.title} — {r.pricePerNight} / night {r.status && r.status !== 'Available' ? `(${r.status})` : ''}
@@ -1053,11 +1069,13 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                    Check-in Date
+                  <label htmlFor="drawer-check-in" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                    CHECK-IN DATE
                   </label>
                   <input
+                    id="drawer-check-in"
                     type="date"
+                    min={todayStr}
                     value={checkIn}
                     onChange={(e) => handleCheckInChange(e.target.value)}
                     className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
@@ -1066,13 +1084,14 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                   />
                 </div>
                 <div>
-                  <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                    Check-out Date
+                  <label htmlFor="drawer-check-out" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                    CHECK-OUT DATE
                   </label>
                   <input
+                    id="drawer-check-out"
                     type="date"
                     value={checkOut}
-                    min={getMinCheckOut(checkIn)}
+                    min={checkIn ? getMinCheckOut(checkIn) : todayStr}
                     onChange={(e) => handleCheckOutChange(e.target.value)}
                     className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                     style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
@@ -1082,28 +1101,31 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                  Guests
+                <label htmlFor="drawer-guests" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                  GUESTS
                 </label>
                 <select
+                  id="drawer-guests"
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
                   className="w-full border border-[#D8D0C3] p-3 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none"
                   style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
                 >
-                  <option>1 Adult</option>
-                  <option>2 Adults</option>
-                  <option>2 Adults, 1 Child</option>
-                  <option>3 Adults</option>
-                  <option>4 Adults (Signature Suite)</option>
+                  <option value="">Select number of guests</option>
+                  <option value="1 Adult">1 Adult</option>
+                  <option value="2 Adults">2 Adults</option>
+                  <option value="2 Adults, 1 Child">2 Adults, 1 Child</option>
+                  <option value="3 Adults">3 Adults</option>
+                  <option value="4 Adults (Signature Suite)">4 Adults (Signature Suite)</option>
                 </select>
               </div>
 
               <div>
-                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
-                  Special Requests / Notes (Optional)
+                <label htmlFor="drawer-special-requests" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                  SPECIAL REQUESTS / NOTES (OPTIONAL)
                 </label>
                 <textarea
+                  id="drawer-special-requests"
                   rows={2}
                   placeholder="e.g. Airport transfer, quiet floor, late check-in..."
                   value={specialRequests}
@@ -1145,9 +1167,9 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               {/* Promotional Offer / Discount Code Box */}
               <div className="p-4 bg-[#F4F1EB] border border-[#D8D0C3] space-y-2.5">
                 <div className="flex items-center justify-between">
-                  <label className="text-[10px] font-mono uppercase tracking-widest text-[#77736C] font-medium flex items-center gap-1.5">
+                  <label htmlFor="drawer-promo-code" className="text-[10px] font-mono uppercase tracking-widest text-[#77736C] font-medium flex items-center gap-1.5">
                     <Tag size={12} className="text-[#A58A5C]" />
-                    <span>Promotional Offer Code</span>
+                    <span>PROMOTIONAL OFFER CODE</span>
                   </label>
                   {appliedOffer && (
                     <span className="text-[10px] font-mono text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 font-semibold">
@@ -1175,8 +1197,9 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                 ) : (
                   <div className="flex gap-2">
                     <input
+                      id="drawer-promo-code"
                       type="text"
-                      placeholder="e.g. SANCTUARY15"
+                      placeholder="Enter promotional code"
                       value={promoCodeInput}
                       onChange={(e) => {
                         setPromoCodeInput(e.target.value.toUpperCase());
@@ -1196,7 +1219,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                       disabled={isApplyingPromo || !promoCodeInput.trim()}
                       className="px-4 py-2 text-xs font-mono tracking-widest bg-[#111111] text-[#F4F1EB] hover:bg-[#A58A5C] hover:text-[#111111] transition-colors disabled:opacity-50"
                     >
-                      {isApplyingPromo ? 'Checking...' : 'Apply'}
+                      {isApplyingPromo ? 'CHECKING...' : 'APPLY'}
                     </button>
                   </div>
                 )}
@@ -1214,32 +1237,40 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                 className="p-5 border border-[#D8D0C3] space-y-2.5 shadow-xs rounded-none"
                 style={{ backgroundColor: '#ECE8E0' }}
               >
-                <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
-                  <span className="text-[#77736C]">Duration:</span>
-                  <span className="font-semibold">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
-                </div>
-                <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
-                  <span className="text-[#77736C]">Room Rate ({nights}x):</span>
-                  <span>₹{roomSubtotal.toLocaleString('en-IN')}</span>
-                </div>
-                {appliedOffer && promoDiscount > 0 && (
-                  <div className="flex items-center justify-between text-xs font-mono text-emerald-700 font-semibold">
-                    <span>Privilege Discount ({appliedOffer.code}):</span>
-                    <span>-₹{promoDiscount.toLocaleString('en-IN')}</span>
+                {!selectedRoom || nights === 0 ? (
+                  <div className="py-2 text-center text-xs font-mono text-[#77736C]">
+                    Select a room and stay dates to calculate room tariff & taxes.
                   </div>
+                ) : (
+                  <>
+                    <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
+                      <span className="text-[#77736C]">Duration:</span>
+                      <span className="font-semibold">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                    </div>
+                    <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
+                      <span className="text-[#77736C]">Room Rate ({nights}x):</span>
+                      <span>₹{roomSubtotal.toLocaleString('en-IN')}</span>
+                    </div>
+                    {appliedOffer && promoDiscount > 0 && (
+                      <div className="flex items-center justify-between text-xs font-mono text-emerald-700 font-semibold">
+                        <span>Privilege Discount ({appliedOffer.code}):</span>
+                        <span>-₹{promoDiscount.toLocaleString('en-IN')}</span>
+                      </div>
+                    )}
+                    <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
+                      <span className="text-[#77736C]">Luxury GST (18%):</span>
+                      <span>₹{estimatedTaxes.toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="pt-2.5 border-t border-[#171717]/10 flex items-baseline justify-between">
+                      <span className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider">
+                        Total Payable:
+                      </span>
+                      <span className="font-serif text-2xl text-[#111111] font-semibold">
+                        ₹{estimatedTotal.toLocaleString('en-IN')}
+                      </span>
+                    </div>
+                  </>
                 )}
-                <div className="flex items-center justify-between text-xs font-mono text-[#111111]">
-                  <span className="text-[#77736C]">Luxury GST (18%):</span>
-                  <span>₹{estimatedTaxes.toLocaleString('en-IN')}</span>
-                </div>
-                <div className="pt-2.5 border-t border-[#171717]/10 flex items-baseline justify-between">
-                  <span className="text-xs font-mono font-bold text-[#111111] uppercase tracking-wider">
-                    Total Payable:
-                  </span>
-                  <span className="font-serif text-2xl text-[#111111] font-semibold">
-                    ₹{estimatedTotal.toLocaleString('en-IN')}
-                  </span>
-                </div>
               </div>
 
               {/* Validation or General Error Banner */}

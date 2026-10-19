@@ -485,7 +485,7 @@ function openRazorpayTestModal({
         </span>
 
         <span>
-          ${guestPhone || '+91 98450 12345'}
+          ${guestPhone || ''}
         </span>
       </div>
 
@@ -1256,11 +1256,11 @@ export async function launchRazorpayCheckout({
 
           email:
             guestEmail ||
-            'guest@novahouse.example',
+            '',
 
           contact:
             guestPhone ||
-            '+91 98450 12345',
+            '',
         },
 
         notes: {

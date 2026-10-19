@@ -7,7 +7,7 @@ export default function Intro() {
       <div className="container-luxury">
         {/* Section Index Marker */}
         <div className="flex items-center justify-between border-b border-[#171717]/10 pb-5 mb-12 sm:mb-16">
-          <span className="editorial-tag">01 / Introduction</span>
+          <span className="editorial-tag">Introduction</span>
           <span className="font-mono text-xs uppercase tracking-widest text-[#77736C]">
             NOVA HOUSE · Philosophy
           </span>

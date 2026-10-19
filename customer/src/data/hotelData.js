@@ -176,8 +176,8 @@ export const EXPERIENCES_DATA = [
     features: ["Bespoke Ayurvedic bodywork", "Travertine cedar saunas", "Cold vitality plunge pool", "Private treatment suites"],
   },
   {
-    id: "fitness",
-    title: "FITNESS",
+    id: "movement-studio",
+    title: "MOVEMENT STUDIO",
     subtitle: "MOVE AT YOUR OWN PACE",
     category: "Movement Studio",
     description:

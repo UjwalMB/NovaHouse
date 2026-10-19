@@ -64,7 +64,7 @@ export default function Offers({ onClaimOffer }) {
         {/* Section Header */}
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#171717]/10 pb-8 mb-16">
           <div>
-            <span className="editorial-tag mb-4">03 / Privileges</span>
+            <span className="editorial-tag mb-4">Privileges</span>
             <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
               Curated <br />
               <span className="italic font-normal text-[#A58A5C]">promotions & offers.</span>
