@@ -49,7 +49,13 @@ export default function RazorpayModal({
 
       setIsProcessing(false);
       if (onSuccess) {
-        onSuccess(authData);
+        onSuccess({
+          ...authData,
+          amount: orderData.amount,
+          method: activeTab === 'upi' ? 'UPI / Razorpay' : activeTab === 'card' ? 'Card / Razorpay' : 'Netbanking / Razorpay',
+          email: guestEmail,
+          contact: guestPhone,
+        });
       }
     } catch (err) {
       setIsProcessing(false);

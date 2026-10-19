@@ -1,10 +1,12 @@
-import React, { useState, useMemo } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import {
   Mail,
   Phone,
   Eye,
 } from 'lucide-react';
 import { initialGuests } from '../data/guests';
+import { getGuests } from '../services/guestService';
+import { useBookings } from '../hooks/useBookings';
 import SearchBar from '../components/ui/SearchBar';
 import FilterBar from '../components/ui/FilterBar';
 import StatusBadge from '../components/ui/StatusBadge';
@@ -14,9 +16,77 @@ import Button from '../components/ui/Button';
 import { Guest } from '../types';
 
 export default function Guests() {
-  const [guests] = useState<Guest[]>(initialGuests);
+  const { bookings } = useBookings();
+  const [baseGuests, setBaseGuests] = useState<Guest[]>(initialGuests);
   const [searchQuery, setSearchQuery] = useState('');
   const [tierFilter, setTierFilter] = useState('all');
+
+  useEffect(() => {
+    async function load() {
+      try {
+        const live = await getGuests();
+        if (live && live.length > 0) {
+          setBaseGuests(live);
+        }
+      } catch (e) {}
+    }
+    load();
+  }, []);
+
+  // Merge base guests with any live bookings made by customers
+  const guests = useMemo(() => {
+    const guestMap = new Map<string, Guest>();
+
+    // 1. Seed with base guests
+    baseGuests.forEach((g) => {
+      const key = (g.email || g.phone || g.id).toLowerCase();
+      guestMap.set(key, { ...g });
+    });
+
+    // 2. Enrich/Upsert from all customer bookings
+    bookings.forEach((b) => {
+      if (!b.guestName && !b.guestEmail && !b.guestPhone) return;
+      const key = (b.guestEmail || b.guestPhone || b.id).toLowerCase();
+      if (guestMap.has(key)) {
+        const existing = guestMap.get(key)!;
+        const historySet = new Set(existing.history || []);
+        historySet.add(b.id);
+        const stays = historySet.size;
+        guestMap.set(key, {
+          ...existing,
+          name: b.guestName || existing.name,
+          phone: b.guestPhone || existing.phone,
+          email: b.guestEmail || existing.email,
+          country: b.guestCountry || existing.country,
+          totalStays: Math.max(existing.totalStays, stays),
+          totalSpent: (existing.totalSpent || 0) + (b.totalAmount || 0),
+          lastStay: b.checkIn > existing.lastStay ? b.checkIn : existing.lastStay,
+          notes: b.specialRequests ? `${existing.notes ? existing.notes + ' · ' : ''}Special Req: ${b.specialRequests}` : existing.notes,
+          history: Array.from(historySet),
+        });
+      } else {
+        const isVip = (b.totalAmount || 0) >= 100000;
+        guestMap.set(key, {
+          id: `gst_${b.id}`,
+          name: b.guestName || 'Patron Guest',
+          email: b.guestEmail || '',
+          phone: b.guestPhone || '',
+          country: b.guestCountry || 'India',
+          city: 'Bengaluru',
+          totalStays: 1,
+          totalSpent: b.totalAmount || 0,
+          lastStay: b.checkIn || new Date().toISOString().split('T')[0],
+          status: isVip ? 'VIP' : 'New Guest',
+          tier: isVip ? 'VIP Member' : 'Member',
+          preferences: [b.roomType, 'Direct Online Reservation'],
+          notes: b.specialRequests || 'Direct web reservation',
+          history: [b.id],
+        });
+      }
+    });
+
+    return Array.from(guestMap.values());
+  }, [baseGuests, bookings]);
 
   // Selected Guest Drawer
   const [selectedGuest, setSelectedGuest] = useState<Guest | null>(null);

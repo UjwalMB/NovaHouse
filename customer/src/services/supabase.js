@@ -556,6 +556,13 @@ export async function saveBookingToSupabase(booking) {
         ),
       ])
     );
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        const bc = new BroadcastChannel('nova_house_sync');
+        bc.postMessage({ type: 'BOOKING_CREATED', booking: formatted });
+        bc.close();
+      }
+    } catch (bcErr) {}
     }
   } catch (e) {
     console.warn(
@@ -700,11 +707,18 @@ export async function savePaymentToSupabase({
                 paymentStatus: 'PAID',
                 paymentId: row.razorpay_payment_id,
                 paymentMethod: row.method,
+                guestEmail: email || booking.guestEmail,
+                guestPhone: contact || booking.guestPhone,
               }
             : booking
         );
         localStorage.setItem('nova_admin_bookings', JSON.stringify(updated));
       }
+    }
+    if (typeof BroadcastChannel !== 'undefined') {
+      const bc = new BroadcastChannel('nova_house_sync');
+      bc.postMessage({ type: 'PAYMENT_UPDATED', bookingId, paymentId: row.razorpay_payment_id });
+      bc.close();
     }
   } catch (e) {
     console.warn('Local payment storage error:', e);

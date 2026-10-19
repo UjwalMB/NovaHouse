@@ -37,6 +37,25 @@ export function useBookings() {
     };
     window.addEventListener('focus', handleFocus);
 
+    // Cross-tab / cross-window instant notification via BroadcastChannel
+    let bc: BroadcastChannel | null = null;
+    try {
+      if (typeof BroadcastChannel !== 'undefined') {
+        bc = new BroadcastChannel('nova_house_sync');
+        bc.onmessage = () => {
+          fetchBookings();
+        };
+      }
+    } catch (e) {}
+
+    // Storage event listener for local state sync
+    const handleStorage = (e: StorageEvent) => {
+      if (!e.key || e.key.includes('bookings') || e.key.includes('nova_admin')) {
+        fetchBookings();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
     // Instant Supabase Realtime WebSocket subscription for new/updated bookings
     const unsubscribe = subscribeToTable('bookings', () => {
       fetchBookings();
@@ -45,10 +64,16 @@ export function useBookings() {
     // Also fallback poll backend so changes appear even in restricted networks
     const pollTimer = setInterval(() => {
       fetchBookings();
-    }, 3500);
+    }, 2500);
 
     return () => {
       window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('storage', handleStorage);
+      if (bc) {
+        try {
+          bc.close();
+        } catch (e) {}
+      }
       if (unsubscribe) unsubscribe();
       clearInterval(pollTimer);
     };

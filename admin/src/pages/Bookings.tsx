@@ -5,6 +5,10 @@ import {
   Download,
   Eye,
   CreditCard,
+  Mail,
+  Phone,
+  MapPin,
+  FileText,
 } from 'lucide-react';
 import { settlePayment } from '../services/paymentService';
 import { useBookings } from '../hooks/useBookings';
@@ -65,6 +69,9 @@ export default function Bookings() {
         b.id.toLowerCase().includes(q) ||
         b.guestName.toLowerCase().includes(q) ||
         b.guestEmail.toLowerCase().includes(q) ||
+        (b.guestPhone && b.guestPhone.toLowerCase().includes(q)) ||
+        (b.guestCountry && b.guestCountry.toLowerCase().includes(q)) ||
+        (b.specialRequests && b.specialRequests.toLowerCase().includes(q)) ||
         b.roomType.toLowerCase().includes(q);
 
       const matchesStatus =
@@ -92,9 +99,9 @@ export default function Bookings() {
 
   // Export CSV Handler
   const handleExport = () => {
-    const headers = ['Booking ID,Guest,Email,Room,CheckIn,CheckOut,Guests,Amount,Payment,Status'];
+    const headers = ['Booking ID,Guest,Email,Phone,Country,Room,CheckIn,CheckOut,Guests,Amount,Payment,Status,Special Requests'];
     const rows = filteredBookings.map((b) =>
-      `"${b.id}","${b.guestName}","${b.guestEmail}","${b.roomType}","${b.checkIn}","${b.checkOut}",${b.guests},${b.totalAmount},"${b.paymentStatus}","${b.bookingStatus}"`
+      `"${b.id}","${b.guestName}","${b.guestEmail}","${b.guestPhone || ''}","${b.guestCountry || ''}","${b.roomType}","${b.checkIn}","${b.checkOut}",${b.guests},${b.totalAmount},"${b.paymentStatus}","${b.bookingStatus}","${(b.specialRequests || '').replace(/"/g, '""')}"`
     );
     const csvContent = 'data:text/csv;charset=utf-8,' + [headers, ...rows].join('\n');
     const encodedUri = encodeURI(csvContent);
@@ -150,12 +157,48 @@ export default function Bookings() {
       ),
     },
     {
-      header: 'Guest',
+      header: 'Guest Details',
       key: 'guestName',
       render: (b: Booking) => (
-        <div>
-          <div className="font-medium text-[#111111]">{b.guestName}</div>
-          <div className="text-[11px] text-[#77736C] font-mono">{b.guestEmail}</div>
+        <div className="space-y-1">
+          <div className="font-medium text-[#111111] flex items-center gap-1.5 flex-wrap">
+            <span className="font-semibold">{b.guestName}</span>
+            {b.guestCountry && (
+              <span className="text-[10px] font-mono px-1.5 py-0.2 bg-[#FAF8F5] border border-[#E2DDD5] text-[#77736C] rounded-xs">
+                {b.guestCountry}
+              </span>
+            )}
+          </div>
+          <div className="text-[11px] text-[#55514B] font-mono flex items-center gap-1.5">
+            <Mail size={11} className="text-[#A58A5C] shrink-0" />
+            <a
+              href={`mailto:${b.guestEmail}`}
+              onClick={(e) => e.stopPropagation()}
+              className="hover:underline hover:text-[#111111]"
+            >
+              {b.guestEmail || '—'}
+            </a>
+          </div>
+          {b.guestPhone && (
+            <div className="text-[11px] text-[#55514B] font-mono flex items-center gap-1.5">
+              <Phone size={11} className="text-[#A58A5C] shrink-0" />
+              <a
+                href={`tel:${b.guestPhone}`}
+                onClick={(e) => e.stopPropagation()}
+                className="hover:underline hover:text-[#111111]"
+              >
+                {b.guestPhone}
+              </a>
+            </div>
+          )}
+          {b.specialRequests && (
+            <div
+              className="text-[10px] font-sans text-[#77736C] bg-[#FAF8F5] px-1.5 py-0.5 border border-[#E2DDD5] rounded-xs truncate max-w-[220px]"
+              title={b.specialRequests}
+            >
+              <span className="text-[#A58A5C] font-semibold">Note:</span> {b.specialRequests}
+            </div>
+          )}
         </div>
       ),
     },

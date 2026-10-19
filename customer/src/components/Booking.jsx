@@ -1,5 +1,21 @@
 import React, { useState, useEffect } from 'react';
-import { Calendar, Users, BedDouble, ArrowUpRight, Check, Sparkles, Shield, Clock, CreditCard, Loader2 } from 'lucide-react';
+import {
+  Calendar,
+  Users,
+  BedDouble,
+  ArrowUpRight,
+  Check,
+  Sparkles,
+  Shield,
+  Clock,
+  CreditCard,
+  Loader2,
+  User,
+  Mail,
+  Phone,
+  FileText,
+  AlertCircle,
+} from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { ROOMS_DATA } from '../data/hotelData';
 import {
@@ -16,6 +32,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   const [guests, setGuests] = useState('2 Guests');
   const [roomsList, setRoomsList] = useState(ROOMS_DATA);
   const [selectedRoomId, setSelectedRoomId] = useState(preselectedRoomId || 'nova-suite');
+
+  // Guest details state
+  const [guestName, setGuestName] = useState('');
+  const [guestEmail, setGuestEmail] = useState('');
+  const [guestPhone, setGuestPhone] = useState('');
+  const [specialRequests, setSpecialRequests] = useState('');
+  const [formError, setFormError] = useState('');
+
   const [isChecking, setIsChecking] = useState(false);
   const [confirmedReservation, setConfirmedReservation] = useState(null);
   const [isCheckoutOpen, setIsCheckoutOpen] = useState(false);
@@ -84,6 +108,23 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setFormError('');
+
+    // Guest details validation
+    if (!guestName || guestName.trim().length < 2) {
+      setFormError('Please enter your full guest name.');
+      return;
+    }
+    if (!guestEmail || !guestEmail.includes('@') || !guestEmail.includes('.')) {
+      setFormError('Please enter a valid guest email address.');
+      return;
+    }
+    const cleanPhone = guestPhone ? guestPhone.replace(/[^0-9]/g, '') : '';
+    if (!cleanPhone || cleanPhone.length < 10) {
+      setFormError('Please enter a valid 10-digit phone number.');
+      return;
+    }
+
     setIsChecking(true);
     setAvailabilityMessage('');
 
@@ -116,12 +157,12 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
         totalAmount: totalPrice,
         checkIn,
         checkOut,
-        guestName: 'Direct Web Guest',
-        guestEmail: 'guest@novahouse.example',
-        guestPhone: '+91 98450 12345',
+        guestName: guestName.trim(),
+        guestEmail: guestEmail.trim(),
+        guestPhone: guestPhone.trim(),
         guestCountry: 'India',
         guests: parseInt(guests) || 2,
-        specialRequests: 'Online reservation via NOVA HOUSE section',
+        specialRequests: specialRequests.trim() || 'Direct website reservation via NOVA HOUSE',
       };
 
       const orderData = await createRazorpayOrder(orderPayload);
@@ -138,7 +179,13 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     setIsCheckoutOpen(false);
     setIsChecking(true);
     try {
-      const verifyResult = await verifyPaymentOnServer(verifyPayload);
+      const verifyResult = await verifyPaymentOnServer({
+        ...verifyPayload,
+        amount: activeOrderData?.amount || totalPrice,
+        email: guestEmail.trim(),
+        contact: guestPhone.trim(),
+        method: verifyPayload?.method || 'Online / Razorpay',
+      });
 
       setConfirmedReservation({
         room: selectedRoom,
@@ -146,6 +193,10 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
         checkIn,
         checkOut,
         guests,
+        guestName: guestName.trim(),
+        guestEmail: guestEmail.trim(),
+        guestPhone: guestPhone.trim(),
+        specialRequests: specialRequests.trim(),
         total: activeOrderData?.amount || totalPrice,
         code: verifyResult.bookingId,
         paymentId: verifyResult.paymentId,
@@ -220,6 +271,18 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
+                  <span className="text-[#77736C]">Guest Name:</span>
+                  <span className="text-[#111111] font-medium">{confirmedReservation.guestName}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#77736C]">Phone Number:</span>
+                  <span className="text-[#111111] font-mono">{confirmedReservation.guestPhone}</span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-[#77736C]">Email Address:</span>
+                  <span className="text-[#111111] font-mono">{confirmedReservation.guestEmail}</span>
+                </div>
+                <div className="flex justify-between items-center">
                   <span className="text-[#77736C]">Room Sanctuary:</span>
                   <span className="text-[#111111] font-medium">{confirmedReservation.room.title}</span>
                 </div>
@@ -235,6 +298,12 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   <span className="text-[#77736C]">Guests:</span>
                   <span className="text-[#111111]">{confirmedReservation.guests}</span>
                 </div>
+                {confirmedReservation.specialRequests && (
+                  <div className="flex justify-between items-start pt-1 border-t border-[#D8D0C3]/60">
+                    <span className="text-[#77736C] shrink-0">Special Requests:</span>
+                    <span className="text-[#111111] text-right font-sans">{confirmedReservation.specialRequests}</span>
+                  </div>
+                )}
                 {confirmedReservation.paymentId && (
                   <div className="flex justify-between items-center">
                     <span className="text-[#77736C]">Razorpay Payment ID:</span>
@@ -254,7 +323,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 <button
                   type="button"
                   onClick={() => window.print()}
-                  className="btn-luxury-primary !py-3.5 !px-8 text-xs tracking-wider"
+                  className="btn-luxury-primary !py-3.5 !px-8 text-xs tracking-wider cursor-pointer"
                   style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
                 >
                   <span>PRINT VOUCHER</span>
@@ -262,85 +331,185 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 <button
                   type="button"
                   onClick={() => setConfirmedReservation(null)}
-                  className="btn-luxury-secondary text-xs !py-3.5 !px-8"
+                  className="btn-luxury-secondary text-xs !py-3.5 !px-8 cursor-pointer"
                 >
                   BACK TO NOVA HOUSE
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* Form Input Fields Grid */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                {/* Check In */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                    <Calendar size={13} className="text-[#A58A5C]" />
-                    <span>Check-in</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={checkIn}
-                    onChange={(e) => handleCheckInChange(e.target.value)}
-                    className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
-                    required
-                  />
-                </div>
+            <form onSubmit={handleSubmit} className="space-y-6">
+              {/* Form Input Fields Grid: Stay Details */}
+              <div className="space-y-2">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-[#A58A5C] block">
+                  Step 1 · Stay Specifications
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                  {/* Check In */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <Calendar size={13} className="text-[#A58A5C]" />
+                      <span>Check-in</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={checkIn}
+                      onChange={(e) => handleCheckInChange(e.target.value)}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      required
+                    />
+                  </div>
 
-                {/* Check Out */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                    <Calendar size={13} className="text-[#A58A5C]" />
-                    <span>Check-out</span>
-                  </label>
-                  <input
-                    type="date"
-                    value={checkOut}
-                    min={getMinCheckOut(checkIn)}
-                    onChange={(e) => setCheckOut(e.target.value)}
-                    className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
-                    required
-                  />
-                </div>
+                  {/* Check Out */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <Calendar size={13} className="text-[#A58A5C]" />
+                      <span>Check-out</span>
+                    </label>
+                    <input
+                      type="date"
+                      value={checkOut}
+                      min={getMinCheckOut(checkIn)}
+                      onChange={(e) => setCheckOut(e.target.value)}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      required
+                    />
+                  </div>
 
-                {/* Guests */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                    <Users size={13} className="text-[#A58A5C]" />
-                    <span>Guests</span>
-                  </label>
-                  <select
-                    value={guests}
-                    onChange={(e) => setGuests(e.target.value)}
-                    className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
-                  >
-                    <option>1 Adult</option>
-                    <option>2 Adults</option>
-                    <option>2 Adults, 1 Child</option>
-                    <option>3 Adults (Suite required)</option>
-                    <option>4 Adults (Signature Suite)</option>
-                  </select>
-                </div>
+                  {/* Guests */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <Users size={13} className="text-[#A58A5C]" />
+                      <span>Guests</span>
+                    </label>
+                    <select
+                      value={guests}
+                      onChange={(e) => setGuests(e.target.value)}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                    >
+                      <option>1 Adult</option>
+                      <option>2 Adults</option>
+                      <option>2 Adults, 1 Child</option>
+                      <option>3 Adults (Suite required)</option>
+                      <option>4 Adults (Signature Suite)</option>
+                    </select>
+                  </div>
 
-                {/* Room Preference */}
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                    <BedDouble size={13} className="text-[#A58A5C]" />
-                    <span>Room Preference</span>
-                  </label>
-                  <select
-                    value={selectedRoomId}
-                    onChange={(e) => setSelectedRoomId(e.target.value)}
-                    className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
-                  >
-                    {roomsList.map((r) => (
-                      <option key={r.id} value={r.id}>
-                        {r.title} ({r.pricePerNight}) {r.status && r.status !== 'Available' ? `[${r.status}]` : ''}
-                      </option>
-                    ))}
-                  </select>
+                  {/* Room Preference */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <BedDouble size={13} className="text-[#A58A5C]" />
+                      <span>Room Preference</span>
+                    </label>
+                    <select
+                      value={selectedRoomId}
+                      onChange={(e) => setSelectedRoomId(e.target.value)}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                    >
+                      {roomsList.map((r) => (
+                        <option key={r.id} value={r.id}>
+                          {r.title} ({r.pricePerNight}) {r.status && r.status !== 'Available' ? `[${r.status}]` : ''}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
               </div>
+
+              {/* Form Input Fields Grid: Guest Credentials */}
+              <div className="space-y-2 pt-2 border-t border-[#D8D0C3]/60">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-[#A58A5C] block">
+                  Step 2 · Patron Guest Information
+                </span>
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+                  {/* Guest Full Name */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <User size={13} className="text-[#A58A5C]" />
+                      <span>Full Name</span>
+                    </label>
+                    <input
+                      type="text"
+                      placeholder="e.g. Vikramaditya Rao"
+                      value={guestName}
+                      onChange={(e) => {
+                        setGuestName(e.target.value);
+                        if (formError) setFormError('');
+                      }}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      required
+                    />
+                  </div>
+
+                  {/* Phone / WhatsApp */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <Phone size={13} className="text-[#A58A5C]" />
+                      <span>Phone / WhatsApp</span>
+                    </label>
+                    <input
+                      type="tel"
+                      placeholder="e.g. +91 98450 12345"
+                      value={guestPhone}
+                      onChange={(e) => {
+                        setGuestPhone(e.target.value);
+                        if (formError) setFormError('');
+                      }}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      required
+                    />
+                  </div>
+
+                  {/* Email Address */}
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                      <Mail size={13} className="text-[#A58A5C]" />
+                      <span>Email Address</span>
+                    </label>
+                    <input
+                      type="email"
+                      placeholder="e.g. patron@domain.com"
+                      value={guestEmail}
+                      onChange={(e) => {
+                        setGuestEmail(e.target.value);
+                        if (formError) setFormError('');
+                      }}
+                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      required
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* Special Requests Field */}
+              <div className="space-y-2">
+                <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
+                  <FileText size={13} className="text-[#A58A5C]" />
+                  <span>Special Requests / Notes (Optional)</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder="e.g. Airport pickup, quiet courtyard floor, vegan breakfast, late check-in..."
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                />
+              </div>
+
+              {/* Error Banners */}
+              {formError && (
+                <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono flex items-center gap-2 animate-fade-in">
+                  <AlertCircle size={15} className="shrink-0 text-red-600" />
+                  <span>{formError}</span>
+                </div>
+              )}
+
+              {availabilityMessage && (
+                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-mono flex items-center gap-2 animate-fade-in">
+                  <AlertCircle size={15} className="shrink-0 text-amber-600" />
+                  <span>{availabilityMessage}</span>
+                </div>
+              )}
 
               {/* Real-time Rate Summary Bar */}
               <div className="p-6 bg-[#F4F1EB] border border-[#D8D0C3] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
@@ -353,7 +522,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                       ₹ {totalPrice.toLocaleString()}
                     </span>
                     <span className="font-mono text-xs text-[#77736C]">
-                      total for {nights} night{nights > 1 ? 's' : ''} (excl. local taxes)
+                      total for {nights} night{nights > 1 ? 's' : ''} (incl. GST)
                     </span>
                   </div>
                 </div>
@@ -375,7 +544,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 <button
                   type="submit"
                   disabled={isChecking}
-                  className="w-full btn-luxury-primary !py-5 text-xs tracking-[0.2em] font-semibold"
+                  className="w-full btn-luxury-primary !py-5 text-xs tracking-[0.2em] font-semibold cursor-pointer"
                   style={{
                     backgroundColor: '#111111',
                     color: '#F4F1EB',
@@ -383,7 +552,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   }}
                 >
                   <span>
-                    {isChecking ? 'Checking Real-time Availability...' : 'Check Availability'}
+                    {isChecking ? 'Checking Real-time Availability...' : 'Proceed to Secure Payment'}
                   </span>
                   <ArrowUpRight size={16} />
                 </button>
@@ -396,9 +565,9 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
       <RazorpayModal
         isOpen={isCheckoutOpen}
         orderData={activeOrderData}
-        guestName="Direct Web Guest"
-        guestEmail="guest@novahouse.example"
-        guestPhone="+91 98450 12345"
+        guestName={guestName.trim()}
+        guestEmail={guestEmail.trim()}
+        guestPhone={guestPhone.trim()}
         onSuccess={handlePaymentSuccess}
         onDismiss={() => setIsCheckoutOpen(false)}
         onError={(err) => {

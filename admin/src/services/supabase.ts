@@ -136,15 +136,18 @@ export function mapGuestFromDb(row: any): Guest {
 
 export function mapPaymentFromDb(row: any): PaymentDisplayRecord {
   const dateStr = row.created_at ? new Date(row.created_at).toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' }) : '12 Oct 2026';
+  const b = row.bookings || {};
   return {
     id: row.id,
     paymentId: row.razorpay_payment_id || row.id,
     bookingId: row.booking_id,
     orderId: row.razorpay_order_id,
-    guestName: row.email || 'Patron Guest',
-    guestEmail: row.email || '',
-    guestPhone: row.contact || '',
-    roomType: 'Sanctuary Suite',
+    guestName: b.guest_name || row.guest_name || row.email || 'Patron Guest',
+    guestEmail: b.guest_email || row.email || '',
+    guestPhone: b.guest_phone || row.contact || '',
+    roomType: b.room_type || 'Sanctuary Suite',
+    checkIn: b.check_in,
+    checkOut: b.check_out,
     amount: Number(row.amount || 0),
     amountPaise: row.amount_paise,
     currency: row.currency || 'INR',
@@ -265,7 +268,10 @@ export async function fetchLivePayments(): Promise<PaymentDisplayRecord[] | null
   const sb = getSupabase();
   if (!sb) return null;
   try {
-    const { data, error } = await sb.from('payments').select('*').order('created_at', { ascending: false });
+    const { data, error } = await sb
+      .from('payments')
+      .select('*, bookings(guest_name, guest_email, guest_phone, room_type, check_in, check_out)')
+      .order('created_at', { ascending: false });
     if (error || !data || data.length === 0) return null;
     return data.map(mapPaymentFromDb);
   } catch (err) {

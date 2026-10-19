@@ -30,10 +30,14 @@ let bookingsState: Booking[] = getStoredBookings();
 export async function getBookings(): Promise<Booking[]> {
   try {
     const live = await fetchLiveBookings();
-    if (live && Array.isArray(live) && live.length > 0) {
-      bookingsState = live;
-      saveStoredBookings(live);
-      return live;
+    if (live && Array.isArray(live)) {
+      const stored = getStoredBookings();
+      const liveIds = new Set(live.map((b) => b.id));
+      const localOnly = stored.filter((b) => !liveIds.has(b.id));
+      const combined = [...live, ...localOnly];
+      bookingsState = combined;
+      saveStoredBookings(combined);
+      return combined;
     }
   } catch (err) {
     console.warn('Live bookings query failed, falling back to local state:', err);

@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { ArrowUpRight, Eye, CreditCard } from 'lucide-react';
+import { ArrowUpRight, Eye, CreditCard, Mail, Phone } from 'lucide-react';
 import StatusBadge from '../ui/StatusBadge';
 import { settlePayment } from '../../services/paymentService';
 import { useToast } from '../ui/Toast';
@@ -74,9 +74,25 @@ export default function RecentBookings({ bookings = [], onRefresh }: RecentBooki
                   </span>
                 </td>
                 <td>
-                  <div>
+                  <div className="space-y-0.5">
                     <div className="font-medium text-[#111111]">{b.guestName}</div>
-                    <div className="text-[11px] text-[#77736C] font-mono">{b.guestPhone}</div>
+                    {b.guestPhone && (
+                      <div className="text-[11px] text-[#77736C] font-mono flex items-center gap-1">
+                        <Phone size={10} className="text-[#A58A5C] shrink-0" />
+                        <span>{b.guestPhone}</span>
+                      </div>
+                    )}
+                    {b.guestEmail && (
+                      <div className="text-[11px] text-[#77736C] font-mono flex items-center gap-1">
+                        <Mail size={10} className="text-[#A58A5C] shrink-0" />
+                        <span>{b.guestEmail}</span>
+                      </div>
+                    )}
+                    {b.specialRequests && (
+                      <div className="text-[10px] text-[#A58A5C] italic truncate max-w-[160px]" title={b.specialRequests}>
+                        Req: {b.specialRequests}
+                      </div>
+                    )}
                   </div>
                 </td>
                 <td>

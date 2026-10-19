@@ -9,6 +9,7 @@
     "dev:admin": "npm run dev --prefix admin",
     "build:customer": "npm run build --prefix customer",
     "build:admin": "npm run build --prefix admin",
-    "build": "npm run build:customer && npm run build:admin"
+    "build": "npm run build:customer && npm run build:admin",
+    "install:all": "npm install --prefix customer && npm install --prefix admin"
   }
 }

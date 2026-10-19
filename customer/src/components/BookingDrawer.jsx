@@ -86,6 +86,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
   const [guestName, setGuestName] = useState('Ujwal');
   const [guestEmail, setGuestEmail] = useState('ujwal@novahouse.com');
   const [guestPhone, setGuestPhone] = useState('+91 98450 12345');
+  const [specialRequests, setSpecialRequests] = useState('');
 
   // Live Room Catalog and Promo State
   const [roomsList, setRoomsList] = useState(ROOMS_DATA);
@@ -357,6 +358,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
         razorpay_payment_id: payResponse.razorpay_payment_id,
         razorpay_signature: payResponse.razorpay_signature,
         booking_id: payResponse.booking_id || orderData.bookingId,
+        amount: orderData.amount || estimatedTotal,
+        email: guestEmail.trim(),
+        contact: guestPhone.trim(),
+        method: payResponse.method || 'Online / Razorpay',
       };
 
       // Backend Cryptographically Verifies Payment (HMAC-SHA256)
@@ -374,6 +379,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
         checkIn,
         checkOut,
         guests: parseInt(guests, 10) || 2,
+        guestName: guestName.trim(),
+        guestEmail: guestEmail.trim(),
+        guestPhone: guestPhone.trim(),
+        specialRequests: specialRequests.trim(),
         paymentStatus: 'PAID',
         bookingStatus: 'Confirmed',
       });
@@ -454,9 +463,10 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
         guestPhone: guestPhone.trim(),
         guestCountry: 'India',
         guests: parseInt(guests, 10) || 2,
-        specialRequests: appliedOffer
-          ? `Direct reservation (Promo: ${appliedOffer.code} - ${appliedOffer.name})`
-          : 'Direct reservation via NOVA HOUSE booking drawer',
+        specialRequests: [
+          specialRequests.trim(),
+          appliedOffer ? `Promo: ${appliedOffer.code} (${appliedOffer.name})` : '',
+        ].filter(Boolean).join(' · ') || 'Direct reservation via NOVA HOUSE booking drawer',
       };
 
       const orderData = await createRazorpayOrder(orderPayload);
@@ -1087,6 +1097,20 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                   <option>3 Adults</option>
                   <option>4 Adults (Signature Suite)</option>
                 </select>
+              </div>
+
+              <div>
+                <label className="block text-[10px] font-mono uppercase tracking-widest text-[#77736C] mb-1.5 font-medium">
+                  Special Requests / Notes (Optional)
+                </label>
+                <textarea
+                  rows={2}
+                  placeholder="e.g. Airport transfer, quiet floor, late check-in..."
+                  value={specialRequests}
+                  onChange={(e) => setSpecialRequests(e.target.value)}
+                  className="w-full border border-[#D8D0C3] p-2.5 text-xs font-mono outline-none focus:border-[#111111] transition-colors rounded-none resize-none"
+                  style={{ backgroundColor: '#FFFFFF', color: '#111111' }}
+                />
               </div>
 
               {/* Background Availability Status Feedback */}

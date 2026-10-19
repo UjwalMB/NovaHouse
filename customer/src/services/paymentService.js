@@ -211,10 +211,12 @@ export async function verifyPaymentOnServer(
 
     email:
       verificationData.email ||
+      verificationData.guestEmail ||
       '',
 
     contact:
       verificationData.contact ||
+      verificationData.guestPhone ||
       '',
   });
 

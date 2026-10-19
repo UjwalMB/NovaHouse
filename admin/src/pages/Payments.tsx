@@ -159,10 +159,20 @@ export default function Payments() {
       header: 'Guest & Booking',
       key: 'bookingId',
       render: (p: any) => (
-        <div>
+        <div className="space-y-0.5">
           <span className="text-xs font-medium text-[#111111] block">
             {p.guestName}
           </span>
+          {p.guestPhone && (
+            <span className="text-[11px] text-[#77736C] font-mono block">
+              {p.guestPhone}
+            </span>
+          )}
+          {p.guestEmail && (
+            <span className="text-[11px] text-[#77736C] font-mono block">
+              {p.guestEmail}
+            </span>
+          )}
           <button
             onClick={(e) => {
               e.stopPropagation();
