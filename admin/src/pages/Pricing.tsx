@@ -2,10 +2,18 @@ import React, { useState } from 'react';
 import {
   Edit2,
   Plus,
+  Tag,
+  Calendar,
+  Gift,
+  Clock,
+  Sliders,
+  CheckCircle2,
+  Percent,
 } from 'lucide-react';
 import { useToast } from '../components/ui/Toast';
 import Button from '../components/ui/Button';
 import Modal from '../components/ui/Modal';
+import { getPricings, savePricing } from '../services/pricingService';
 
 interface RoomPricing {
   id: string;
@@ -15,6 +23,8 @@ interface RoomPricing {
   peakPrice: number;
   discountPercentage: number;
   currentPrice: number;
+  minStayNights?: number;
+  maxStayNights?: number;
 }
 
 interface SeasonRule {
@@ -28,6 +38,17 @@ interface SeasonRule {
   status: string;
 }
 
+interface SpecialPackage {
+  id: string;
+  name: string;
+  roomType: string;
+  minNights: number;
+  packagePrice: number;
+  inclusions: string;
+  validTill: string;
+  status: 'Active' | 'Paused';
+}
+
 const initialRoomPricings: RoomPricing[] = [
   {
     id: 'PRC-01',
@@ -37,6 +58,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 25000,
     discountPercentage: 10,
     currentPrice: 16650,
+    minStayNights: 1,
+    maxStayNights: 14,
   },
   {
     id: 'PRC-02',
@@ -46,6 +69,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 32000,
     discountPercentage: 8,
     currentPrice: 22080,
+    minStayNights: 1,
+    maxStayNights: 21,
   },
   {
     id: 'PRC-03',
@@ -55,6 +80,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 52000,
     discountPercentage: 12,
     currentPrice: 33440,
+    minStayNights: 2,
+    maxStayNights: 30,
   },
   {
     id: 'PRC-04',
@@ -64,6 +91,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 60000,
     discountPercentage: 10,
     currentPrice: 40500,
+    minStayNights: 2,
+    maxStayNights: 30,
   },
   {
     id: 'PRC-05',
@@ -73,6 +102,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 72000,
     discountPercentage: 5,
     currentPrice: 51300,
+    minStayNights: 2,
+    maxStayNights: 30,
   },
   {
     id: 'PRC-06',
@@ -82,6 +113,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 120000,
     discountPercentage: 0,
     currentPrice: 85000,
+    minStayNights: 3,
+    maxStayNights: 30,
   },
   {
     id: 'PRC-07',
@@ -91,6 +124,8 @@ const initialRoomPricings: RoomPricing[] = [
     peakPrice: 22000,
     discountPercentage: 10,
     currentPrice: 14850,
+    minStayNights: 1,
+    maxStayNights: 60,
   },
 ];
 
@@ -127,17 +162,55 @@ const initialSeasons: SeasonRule[] = [
   },
 ];
 
-import { getPricings, savePricing } from '../services/pricingService';
+const initialPackages: SpecialPackage[] = [
+  {
+    id: 'PKG-01',
+    name: 'The Sanctuary Rejuvenation Retreat',
+    roomType: 'Junior Suite',
+    minNights: 2,
+    packagePrice: 72000,
+    inclusions: 'Daily artisanal breakfast, 60-min herbal botanical massage, private airport Tesla transfer',
+    validTill: '2027-03-31',
+    status: 'Active',
+  },
+  {
+    id: 'PKG-02',
+    name: 'Grand Penthouse Residency Experiential',
+    roomType: 'Penthouse Collection',
+    minNights: 3,
+    packagePrice: 240000,
+    inclusions: 'Dedicated 24h butler, private sommelier cellar tasting, sunset terrace dinner for 4',
+    validTill: '2027-06-30',
+    status: 'Active',
+  },
+  {
+    id: 'PKG-03',
+    name: 'Extended Executive Stay Workstation',
+    roomType: 'Studio Chamber',
+    minNights: 7,
+    packagePrice: 95000,
+    inclusions: 'High-speed encrypted fiber Wi-Fi, daily express laundry, boardroom access, unlimited artisanal coffee',
+    validTill: '2026-12-31',
+    status: 'Active',
+  },
+];
 
 export default function Pricing() {
   const { addToast } = useToast();
   const [pricings, setPricings] = useState<RoomPricing[]>(initialRoomPricings);
   const [seasons, setSeasons] = useState<SeasonRule[]>(initialSeasons);
+  const [packages, setPackages] = useState<SpecialPackage[]>(initialPackages);
 
   React.useEffect(() => {
     async function load() {
       const data = await getPricings();
-      if (data && data.length > 0) setPricings(data);
+      if (data && data.length > 0) {
+        setPricings(data.map((d: any) => ({
+          ...d,
+          minStayNights: d.minStayNights || 1,
+          maxStayNights: d.maxStayNights || 30,
+        })));
+      }
     }
     load();
   }, []);
@@ -155,6 +228,18 @@ export default function Pricing() {
     room: 'All Inventory',
     priceMultiplier: '+15% Dynamic Tier',
     discount: '5% Standard',
+  });
+
+  // New Package Modal
+  const [isPackageModalOpen, setIsPackageModalOpen] = useState(false);
+  const [packageForm, setPackageForm] = useState<Partial<SpecialPackage>>({
+    name: '',
+    roomType: 'Deluxe Room',
+    minNights: 2,
+    packagePrice: 38000,
+    inclusions: 'Daily bespoke breakfast, cocktail tasting, late check-out 4 PM',
+    validTill: '2027-03-31',
+    status: 'Active',
   });
 
   const handleOpenEdit = (p: RoomPricing) => {
@@ -175,7 +260,7 @@ export default function Pricing() {
     setPricings((prev) =>
       prev.map((item) => (item.id === updated.id ? updated : item))
     );
-    addToast(`Tariff updated for ${updated.roomType} and synced to customer interface.`);
+    addToast(`Tariff & stay policies updated for ${updated.roomType}.`);
     setEditingPricing(null);
   };
 
@@ -191,6 +276,23 @@ export default function Pricing() {
     setIsSeasonModalOpen(false);
   };
 
+  const handleAddPackage = (e: React.FormEvent) => {
+    e.preventDefault();
+    const newPkg: SpecialPackage = {
+      id: `PKG-${Date.now()}`,
+      name: packageForm.name || 'Bespoke Package',
+      roomType: packageForm.roomType || 'Deluxe Room',
+      minNights: Number(packageForm.minNights || 2),
+      packagePrice: Number(packageForm.packagePrice || 40000),
+      inclusions: packageForm.inclusions || 'Complimentary breakfast and amenities',
+      validTill: packageForm.validTill || '2027-01-01',
+      status: 'Active',
+    };
+    setPackages([newPkg, ...packages]);
+    addToast(`Special package "${newPkg.name}" created.`);
+    setIsPackageModalOpen(false);
+  };
+
   return (
     <div className="space-y-8 animate-in fade-in duration-300">
       {/* Header */}
@@ -200,21 +302,31 @@ export default function Pricing() {
             Dynamic Revenue Yield Engine
           </span>
           <h2 className="font-serif text-3xl font-light text-[#111111] uppercase tracking-tight">
-            Tariff & Seasonal Pricing
+            Tariff, Stay Restrictions & Packages
           </h2>
           <p className="text-xs text-[#77736C] mt-1">
-            Manage base rates, weekend multipliers, seasonal rules, and direct booking discounts.
+            Manage base rates, weekend/peak multipliers, minimum stay length, promotional packages, and seasonal surges.
           </p>
         </div>
 
-        <Button
-          variant="primary"
-          size="sm"
-          icon={Plus}
-          onClick={() => setIsSeasonModalOpen(true)}
-        >
-          Add Seasonal Rule
-        </Button>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Gift}
+            onClick={() => setIsPackageModalOpen(true)}
+          >
+            New Package
+          </Button>
+          <Button
+            variant="primary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsSeasonModalOpen(true)}
+          >
+            Add Seasonal Rule
+          </Button>
+        </div>
       </div>
 
       {/* Room Type Base Tariff Matrix Table */}
@@ -225,7 +337,7 @@ export default function Pricing() {
               Inventory Categories
             </span>
             <h3 className="font-serif text-lg font-light uppercase text-[#111111]">
-              Category Base & Multiplier Tariffs
+              Category Base Tariffs & Stay Restrictions
             </h3>
           </div>
           <span className="font-mono text-xs text-[#77736C]">
@@ -238,9 +350,10 @@ export default function Pricing() {
             <thead>
               <tr>
                 <th>Room Type</th>
-                <th>Base Price</th>
-                <th>Weekend Price</th>
-                <th>Peak Surge Price</th>
+                <th>Base Rate</th>
+                <th>Weekend Rate</th>
+                <th>Peak Surge</th>
+                <th>Min / Max Stay</th>
                 <th>Discount</th>
                 <th>Current Effective Tariff</th>
                 <th style={{ textAlign: 'right' }}>Action</th>
@@ -262,6 +375,9 @@ export default function Pricing() {
                   </td>
                   <td className="font-mono text-xs text-[#962828] font-medium">
                     ₹ {p.peakPrice.toLocaleString()}
+                  </td>
+                  <td className="font-mono text-xs text-[#55514B]">
+                    {p.minStayNights || 1} min / {p.maxStayNights || 30} max nights
                   </td>
                   <td className="font-mono text-xs text-[#235C33]">
                     {p.discountPercentage}% Off
@@ -288,6 +404,70 @@ export default function Pricing() {
         </div>
       </div>
 
+      {/* Packages & Special Rates Section */}
+      <div className="admin-card">
+        <div className="admin-card-header flex items-center justify-between">
+          <div>
+            <span className="font-mono text-[10px] uppercase tracking-widest text-[#A58A5C] block">
+              Curated Stay Collections
+            </span>
+            <h3 className="font-serif text-lg font-light uppercase text-[#111111]">
+              Special Offers & Bundle Packages
+            </h3>
+          </div>
+          <Button
+            variant="secondary"
+            size="sm"
+            icon={Plus}
+            onClick={() => setIsPackageModalOpen(true)}
+          >
+            Create Package
+          </Button>
+        </div>
+
+        <div className="data-table-container !border-0">
+          <table className="data-table">
+            <thead>
+              <tr>
+                <th>Package Name</th>
+                <th>Sanctuary Category</th>
+                <th>Min Stay</th>
+                <th>Package Tariff</th>
+                <th>Complimentary Inclusions</th>
+                <th>Valid Until</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {packages.map((pkg) => (
+                <tr key={pkg.id}>
+                  <td>
+                    <span className="font-serif text-sm font-semibold text-[#111111]">
+                      {pkg.name}
+                    </span>
+                  </td>
+                  <td className="font-mono text-xs">{pkg.roomType}</td>
+                  <td className="font-mono text-xs text-[#77736C]">{pkg.minNights} Nights</td>
+                  <td className="font-mono text-xs font-bold text-[#111111]">
+                    ₹ {pkg.packagePrice.toLocaleString()}
+                  </td>
+                  <td className="font-sans text-xs text-[#55514B] max-w-xs truncate" title={pkg.inclusions}>
+                    {pkg.inclusions}
+                  </td>
+                  <td className="font-mono text-xs text-[#77736C]">{pkg.validTill}</td>
+                  <td>
+                    <span className="badge badge-success">
+                      <span className="badge-dot" />
+                      <span>{pkg.status}</span>
+                    </span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      </div>
+
       {/* Seasonal Pricing Rules Section */}
       <div className="admin-card">
         <div className="admin-card-header flex items-center justify-between">
@@ -296,7 +476,7 @@ export default function Pricing() {
               Event & Holiday Calendar
             </span>
             <h3 className="font-serif text-lg font-light uppercase text-[#111111]">
-              Seasonal Yield Rules
+              Seasonal Yield & Peak Multiplier Rules
             </h3>
           </div>
           <Button
@@ -354,11 +534,11 @@ export default function Pricing() {
         </div>
       </div>
 
-      {/* Adjust Tariff Modal */}
+      {/* Adjust Tariff & Stay Policy Modal */}
       <Modal
         isOpen={!!editingPricing}
         onClose={() => setEditingPricing(null)}
-        title="Adjust Category Tariff"
+        title="Adjust Category Tariff & Policies"
         subtitle={editingPricing?.roomType}
       >
         {priceForm && (
@@ -412,6 +592,36 @@ export default function Pricing() {
                   value={priceForm.discountPercentage}
                   onChange={(e) =>
                     setPriceForm({ ...priceForm, discountPercentage: Number(e.target.value) })
+                  }
+                  className="form-input text-xs font-mono"
+                />
+              </div>
+
+              <div className="form-group !mb-0">
+                <label className="form-label">Minimum Stay (Nights)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={30}
+                  required
+                  value={priceForm.minStayNights || 1}
+                  onChange={(e) =>
+                    setPriceForm({ ...priceForm, minStayNights: Number(e.target.value) })
+                  }
+                  className="form-input text-xs font-mono"
+                />
+              </div>
+
+              <div className="form-group !mb-0">
+                <label className="form-label">Maximum Stay (Nights)</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={90}
+                  required
+                  value={priceForm.maxStayNights || 30}
+                  onChange={(e) =>
+                    setPriceForm({ ...priceForm, maxStayNights: Number(e.target.value) })
                   }
                   className="form-input text-xs font-mono"
                 />
@@ -525,6 +735,106 @@ export default function Pricing() {
             </Button>
             <Button variant="primary" size="sm" type="submit">
               Save Seasonal Period
+            </Button>
+          </div>
+        </form>
+      </Modal>
+
+      {/* Add Special Package Modal */}
+      <Modal
+        isOpen={isPackageModalOpen}
+        onClose={() => setIsPackageModalOpen(false)}
+        title="Create Curated Package"
+        subtitle="Special Bundles & Extended Stays"
+      >
+        <form onSubmit={handleAddPackage} className="space-y-4">
+          <div className="form-group !mb-0">
+            <label className="form-label">Package Name</label>
+            <input
+              type="text"
+              required
+              value={packageForm.name || ''}
+              onChange={(e) => setPackageForm({ ...packageForm, name: e.target.value })}
+              placeholder="e.g. Royal Anniversary Escape"
+              className="form-input text-xs"
+            />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="form-group !mb-0">
+              <label className="form-label">Sanctuary Type</label>
+              <select
+                value={packageForm.roomType}
+                onChange={(e) => setPackageForm({ ...packageForm, roomType: e.target.value })}
+                className="form-select text-xs font-mono"
+              >
+                <option value="Deluxe Room">Deluxe Room</option>
+                <option value="Premier Room">Premier Room</option>
+                <option value="Junior Suite">Junior Suite</option>
+                <option value="Executive Suite">Executive Suite</option>
+                <option value="Terrace Suite">Terrace Suite</option>
+                <option value="Penthouse Collection">Penthouse Collection</option>
+                <option value="Studio Chamber">Studio Chamber</option>
+              </select>
+            </div>
+
+            <div className="form-group !mb-0">
+              <label className="form-label">Minimum Stay Length (Nights)</label>
+              <input
+                type="number"
+                min={1}
+                required
+                value={packageForm.minNights || 2}
+                onChange={(e) => setPackageForm({ ...packageForm, minNights: Number(e.target.value) })}
+                className="form-input text-xs font-mono"
+              />
+            </div>
+
+            <div className="form-group !mb-0">
+              <label className="form-label">Total Package Tariff (₹)</label>
+              <input
+                type="number"
+                required
+                value={packageForm.packagePrice || 45000}
+                onChange={(e) => setPackageForm({ ...packageForm, packagePrice: Number(e.target.value) })}
+                className="form-input text-xs font-mono"
+              />
+            </div>
+
+            <div className="form-group !mb-0">
+              <label className="form-label">Validity Expiration Date</label>
+              <input
+                type="date"
+                required
+                value={packageForm.validTill || '2027-03-31'}
+                onChange={(e) => setPackageForm({ ...packageForm, validTill: e.target.value })}
+                className="form-input text-xs font-mono"
+              />
+            </div>
+          </div>
+
+          <div className="form-group !mb-0">
+            <label className="form-label">Package Inclusions & Privileges</label>
+            <textarea
+              rows={2}
+              required
+              value={packageForm.inclusions || ''}
+              onChange={(e) => setPackageForm({ ...packageForm, inclusions: e.target.value })}
+              placeholder="e.g. Daily breakfast buffet, 1x 4-course tasting dinner, complimentary chauffeur transfer..."
+              className="form-textarea text-xs"
+            />
+          </div>
+
+          <div className="flex items-center justify-end gap-3 pt-4 border-t border-[#ECE8E0]">
+            <Button
+              variant="secondary"
+              size="sm"
+              onClick={() => setIsPackageModalOpen(false)}
+            >
+              Cancel
+            </Button>
+            <Button variant="primary" size="sm" type="submit">
+              Publish Package
             </Button>
           </div>
         </form>

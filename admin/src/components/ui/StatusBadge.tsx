@@ -19,12 +19,14 @@ export default function StatusBadge({ status, className = '' }: StatusBadgeProps
     case 'paid':
     case 'resolved':
     case 'approved':
+    case 'inspected':
       badgeVariant = 'badge-success';
       break;
 
     case 'pending':
     case 'in progress':
     case 'cleaning':
+    case 'dirty':
     case 'low stock':
     case 'scheduled':
       badgeVariant = 'badge-warning';
@@ -33,6 +35,7 @@ export default function StatusBadge({ status, className = '' }: StatusBadgeProps
     case 'cancelled':
     case 'blocked':
     case 'maintenance':
+    case 'out of service':
     case 'expired':
     case 'hidden':
       badgeVariant = 'badge-danger';

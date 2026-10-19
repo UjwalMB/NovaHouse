@@ -45,3 +45,26 @@ export async function updateGuest(id: string, updatedFields: Partial<Guest>): Pr
   saveStoredGuests(guestsState);
   return guestsState.find((g) => g.id === id);
 }
+
+export async function createGuest(guest: Partial<Guest>): Promise<Guest> {
+  const newGuest: Guest = {
+    id: `gst_${Date.now()}`,
+    name: guest.name || 'Valued Guest',
+    email: guest.email || '',
+    phone: guest.phone || '',
+    country: guest.country || 'India',
+    city: guest.city || 'Bengaluru',
+    totalStays: 1,
+    totalSpent: 0,
+    lastStay: new Date().toISOString().split('T')[0],
+    status: 'Active',
+    tier: guest.tier || 'Member',
+    preferences: guest.preferences || ['Quiet Suite'],
+    notes: guest.notes || '',
+    history: [],
+    ...guest,
+  };
+  guestsState = [newGuest, ...guestsState];
+  saveStoredGuests(guestsState);
+  return newGuest;
+}

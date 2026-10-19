@@ -130,3 +130,120 @@ export const initialDining = {
     }
   ]
 };
+
+export const initialTables = [
+  { id: 'TBL-01', tableNumber: 'T-01', capacity: 2, section: 'Main Dining', status: 'Available' },
+  { id: 'TBL-02', tableNumber: 'T-02', capacity: 2, section: 'Main Dining', status: 'Occupied', currentOrderId: 'ORD-101' },
+  { id: 'TBL-03', tableNumber: 'T-03', capacity: 4, section: 'Main Dining', status: 'Available' },
+  { id: 'TBL-04', tableNumber: 'T-04', capacity: 4, section: 'Courtyard Terrace', status: 'Reserved', reservedFor: 'Eleanor Vance', reservationTime: '08:00 PM' },
+  { id: 'TBL-05', tableNumber: 'T-05', capacity: 6, section: 'Courtyard Terrace', status: 'Available' },
+  { id: 'TBL-06', tableNumber: 'T-06', capacity: 2, section: 'Cellar Lounge', status: 'Occupied', currentOrderId: 'ORD-102' },
+  { id: 'TBL-07', tableNumber: 'T-07', capacity: 4, section: 'Cellar Lounge', status: 'Available' },
+  { id: 'TBL-08', tableNumber: 'T-08', capacity: 8, section: 'Private Pavilion', status: 'Reserved', reservedFor: 'Vikramaditya Singhania', reservationTime: '08:30 PM' },
+];
+
+export const initialRestaurantOrders = [
+  {
+    id: 'ORD-101',
+    orderNumber: 'EMB-9021',
+    tableNumber: 'T-02',
+    guestName: 'Rohit Verma',
+    roomNumber: '102',
+    items: [
+      { menuItemId: 'D03', name: 'Charred Byadgi Chili Prawns', price: 1450, quantity: 2 },
+      { menuItemId: 'D10', name: 'Richmond botanical Highball', price: 1100, quantity: 2 },
+    ],
+    subtotal: 5100,
+    taxes: 918,
+    total: 6018,
+    status: 'Preparing',
+    paymentStatus: 'BILLED_TO_ROOM',
+    createdAt: '2026-10-19 19:40',
+    serverName: 'Aditya Sen',
+    specialInstructions: 'Medium spicy prawns, extra lime on the highball.',
+  },
+  {
+    id: 'ORD-102',
+    orderNumber: 'EMB-9022',
+    tableNumber: 'T-06',
+    guestName: 'Priya Nambiar',
+    items: [
+      { menuItemId: 'D11', name: 'Smoked Tamarind Old Fashioned', price: 1350, quantity: 2 },
+      { menuItemId: 'D04', name: 'Tender Jackfruit Tartare', price: 950, quantity: 1 },
+    ],
+    subtotal: 3650,
+    taxes: 657,
+    total: 4307,
+    status: 'Ready',
+    paymentStatus: 'UNPAID',
+    createdAt: '2026-10-19 20:05',
+    serverName: 'Neha Pillai',
+  },
+  {
+    id: 'ORD-103',
+    orderNumber: 'EMB-9019',
+    tableNumber: 'T-03',
+    guestName: 'David Sterling',
+    roomNumber: '301',
+    items: [
+      { menuItemId: 'D09', name: 'Jaggery & Cardamom Soufflé', price: 800, quantity: 2 },
+      { menuItemId: 'D02', name: 'Coorg Robusta French Toast', price: 850, quantity: 1 },
+    ],
+    subtotal: 2450,
+    taxes: 441,
+    total: 2891,
+    status: 'Completed',
+    paymentStatus: 'PAID',
+    createdAt: '2026-10-19 17:15',
+    serverName: 'Aditya Sen',
+  },
+];
+
+export const initialRoomServiceOrders = [
+  {
+    id: 'RS-301',
+    orderNumber: 'RS-8801',
+    roomNumber: '301',
+    guestName: 'Vikramaditya Singhania',
+    guestPhone: '+91 98200 44112',
+    bookingId: 'NH-1024',
+    items: [
+      { menuItemId: 'D03', name: 'Charred Byadgi Chili Prawns', price: 1450, quantity: 1 },
+      { menuItemId: 'D01', name: 'Mysore Charcoal Smoked Idli', price: 650, quantity: 2 },
+      { menuItemId: 'D10', name: 'Richmond botanical Highball', price: 1100, quantity: 1 },
+    ],
+    subtotal: 3850,
+    taxes: 693,
+    deliveryCharge: 350,
+    total: 4893,
+    status: 'Delivered',
+    paymentStatus: 'BILLED_TO_ROOM',
+    createdAt: '2026-10-19 18:20',
+    deliveryTimeEstimated: '18:55',
+    assignedStaff: 'Sunil Nair',
+    specialInstructions: 'White-glove tray setup on the private terrace table.',
+  },
+  {
+    id: 'RS-302',
+    orderNumber: 'RS-8802',
+    roomNumber: '501',
+    guestName: 'Tara Oberoi',
+    guestPhone: '+91 97110 33200',
+    bookingId: 'NH-1025',
+    items: [
+      { menuItemId: 'D09', name: 'Jaggery & Cardamom Soufflé', price: 800, quantity: 2 },
+      { menuItemId: 'D11', name: 'Smoked Tamarind Old Fashioned', price: 1350, quantity: 2 },
+    ],
+    subtotal: 4300,
+    taxes: 774,
+    deliveryCharge: 350,
+    total: 5424,
+    status: 'Preparing',
+    paymentStatus: 'BILLED_TO_ROOM',
+    createdAt: '2026-10-19 20:30',
+    deliveryTimeEstimated: '21:05',
+    assignedStaff: 'Sunil Nair',
+    specialInstructions: 'Rooftop penthouse lounge delivery.',
+  },
+];
+

@@ -249,3 +249,268 @@ export interface MenuItem {
   isChefSpecial: boolean;
   image: string;
 }
+
+// ============================================================================
+// HOTEL OPERATIONS: HOUSEKEEPING & MAINTENANCE
+// ============================================================================
+
+export type HousekeepingStatus = 'Clean' | 'Dirty' | 'Cleaning' | 'Inspected' | 'Out of Service';
+export type TaskPriority = 'Low' | 'Medium' | 'High' | 'Critical';
+export type TaskStatus = 'Pending' | 'In Progress' | 'Completed' | 'Inspected';
+
+export interface HousekeepingTask {
+  id: string;
+  roomNumber: string;
+  roomType: string;
+  taskType: 'Daily Turnover' | 'Deep Clean' | 'Checkout Clean' | 'Touch-up' | 'Linen Change' | 'Inspection';
+  assignedStaff: string;
+  priority: TaskPriority;
+  status: TaskStatus;
+  roomStatus: HousekeepingStatus;
+  scheduledTime: string;
+  completedAt?: string;
+  notes?: string;
+  checklist: { item: string; completed: boolean }[];
+}
+
+export interface LostAndFoundItem {
+  id: string;
+  item: string;
+  locationFound: string; // e.g. Room 204 or Ember Dining
+  foundDate: string;
+  foundBy: string;
+  status: 'Reported' | 'Stored' | 'Claimed' | 'Disposed';
+  guestName?: string;
+  guestPhone?: string;
+  claimedDate?: string;
+}
+
+export interface MaintenanceRequest {
+  id: string;
+  roomNumber: string;
+  category: 'Plumbing' | 'Electrical' | 'HVAC' | 'Carpentry' | 'Audio/Visual' | 'Appliance' | 'Other';
+  issue: string;
+  description: string;
+  priority: TaskPriority;
+  status: 'Open' | 'In Progress' | 'Completed' | 'On Hold';
+  assignedStaff: string;
+  createdDate: string;
+  completedDate?: string;
+  resolutionNotes?: string;
+  estimatedCost?: number;
+}
+
+// ============================================================================
+// HOTEL OPERATIONS: DINING (TABLES, ORDERS, ROOM SERVICE)
+// ============================================================================
+
+export interface RestaurantTable {
+  id: string;
+  tableNumber: string;
+  capacity: number;
+  section: 'Main Dining' | 'Courtyard Terrace' | 'Cellar Lounge' | 'Private Pavilion';
+  status: 'Available' | 'Occupied' | 'Reserved';
+  currentOrderId?: string;
+  reservedFor?: string;
+  reservationTime?: string;
+}
+
+export type OrderStatus = 'New' | 'Accepted' | 'Preparing' | 'Ready' | 'Delivered' | 'Completed' | 'Cancelled';
+
+export interface OrderItem {
+  menuItemId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  notes?: string;
+}
+
+export interface RestaurantOrder {
+  id: string;
+  orderNumber: string;
+  tableNumber: string;
+  guestName?: string;
+  roomNumber?: string;
+  items: OrderItem[];
+  subtotal: number;
+  taxes: number;
+  total: number;
+  status: OrderStatus;
+  paymentStatus: 'PAID' | 'UNPAID' | 'BILLED_TO_ROOM';
+  createdAt: string;
+  serverName: string;
+  specialInstructions?: string;
+}
+
+export interface RoomServiceOrder {
+  id: string;
+  orderNumber: string;
+  roomNumber: string;
+  guestName: string;
+  guestPhone?: string;
+  bookingId?: string;
+  items: OrderItem[];
+  subtotal: number;
+  taxes: number;
+  deliveryCharge: number;
+  total: number;
+  status: OrderStatus;
+  paymentStatus: 'PAID' | 'UNPAID' | 'BILLED_TO_ROOM';
+  createdAt: string;
+  deliveryTimeEstimated?: string;
+  assignedStaff?: string;
+  specialInstructions?: string;
+}
+
+// ============================================================================
+// GUEST EXPERIENCE: DOCUMENTS & COMMUNICATION
+// ============================================================================
+
+export type DocumentType = 'Passport' | 'Aadhaar Card' | 'Driver License' | 'Voter ID' | 'Visa' | 'Other';
+export type VerificationStatus = 'Pending' | 'Verified' | 'Rejected';
+
+export interface GuestDocument {
+  id: string;
+  guestId: string;
+  guestName: string;
+  documentType: DocumentType;
+  documentNumber: string;
+  nationality: string;
+  expiryDate?: string;
+  uploadDate: string;
+  verificationStatus: VerificationStatus;
+  verifiedBy?: string;
+  verifiedAt?: string;
+  fileUrl?: string;
+  fileName?: string;
+  notes?: string;
+}
+
+export interface GuestCommunication {
+  id: string;
+  guestId?: string;
+  bookingId?: string;
+  guestName: string;
+  channel: 'Email' | 'SMS' | 'Internal Note' | 'WhatsApp';
+  type: 'Booking Confirmation' | 'Pre-Arrival Check-In' | 'Stay Courtesy' | 'Check-Out Invoice' | 'Cancellation Notice' | 'Custom Message' | 'Enquiry Follow-Up';
+  subject?: string;
+  content: string;
+  sentBy: string;
+  sentAt: string;
+  status: 'Sent' | 'Delivered' | 'Read' | 'Failed';
+}
+
+// ============================================================================
+// FINANCE: INVOICES, RECEIPTS, SETTLEMENTS
+// ============================================================================
+
+export interface InvoiceLineItem {
+  id: string;
+  description: string;
+  category: 'Room Tariff' | 'Dining' | 'Room Service' | 'Spa & Experience' | 'Mini Bar' | 'Laundry' | 'Taxes' | 'Other';
+  quantity: number;
+  unitPrice: number;
+  amount: number;
+}
+
+export interface Invoice {
+  id: string;
+  invoiceNumber: string;
+  bookingId?: string;
+  guestName: string;
+  guestEmail: string;
+  guestPhone: string;
+  companyName?: string;
+  gstin?: string;
+  roomNumber?: string;
+  issueDate: string;
+  dueDate: string;
+  items: InvoiceLineItem[];
+  subtotal: number;
+  cgst: number;
+  sgst: number;
+  totalTaxes: number;
+  discount: number;
+  grandTotal: number;
+  status: 'Paid' | 'Pending' | 'Overdue' | 'Cancelled';
+  paymentMethod?: string;
+  notes?: string;
+}
+
+export interface Receipt {
+  id: string;
+  receiptNumber: string;
+  invoiceId?: string;
+  bookingId?: string;
+  paymentId: string;
+  guestName: string;
+  guestEmail?: string;
+  amountPaid: number;
+  currency: string;
+  paymentMethod: string;
+  paidAt: string;
+  transactionRef: string;
+  receivedBy: string;
+  notes?: string;
+}
+
+export interface Settlement {
+  id: string;
+  settlementId: string;
+  gateway: 'Razorpay' | 'POS Terminal' | 'Direct Bank Transfer';
+  capturedAmount: number;
+  refundedAmount: number;
+  gatewayFees: number;
+  taxOnFees: number;
+  netSettlement: number;
+  settlementDate: string;
+  transactionCount: number;
+  status: 'Reconciled' | 'Processing' | 'Pending';
+  utrNumber?: string;
+}
+
+// ============================================================================
+// MANAGEMENT: ROLES & ACTIVITY LOGS
+// ============================================================================
+
+export interface RolePermission {
+  id: string;
+  roleName: string;
+  description: string;
+  userCount: number;
+  permissions: {
+    dashboard: boolean;
+    bookings: boolean;
+    rooms: boolean;
+    guests: boolean;
+    availability: boolean;
+    pricing: boolean;
+    housekeeping: boolean;
+    maintenance: boolean;
+    dining: boolean;
+    experiences: boolean;
+    offers: boolean;
+    documents: boolean;
+    communications: boolean;
+    reviews: boolean;
+    enquiries: boolean;
+    payments: boolean;
+    invoices: boolean;
+    settlements: boolean;
+    analytics: boolean;
+    staff: boolean;
+    settings: boolean;
+  };
+}
+
+export interface ActivityLog {
+  id: string;
+  user: string;
+  role: string;
+  action: string;
+  module: string;
+  details: string;
+  timestamp: string;
+  ipAddress?: string;
+}
+

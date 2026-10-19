@@ -1,0 +1,48 @@
+import { GuestCommunication } from '../types';
+
+export const initialCommunications: GuestCommunication[] = [
+  {
+    id: 'COM-901',
+    guestName: 'Vikramaditya Singhania',
+    channel: 'Email',
+    type: 'Booking Confirmation',
+    subject: 'Your Sanctuary Awaits · NOVA HOUSE Booking NH-1024 Confirmed',
+    content: 'Dear Mr. Singhania, We are pleased to confirm your reservation in the Junior Suite (Nova Suite 301) for 3 nights. Your dedicated butler, Sunil Nair, has been assigned.',
+    sentBy: 'Reservations Desk',
+    sentAt: '2026-10-17 14:15',
+    status: 'Delivered',
+  },
+  {
+    id: 'COM-902',
+    guestName: 'Eleanor Vance',
+    channel: 'SMS',
+    type: 'Pre-Arrival Check-In',
+    subject: 'Welcome to NOVA HOUSE',
+    content: 'Dear Ms. Vance, Your Terrace Sanctuary Suite is prepared at your preferred temperature of 21.5°C. Airport luxury sedan is waiting at Terminal 2.',
+    sentBy: 'Concierge Team',
+    sentAt: '2026-10-18 10:30',
+    status: 'Delivered',
+  },
+  {
+    id: 'COM-903',
+    guestName: 'Rohit Verma',
+    channel: 'Email',
+    type: 'Check-Out Invoice',
+    subject: 'Thank You for Staying With Us · Folio & Invoice #INV-2026-088',
+    content: 'Dear Mr. Verma, It was an honor hosting you at NOVA HOUSE. Please find attached your comprehensive tax folio and receipt. We look forward to welcoming you back.',
+    sentBy: 'Front Desk Folio',
+    sentAt: '2026-10-19 11:45',
+    status: 'Read',
+  },
+  {
+    id: 'COM-904',
+    guestName: 'Tara Oberoi',
+    channel: 'Internal Note',
+    type: 'Stay Courtesy',
+    subject: 'Anniversary Celebration Preparation',
+    content: 'Guest is celebrating 10th wedding anniversary. Complimentary artisanal chocolate truffles and Laurent-Perrier Champagne placed on penthouse terrace.',
+    sentBy: 'Guest Experience Manager',
+    sentAt: '2026-10-19 16:00',
+    status: 'Sent',
+  },
+];
