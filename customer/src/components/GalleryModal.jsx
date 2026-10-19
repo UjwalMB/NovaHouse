@@ -36,16 +36,16 @@ export default function GalleryModal({ item, allItems, onClose, onSelectNext, on
         data-lenis-prevent="true"
       >
         {/* Top Control Bar */}
-        <div className="w-full flex items-center justify-between text-[#F4F1EB] pb-4 border-b border-white/10 font-mono text-xs">
+        <div className="w-full flex items-center justify-between text-[#F5F2EA] pb-4 border-b border-white/10 font-mono text-xs">
           <div className="flex items-center gap-3">
-            <span className="text-[#A58A5C] uppercase tracking-widest">{item.category}</span>
+            <span className="text-[#B69A68] uppercase tracking-widest">{item.category}</span>
             <span className="text-white/40">/</span>
             <span className="font-serif text-base tracking-wide">{item.title}</span>
           </div>
 
           <div className="flex items-center gap-4">
             <span className="text-white/60">
-              0{currentIndex + 1} / 0{allItems.length}
+              {currentIndex + 1} / {allItems.length}
             </span>
             <button
               onClick={onClose}
@@ -68,7 +68,7 @@ export default function GalleryModal({ item, allItems, onClose, onSelectNext, on
           {/* Navigation Arrows */}
           <button
             onClick={onSelectPrev}
-            className="absolute left-3 p-3 bg-black/60 hover:bg-[#A58A5C] hover:text-[#111111] text-white transition-all backdrop-blur-md"
+            className="absolute left-3 p-3 bg-black/60 hover:bg-[#B69A68] hover:text-[#181818] text-white transition-all backdrop-blur-md"
             aria-label="Previous image"
           >
             <ChevronLeft size={22} />
@@ -76,7 +76,7 @@ export default function GalleryModal({ item, allItems, onClose, onSelectNext, on
 
           <button
             onClick={onSelectNext}
-            className="absolute right-3 p-3 bg-black/60 hover:bg-[#A58A5C] hover:text-[#111111] text-white transition-all backdrop-blur-md"
+            className="absolute right-3 p-3 bg-black/60 hover:bg-[#B69A68] hover:text-[#181818] text-white transition-all backdrop-blur-md"
             aria-label="Next image"
           >
             <ChevronRight size={22} />
@@ -84,7 +84,7 @@ export default function GalleryModal({ item, allItems, onClose, onSelectNext, on
         </div>
 
         {/* Footer info */}
-        <div className="w-full text-center text-xs font-mono text-[#D8D0C3]/60 tracking-wider">
+        <div className="w-full text-center text-xs font-mono text-[#B8B3AA]/60 tracking-wider">
           Use ← and → arrow keys to navigate · Press ESC to close
         </div>
       </div>

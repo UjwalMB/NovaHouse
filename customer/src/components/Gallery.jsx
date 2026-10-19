@@ -19,20 +19,19 @@ export default function Gallery({ onOpenLightbox }) {
       });
 
   return (
-    <section id="gallery" className="section-spacing bg-[#F4F1EB] text-[#171717] relative">
+    <section id="gallery" className="section-spacing bg-[#F7F5EF] text-[#181818] relative">
       <div className="container-luxury">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#171717]/10 pb-8 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#181818]/10 pb-8 mb-16">
           <div>
-            <span className="editorial-tag mb-4">Gallery</span>
             <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
               An architectural <br />
-              <span className="italic font-normal text-[#A58A5C]">visual archive.</span>
+              <span className="italic font-normal text-[#B69A68]">visual archive.</span>
             </h2>
           </div>
 
           <div className="flex flex-col md:items-end gap-4">
-            <p className="text-sm font-sans text-[#77736C] max-w-sm md:text-right">
+            <p className="text-sm font-sans text-[#77736B] max-w-sm md:text-right">
               Moments of light, crafted materials, and secluded tranquil corners captured across NOVA HOUSE.
             </p>
 
@@ -83,21 +82,21 @@ export default function Gallery({ onOpenLightbox }) {
             return (
               <div
                 key={item.id}
-                className={`${colSpan} group relative overflow-hidden bg-[#ECE8E0] border border-[#D8D0C3] cursor-pointer`}
+                className={`${colSpan} group relative overflow-hidden bg-[#FBFAF6] border border-[#181818]/10 hover:border-[#B69A68]/50 hover:-translate-y-1 transition-all duration-500 ease-out cursor-pointer shadow-xs hover:shadow-md`}
                 onClick={() => onOpenLightbox(item, filteredItems)}
               >
-                <div className={`w-full ${aspectClass} overflow-hidden relative`}>
+                <div className={`w-full ${aspectClass} overflow-hidden relative bg-[#E8E2D7]`}>
                   <img
                     src={item.image}
                     alt={item.title}
-                    className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-700 ease-out"
+                    className="w-full h-full object-cover transform scale-100 group-hover:scale-[1.03] transition-transform duration-700 ease-out"
                   />
 
                   {/* High contrast gradient overlay so text is ALWAYS clearly legible */}
                   <div
                     className="absolute inset-0 pointer-events-none transition-opacity duration-300"
                     style={{
-                      background: 'linear-gradient(to top, rgba(17, 17, 17, 0.88) 0%, rgba(17, 17, 17, 0.35) 45%, transparent 75%)',
+                      background: 'linear-gradient(to top, rgba(11, 11, 11, 0.88) 0%, rgba(11, 11, 11, 0.35) 45%, transparent 75%)',
                     }}
                   />
 
@@ -108,26 +107,26 @@ export default function Gallery({ onOpenLightbox }) {
                         className="font-mono text-[10px] tracking-widest uppercase px-2.5 py-1 font-medium shadow-md"
                         style={{
                           backgroundColor: 'rgba(17, 17, 17, 0.92)',
-                          color: '#F4F1EB',
-                          border: '1px solid rgba(244, 241, 235, 0.25)',
+                          color: '#F5F2EA',
+                          border: '1px solid rgba(245, 242, 234, 0.25)',
                         }}
                       >
                         {item.category}
                       </span>
                       <div
-                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-md"
+                        className="w-8 h-8 rounded-full flex items-center justify-center shadow-md transition-transform duration-300 group-hover:scale-110 group-hover:rotate-12"
                         style={{
                           backgroundColor: 'rgba(17, 17, 17, 0.92)',
-                          border: '1px solid rgba(244, 241, 235, 0.25)',
+                          border: '1px solid rgba(245, 242, 234, 0.25)',
                         }}
                       >
-                        <Maximize2 size={13} className="text-[#A58A5C]" />
+                        <Maximize2 size={13} className="text-[#B69A68]" />
                       </div>
                     </div>
 
                     <div>
                       <h4
-                        className="font-serif text-xl sm:text-2xl font-light text-[#FFFFFF]"
+                        className="font-serif text-xl sm:text-2xl font-light text-[#FFFFFF] transform transition-transform duration-500 ease-out group-hover:-translate-y-1"
                         style={{
                           textShadow: '0 2px 12px rgba(0, 0, 0, 0.85)',
                           color: '#FFFFFF',
@@ -136,9 +135,9 @@ export default function Gallery({ onOpenLightbox }) {
                         {item.title}
                       </h4>
                       <span
-                        className="font-mono text-[11px] uppercase tracking-wider block mt-1 font-medium"
+                        className="font-mono text-[11px] uppercase tracking-wider block mt-1 font-medium transition-colors duration-300 group-hover:text-[#FFFFFF]"
                         style={{
-                          color: '#A58A5C',
+                          color: '#B69A68',
                           textShadow: '0 1px 6px rgba(0, 0, 0, 0.8)',
                         }}
                       >
@@ -148,13 +147,13 @@ export default function Gallery({ onOpenLightbox }) {
                   </div>
                 </div>
 
-                {/* Permanent baseline caption */}
+                {/* Permanent baseline caption with category (no decorative numbers) */}
                 <div
-                  className="p-3 border-t border-[#D8D0C3] flex items-center justify-between text-xs font-mono"
-                  style={{ backgroundColor: '#F4F1EB', color: '#111111' }}
+                  className="p-3.5 border-t border-[#181818]/10 flex items-center justify-between text-xs font-mono"
+                  style={{ backgroundColor: '#FBFAF6', color: '#181818' }}
                 >
-                  <span className="truncate max-w-[200px] font-medium">{item.title}</span>
-                  <span className="text-[#A58A5C] font-semibold">0{index + 1}</span>
+                  <span className="truncate font-medium">{item.title}</span>
+                  <span className="text-[10px] uppercase tracking-widest text-[#B69A68] font-semibold">{item.category}</span>
                 </div>
               </div>
             );

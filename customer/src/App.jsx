@@ -104,7 +104,7 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-[#F4F1EB] text-[#171717] selection:bg-[#A58A5C] selection:text-white">
+    <div className="min-h-screen bg-[#F7F5EF] text-[#181818] selection:bg-[#B69A68] selection:text-white">
       {/* Primary Sticky Header */}
       <Navbar onOpenBooking={() => handleOpenBooking('deluxe-room')} />
 

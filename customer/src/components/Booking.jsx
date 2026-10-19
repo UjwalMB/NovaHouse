@@ -231,7 +231,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
           particleCount: 80,
           spread: 60,
           origin: { y: 0.7 },
-          colors: ['#A58A5C', '#111111', '#D8D0C3', '#F4F1EB'],
+          colors: ['#B69A68', '#181818', '#E8E2D7', '#F7F5EF'],
         });
       } catch (err) {}
 
@@ -244,98 +244,97 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   };
 
   return (
-    <section id="booking" className="section-spacing bg-[#F4F1EB] text-[#171717] relative">
+    <section id="booking" className="section-spacing bg-[#F7F5EF] text-[#181818] relative">
       <div className="container-luxury">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#171717]/10 pb-8 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#181818]/10 pb-8 mb-16">
           <div>
-            <span className="editorial-tag mb-4">Reservations</span>
             <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
               Your stay <br />
-              <span className="italic font-normal text-[#A58A5C]">starts here.</span>
+              <span className="italic font-normal text-[#B69A68]">starts here.</span>
             </h2>
           </div>
 
-          <p className="text-sm font-sans text-[#77736C] max-w-sm md:text-right">
+          <p className="text-sm font-sans text-[#77736B] max-w-sm md:text-right">
             Reserve directly with NOVA HOUSE for our guaranteed best tariff, complimentary daily breakfast, and flexible 48h cancellation.
           </p>
         </div>
 
         {/* Booking Interface Container */}
-        <div className="bg-[#ECE8E0] border border-[#D8D0C3] p-6 sm:p-10 lg:p-12 shadow-sm">
+        <div className="bg-[#EFEBE2] border border-[#181818]/10 p-6 sm:p-10 lg:p-12 shadow-sm">
           {confirmedReservation ? (
-            <div className="bg-[#F4F1EB] border border-[#A58A5C] p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 animate-fade-in shadow-lg">
-              <div className="w-16 h-16 rounded-full bg-[#A58A5C] text-[#111111] flex items-center justify-center mx-auto shadow-md">
+            <div className="bg-[#FBFAF6] border border-[#B69A68] p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 animate-fade-in shadow-lg">
+              <div className="w-16 h-16 rounded-full bg-[#B69A68] text-[#111111] flex items-center justify-center mx-auto shadow-md">
                 <Check size={32} />
               </div>
 
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#A58A5C] block mb-1">
+                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#B69A68] block mb-1">
                   NOVA HOUSE
                 </span>
-                <h3 className="font-serif text-3xl sm:text-4xl font-light uppercase text-[#111111]">
+                <h3 className="font-serif text-3xl sm:text-4xl font-light uppercase text-[#181818]">
                   BOOKING CONFIRMED
                 </h3>
-                <p className="font-serif italic text-base text-[#77736C] mt-1">
+                <p className="font-serif italic text-base text-[#77736B] mt-1">
                   "Your stay is reserved."
                 </p>
               </div>
 
               {/* Booking Dossier Details Table */}
-              <div className="p-6 bg-[#ECE8E0] border border-[#D8D0C3] rounded-xs space-y-3 font-mono text-xs text-left">
-                <div className="flex justify-between items-center pb-2 border-b border-[#D8D0C3]">
-                  <span className="text-[#77736C]">Booking ID:</span>
-                  <strong className="text-[#111111] font-semibold">{confirmedReservation.code}</strong>
+              <div className="p-6 bg-[#EFEBE2] border border-[#181818]/10 rounded-xs space-y-3 font-mono text-xs text-left">
+                <div className="flex justify-between items-center pb-2 border-b border-[#181818]/10">
+                  <span className="text-[#77736B]">Booking ID:</span>
+                  <strong className="text-[#181818] font-semibold">{confirmedReservation.code}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Payment Status:</span>
+                  <span className="text-[#77736B]">Payment Status:</span>
                   <span className="px-2.5 py-0.5 rounded-xs bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-bold">
                     PAID
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Guest Name:</span>
-                  <span className="text-[#111111] font-medium">{confirmedReservation.guestName}</span>
+                  <span className="text-[#77736B]">Guest Name:</span>
+                  <span className="text-[#181818] font-medium">{confirmedReservation.guestName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Phone Number:</span>
-                  <span className="text-[#111111] font-mono">{confirmedReservation.guestPhone}</span>
+                  <span className="text-[#77736B]">Phone Number:</span>
+                  <span className="text-[#181818] font-mono">{confirmedReservation.guestPhone}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Email Address:</span>
-                  <span className="text-[#111111] font-mono">{confirmedReservation.guestEmail}</span>
+                  <span className="text-[#77736B]">Email Address:</span>
+                  <span className="text-[#181818] font-mono">{confirmedReservation.guestEmail}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Room Sanctuary:</span>
-                  <span className="text-[#111111] font-medium">{confirmedReservation.room.title}</span>
+                  <span className="text-[#77736B]">Room Sanctuary:</span>
+                  <span className="text-[#181818] font-medium">{confirmedReservation.room.title}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Check-in:</span>
-                  <span className="text-[#111111]">{confirmedReservation.checkIn}</span>
+                  <span className="text-[#77736B]">Check-in:</span>
+                  <span className="text-[#181818]">{confirmedReservation.checkIn}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Check-out:</span>
-                  <span className="text-[#111111]">{confirmedReservation.checkOut}</span>
+                  <span className="text-[#77736B]">Check-out:</span>
+                  <span className="text-[#181818]">{confirmedReservation.checkOut}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736C]">Guests:</span>
-                  <span className="text-[#111111]">{confirmedReservation.guests}</span>
+                  <span className="text-[#77736B]">Guests:</span>
+                  <span className="text-[#181818]">{confirmedReservation.guests}</span>
                 </div>
                 {confirmedReservation.specialRequests && (
-                  <div className="flex justify-between items-start pt-1 border-t border-[#D8D0C3]/60">
-                    <span className="text-[#77736C] shrink-0">Special Requests:</span>
-                    <span className="text-[#111111] text-right font-sans">{confirmedReservation.specialRequests}</span>
+                  <div className="flex justify-between items-start pt-1 border-t border-[#181818]/10">
+                    <span className="text-[#77736B] shrink-0">Special Requests:</span>
+                    <span className="text-[#181818] text-right font-sans">{confirmedReservation.specialRequests}</span>
                   </div>
                 )}
                 {confirmedReservation.paymentId && (
                   <div className="flex justify-between items-center">
-                    <span className="text-[#77736C]">Razorpay Payment ID:</span>
-                    <span className="text-[#111111] font-mono text-[11px]">{confirmedReservation.paymentId}</span>
+                    <span className="text-[#77736B]">Razorpay Payment ID:</span>
+                    <span className="text-[#181818] font-mono text-[11px]">{confirmedReservation.paymentId}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-baseline pt-2 border-t border-[#D8D0C3]">
-                  <span className="text-[#77736C]">Total Amount:</span>
-                  <span className="font-serif text-2xl text-[#111111] font-semibold">
+                <div className="flex justify-between items-baseline pt-2 border-t border-[#181818]/10">
+                  <span className="text-[#77736B]">Total Amount:</span>
+                  <span className="font-serif text-2xl text-[#181818] font-semibold">
                     ₹ {confirmedReservation.total.toLocaleString()}
                   </span>
                 </div>
@@ -347,7 +346,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   type="button"
                   onClick={() => window.print()}
                   className="btn-luxury-primary !py-3.5 !px-8 text-xs tracking-wider cursor-pointer"
-                  style={{ backgroundColor: '#111111', color: '#F4F1EB', borderColor: '#111111' }}
+                  style={{ backgroundColor: '#181818', color: '#F5F2EA', borderColor: '#181818' }}
                 >
                   <span>PRINT VOUCHER</span>
                 </button>
@@ -364,14 +363,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Form Input Fields Grid: Stay Details */}
               <div className="space-y-2">
-                <span className="font-mono text-[10px] tracking-widest uppercase text-[#A58A5C] block">
-                  Step 1 · Stay Specifications
+                <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
+                  Stay Specifications
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                   {/* Check In */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <Calendar size={13} className="text-[#A58A5C]" />
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <Calendar size={13} className="text-[#B69A68]" />
                       <span>Check-in</span>
                     </label>
                     <input
@@ -379,15 +378,15 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                       min={todayStr}
                       value={checkIn}
                       onChange={(e) => handleCheckInChange(e.target.value)}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                       required
                     />
                   </div>
 
                   {/* Check Out */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <Calendar size={13} className="text-[#A58A5C]" />
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <Calendar size={13} className="text-[#B69A68]" />
                       <span>Check-out</span>
                     </label>
                     <input
@@ -395,21 +394,21 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                       value={checkOut}
                       min={getMinCheckOut(checkIn)}
                       onChange={(e) => setCheckOut(e.target.value)}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                       required
                     />
                   </div>
 
                   {/* Guests */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <Users size={13} className="text-[#A58A5C]" />
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <Users size={13} className="text-[#B69A68]" />
                       <span>Guests</span>
                     </label>
                     <select
                       value={guests}
                       onChange={(e) => setGuests(e.target.value)}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                     >
                       <option>1 Adult</option>
                       <option>2 Adults</option>
@@ -421,14 +420,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
                   {/* Room Preference */}
                   <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <BedDouble size={13} className="text-[#A58A5C]" />
+                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <BedDouble size={13} className="text-[#B69A68]" />
                       <span>Room Preference</span>
                     </label>
                     <select
                       value={selectedRoomId}
                       onChange={(e) => setSelectedRoomId(e.target.value)}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                     >
                       {roomsList.map((r) => (
                         <option key={r.id} value={r.id}>
@@ -441,15 +440,15 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
               </div>
 
               {/* Form Input Fields Grid: Guest Credentials */}
-              <div className="space-y-2 pt-2 border-t border-[#D8D0C3]/60">
-                <span className="font-mono text-[10px] tracking-widest uppercase text-[#A58A5C] block">
-                  Step 2 · Patron Guest Information
+              <div className="space-y-2 pt-2 border-t border-[#181818]/10">
+                <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
+                  Patron Guest Information
                 </span>
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
                   {/* Guest Full Name */}
                   <div className="space-y-2">
-                    <label htmlFor="booking-guest-name" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <User size={13} className="text-[#A58A5C]" />
+                    <label htmlFor="booking-guest-name" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <User size={13} className="text-[#B69A68]" />
                       <span>GUEST NAME</span>
                     </label>
                     <input
@@ -461,15 +460,15 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                         setGuestName(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                       required
                     />
                   </div>
 
                   {/* Phone / WhatsApp */}
                   <div className="space-y-2">
-                    <label htmlFor="booking-guest-phone" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <Phone size={13} className="text-[#A58A5C]" />
+                    <label htmlFor="booking-guest-phone" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <Phone size={13} className="text-[#B69A68]" />
                       <span>PHONE / WHATSAPP</span>
                     </label>
                     <input
@@ -481,15 +480,15 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                         setGuestPhone(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                       required
                     />
                   </div>
 
                   {/* Email Address */}
                   <div className="space-y-2">
-                    <label htmlFor="booking-guest-email" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                      <Mail size={13} className="text-[#A58A5C]" />
+                    <label htmlFor="booking-guest-email" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                      <Mail size={13} className="text-[#B69A68]" />
                       <span>EMAIL ADDRESS</span>
                     </label>
                     <input
@@ -501,7 +500,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                         setGuestEmail(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                       required
                     />
                   </div>
@@ -510,8 +509,8 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
               {/* Special Requests Field */}
               <div className="space-y-2">
-                <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736C]">
-                  <FileText size={13} className="text-[#A58A5C]" />
+                <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
+                  <FileText size={13} className="text-[#B69A68]" />
                   <span>Special Requests / Notes (Optional)</span>
                 </label>
                 <input
@@ -519,7 +518,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   placeholder="e.g. Airport pickup, quiet courtyard floor, vegan breakfast, late check-in..."
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
-                  className="w-full bg-[#F4F1EB] border border-[#D8D0C3] p-4 text-xs font-mono text-[#111111] outline-none focus:border-[#111111] transition-colors"
+                  className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
                 />
               </div>
 
@@ -539,28 +538,28 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
               )}
 
               {/* Real-time Rate Summary Bar */}
-              <div className="p-6 bg-[#F4F1EB] border border-[#D8D0C3] flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+              <div className="p-6 bg-[#FBFAF6] border border-[#181818]/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
                 <div className="space-y-1">
-                  <span className="font-mono text-[10px] tracking-widest uppercase text-[#A58A5C] block">
+                  <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
                     Real-time Stay Estimation
                   </span>
                   <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-light text-[#111111]">
+                    <span className="font-serif text-3xl font-light text-[#181818]">
                       ₹ {totalPrice.toLocaleString()}
                     </span>
-                    <span className="font-mono text-xs text-[#77736C]">
+                    <span className="font-mono text-xs text-[#77736B]">
                       total for {nights} night{nights > 1 ? 's' : ''} (incl. GST)
                     </span>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-xs font-mono text-[#77736C]">
+                <div className="flex items-center gap-6 text-xs font-mono text-[#77736B]">
                   <div className="flex items-center gap-2">
-                    <Shield size={14} className="text-[#A58A5C]" />
+                    <Shield size={14} className="text-[#B69A68]" />
                     <span>Best Direct Price Guaranteed</span>
                   </div>
                   <div className="hidden md:flex items-center gap-2">
-                    <Clock size={14} className="text-[#A58A5C]" />
+                    <Clock size={14} className="text-[#B69A68]" />
                     <span>Instant Confirmation</span>
                   </div>
                 </div>
@@ -573,9 +572,9 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   disabled={isChecking}
                   className="w-full btn-luxury-primary !py-5 text-xs tracking-[0.2em] font-semibold cursor-pointer"
                   style={{
-                    backgroundColor: '#111111',
-                    color: '#F4F1EB',
-                    borderColor: '#111111',
+                    backgroundColor: '#181818',
+                    color: '#F5F2EA',
+                    borderColor: '#181818',
                   }}
                 >
                   <span>

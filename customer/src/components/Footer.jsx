@@ -67,7 +67,7 @@ export default function Footer() {
       className="site-footer section-dark"
       style={{
         backgroundColor: '#111111',
-        color: '#F4F1EB',
+        color: '#F5F2EA',
       }}
     >
       <div className="container-luxury">
@@ -75,25 +75,25 @@ export default function Footer() {
         <div className="grid grid-cols-1 md:grid-cols-12 gap-12 pb-16 border-b border-white/10">
           {/* Brand & Address */}
           <div className="md:col-span-5 space-y-4">
-            <h3 className="font-serif text-3xl font-light tracking-[0.16em] uppercase text-[#F4F1EB]">
+            <h3 className="font-serif text-3xl font-light tracking-[0.16em] uppercase text-[#F5F2EA]">
               NOVA HOUSE
             </h3>
-            <p className="font-mono text-xs uppercase tracking-widest text-[#A58A5C]">
+            <p className="font-mono text-xs uppercase tracking-widest text-[#B69A68] font-medium">
               Bengaluru · India
             </p>
-            <p className="text-xs text-[#D8D0C3]/80 font-sans max-w-sm leading-relaxed pt-2">
+            <p className="text-xs text-[#B8B3AA] font-sans max-w-sm leading-relaxed pt-2">
               Modern hospitality in the heart of Bengaluru. Designed for business travellers, couples, and guests seeking quiet architectural luxury.
             </p>
 
-            <div className="flex items-center gap-3 pt-3 font-mono text-xs text-[#D8D0C3]">
+            <div className="flex items-center gap-3 pt-3 font-mono text-xs text-[#B8B3AA]">
               <span className="live-indicator" />
-              <span>Bengaluru Local Time (IST): <strong className="text-[#F4F1EB]">{bengaluruTime || 'Live'}</strong></span>
+              <span>Bengaluru Local Time (IST): <strong className="text-[#F5F2EA]">{bengaluruTime || 'Live'}</strong></span>
             </div>
           </div>
 
           {/* Navigation Links */}
           <div className="md:col-span-3 space-y-4">
-            <span className="font-mono text-xs uppercase tracking-widest text-[#A58A5C] block">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#B69A68] block font-medium">
               Navigation
             </span>
             <ul
@@ -105,8 +105,8 @@ export default function Footer() {
                   <a
                     href={link.href}
                     onClick={(e) => handleLinkClick(e, link.href)}
-                    className="transition-colors hover:text-[#A58A5C]"
-                    style={{ color: '#D8D0C3', textDecoration: 'none' }}
+                    className="transition-colors hover:text-[#B69A68]"
+                    style={{ color: '#B8B3AA', textDecoration: 'none' }}
                   >
                     {link.label}
                   </a>
@@ -117,15 +117,15 @@ export default function Footer() {
 
           {/* Contact & Inquiries */}
           <div className="md:col-span-4 space-y-4">
-            <span className="font-mono text-xs uppercase tracking-widest text-[#A58A5C] block">
+            <span className="font-mono text-xs uppercase tracking-widest text-[#B69A68] block font-medium">
               Contact & Inquiries
             </span>
             <div className="space-y-2.5 text-xs font-mono">
               <p>
                 <a
                   href={`mailto:${hotelConfig?.email || 'concierge@novahouse.com'}`}
-                  className="transition-colors hover:text-[#A58A5C]"
-                  style={{ color: '#D8D0C3', textDecoration: 'none' }}
+                  className="transition-colors hover:text-[#B69A68]"
+                  style={{ color: '#B8B3AA', textDecoration: 'none' }}
                 >
                   {hotelConfig?.email || 'concierge@novahouse.com'}
                 </a>
@@ -133,19 +133,19 @@ export default function Footer() {
               <p>
                 <a
                   href={`tel:${hotelConfig?.phone || '+918049658800'}`}
-                  className="transition-colors hover:text-[#A58A5C]"
-                  style={{ color: '#D8D0C3', textDecoration: 'none' }}
+                  className="transition-colors hover:text-[#B69A68]"
+                  style={{ color: '#B8B3AA', textDecoration: 'none' }}
                 >
                   {hotelConfig?.phone || '+91 80 4965 8800'}
                 </a>
               </p>
-              <p className="text-[#88847D] pt-2">
+              <p className="text-[#B8B3AA]/80 pt-2">
                 {hotelConfig?.location || 'Richmond Town, Bengaluru 560025, India'}
               </p>
             </div>
 
             <div className="pt-2">
-              <span className="font-mono text-[10px] uppercase tracking-widest text-[#88847D] block mb-2">
+              <span className="font-mono text-[10px] uppercase tracking-widest text-[#B8B3AA]/80 block mb-2 font-medium">
                 Social
               </span>
               <div className="flex items-center gap-4 text-xs font-mono uppercase tracking-wider">
@@ -153,8 +153,8 @@ export default function Footer() {
                   href="https://instagram.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-colors hover:text-[#A58A5C]"
-                  style={{ color: '#D8D0C3', textDecoration: 'none' }}
+                  className="transition-colors hover:text-[#B69A68]"
+                  style={{ color: '#B8B3AA', textDecoration: 'none' }}
                 >
                   Instagram
                 </a>
@@ -163,8 +163,8 @@ export default function Footer() {
                   href="https://linkedin.com"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="transition-colors hover:text-[#A58A5C]"
-                  style={{ color: '#D8D0C3', textDecoration: 'none' }}
+                  className="transition-colors hover:text-[#B69A68]"
+                  style={{ color: '#B8B3AA', textDecoration: 'none' }}
                 >
                   LinkedIn
                 </a>
@@ -174,7 +174,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar: Copyright & Back to Top */}
-        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#88847D]">
+        <div className="pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 text-xs font-mono text-[#B8B3AA]/80">
           <div>
             © 2026 Nova House. All rights reserved.
           </div>

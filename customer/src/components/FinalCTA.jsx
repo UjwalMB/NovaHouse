@@ -3,7 +3,7 @@ import { ArrowUpRight } from 'lucide-react';
 
 export default function FinalCTA({ onOpenBooking }) {
   return (
-    <section className="relative w-full py-28 md:py-40 bg-[#111111] text-[#F4F1EB] section-dark overflow-hidden flex items-center justify-center">
+    <section className="relative w-full py-28 md:py-40 bg-[#111111] text-[#F5F2EA] section-dark overflow-hidden flex items-center justify-center">
       {/* Background Cinematic Dusk Visual */}
       <div className="absolute inset-0 z-0">
         <img
@@ -18,27 +18,24 @@ export default function FinalCTA({ onOpenBooking }) {
         <div
           className="absolute inset-0"
           style={{
-            background: 'linear-gradient(180deg, rgba(17, 17, 17, 0.8) 0%, rgba(17, 17, 17, 0.45) 45%, rgba(17, 17, 17, 0.92) 100%)',
+            background: 'linear-gradient(180deg, rgba(11, 11, 11, 0.82) 0%, rgba(11, 11, 11, 0.48) 45%, rgba(11, 11, 11, 0.94) 100%)',
           }}
         />
         <div className="absolute inset-0 pointer-events-none opacity-10 architectural-grid-subtle" />
       </div>
 
       <div className="container-luxury relative z-10 text-center max-w-4xl space-y-8">
-        <span className="editorial-tag text-[#A58A5C] mx-auto justify-center font-medium">
-          An Invitation to Pause
-        </span>
 
         <h2
           className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-light uppercase tracking-tight leading-[0.9] text-[#FFFFFF]"
           style={{ textShadow: '0 4px 24px rgba(0, 0, 0, 0.7)' }}
         >
           See you <br />
-          <span className="italic font-normal text-[#E8E2D8]">in Bengaluru.</span>
+          <span className="italic font-normal text-[#E8E2D7]">in Bengaluru.</span>
         </h2>
 
         <p
-          className="font-sans text-base sm:text-lg md:text-xl font-light text-[#E8E2D8] max-w-xl mx-auto leading-relaxed"
+          className="font-sans text-base sm:text-lg md:text-xl font-light text-[#B8B3AA] max-w-xl mx-auto leading-relaxed"
           style={{ textShadow: '0 2px 10px rgba(0, 0, 0, 0.7)' }}
         >
           Where thoughtful architecture meets warm southern hospitality. Your personal sanctuary awaits.
@@ -49,8 +46,8 @@ export default function FinalCTA({ onOpenBooking }) {
             onClick={onOpenBooking}
             className="btn-luxury-primary !py-5 !px-10 text-xs tracking-[0.22em] font-semibold shadow-lg"
             style={{
-              backgroundColor: '#A58A5C',
-              borderColor: '#A58A5C',
+              backgroundColor: '#B69A68',
+              borderColor: '#B69A68',
               color: '#111111',
             }}
           >
@@ -63,9 +60,9 @@ export default function FinalCTA({ onOpenBooking }) {
           <span
             className="inline-block px-4 py-2 text-xs font-mono tracking-widest uppercase shadow-md"
             style={{
-              backgroundColor: 'rgba(17, 17, 17, 0.85)',
-              color: '#F4F1EB',
-              border: '1px solid rgba(244, 241, 235, 0.25)',
+              backgroundColor: 'rgba(11, 11, 11, 0.85)',
+              color: '#F5F2EA',
+              border: '1px solid rgba(245, 242, 234, 0.25)',
               backdropFilter: 'blur(8px)',
             }}
           >

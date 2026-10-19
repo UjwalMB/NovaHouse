@@ -80,7 +80,7 @@ export default function RazorpayModal({
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-xs animate-in fade-in duration-200">
       <div
-        className="w-full max-w-md bg-white rounded-lg shadow-2xl overflow-hidden text-[#111111] font-sans flex flex-col relative z-[10000] border border-[#0C2340]/20 animate-in zoom-in-95 duration-200"
+        className="w-full max-w-md bg-[#FBFAF6] rounded-lg shadow-2xl overflow-hidden text-[#181818] font-sans flex flex-col relative z-[10000] border border-[#181818]/15 animate-in zoom-in-95 duration-200"
         style={{ maxHeight: '90vh' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -127,24 +127,24 @@ export default function RazorpayModal({
         {isProcessing ? (
           <div className="py-16 px-6 text-center space-y-4">
             <Loader2 size={36} className="animate-spin text-[#0C2340] mx-auto" />
-            <h4 className="font-serif text-lg font-normal text-[#111111]">
+            <h4 className="font-serif text-lg font-normal text-[#181818]">
               Authorizing Payment
             </h4>
-            <p className="font-mono text-xs text-[#77736C]">
+            <p className="font-mono text-xs text-[#77736B]">
               {processingStatus}
             </p>
           </div>
         ) : (
           <div className="p-5 space-y-4 flex-grow overflow-y-auto">
             {/* Payment Method Selector Tabs */}
-            <div className="grid grid-cols-3 gap-2 bg-[#F4F1EB] p-1 rounded">
+            <div className="grid grid-cols-3 gap-2 bg-[#EFEBE2] p-1 rounded">
               <button
                 type="button"
                 onClick={() => setActiveTab('upi')}
                 className={`py-2 text-xs font-mono font-medium rounded transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'upi'
-                    ? 'bg-white text-[#0C2340] shadow-xs'
-                    : 'text-[#77736C] hover:text-[#111111]'
+                    ? 'bg-[#181818] text-[#F5F2EA] shadow-xs'
+                    : 'text-[#77736B] hover:text-[#181818]'
                 }`}
               >
                 <Smartphone size={14} />
@@ -156,8 +156,8 @@ export default function RazorpayModal({
                 onClick={() => setActiveTab('card')}
                 className={`py-2 text-xs font-mono font-medium rounded transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'card'
-                    ? 'bg-white text-[#0C2340] shadow-xs'
-                    : 'text-[#77736C] hover:text-[#111111]'
+                    ? 'bg-[#181818] text-[#F5F2EA] shadow-xs'
+                    : 'text-[#77736B] hover:text-[#181818]'
                 }`}
               >
                 <CreditCard size={14} />
@@ -169,8 +169,8 @@ export default function RazorpayModal({
                 onClick={() => setActiveTab('netbanking')}
                 className={`py-2 text-xs font-mono font-medium rounded transition-all flex items-center justify-center gap-1.5 ${
                   activeTab === 'netbanking'
-                    ? 'bg-white text-[#0C2340] shadow-xs'
-                    : 'text-[#77736C] hover:text-[#111111]'
+                    ? 'bg-[#181818] text-[#F5F2EA] shadow-xs'
+                    : 'text-[#77736B] hover:text-[#181818]'
                 }`}
               >
                 <Building2 size={14} />
@@ -181,7 +181,7 @@ export default function RazorpayModal({
             {/* TAB 1: UPI */}
             {activeTab === 'upi' && (
               <div className="space-y-3 pt-1">
-                <span className="text-[11px] font-mono uppercase text-[#77736C] block">
+                <span className="text-[11px] font-mono uppercase text-[#77736B] block">
                   Select Fast UPI Checkout App
                 </span>
 
@@ -198,7 +198,7 @@ export default function RazorpayModal({
                       className={`p-3 border rounded text-center transition-all ${
                         selectedUpiApp === app.id
                           ? 'border-[#0C2340] bg-[#F4F8FC] shadow-xs font-semibold'
-                          : 'border-[#E2DDD5] hover:border-[#A58A5C]'
+                          : 'border-[#181818]/12 hover:border-[#B69A68]'
                       }`}
                     >
                       <div className="text-base mb-1">{app.icon}</div>
@@ -207,9 +207,9 @@ export default function RazorpayModal({
                   ))}
                 </div>
 
-                <div className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded text-[11px] font-mono text-[#55514B] flex items-center justify-between">
+                <div className="p-3 bg-[#FBFAF6] border border-[#181818]/10 rounded text-[11px] font-mono text-[#77736B] flex items-center justify-between">
                   <span>Guest VPA:</span>
-                  <strong className="text-[#111111]">
+                  <strong className="text-[#181818]">
                     {guestPhone ? `${guestPhone.replace(/[^0-9]/g, '')}@okaxis` : 'guest@okhdfc'}
                   </strong>
                 </div>
@@ -220,38 +220,38 @@ export default function RazorpayModal({
             {activeTab === 'card' && (
               <div className="space-y-3 pt-1">
                 <div>
-                  <label className="text-[10px] font-mono uppercase text-[#77736C] block mb-1">
+                  <label className="text-[10px] font-mono uppercase text-[#77736B] block mb-1">
                     Test Card Number
                   </label>
                   <input
                     type="text"
                     value={cardNumber}
                     onChange={(e) => setCardNumber(e.target.value)}
-                    className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded outline-none focus:border-[#0C2340]"
+                    className="w-full px-3 py-2 text-xs font-mono border border-[#181818]/12 bg-[#FBFAF6] text-[#181818] rounded outline-none focus:border-[#0C2340]"
                   />
                 </div>
 
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-[10px] font-mono uppercase text-[#77736C] block mb-1">
+                    <label className="text-[10px] font-mono uppercase text-[#77736B] block mb-1">
                       Expiry (MM/YY)
                     </label>
                     <input
                       type="text"
                       value={cardExpiry}
                       onChange={(e) => setCardExpiry(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded outline-none focus:border-[#0C2340]"
+                      className="w-full px-3 py-2 text-xs font-mono border border-[#181818]/12 bg-[#FBFAF6] text-[#181818] rounded outline-none focus:border-[#0C2340]"
                     />
                   </div>
                   <div>
-                    <label className="text-[10px] font-mono uppercase text-[#77736C] block mb-1">
+                    <label className="text-[10px] font-mono uppercase text-[#77736B] block mb-1">
                       CVV
                     </label>
                     <input
                       type="password"
                       value={cardCvv}
                       onChange={(e) => setCardCvv(e.target.value)}
-                      className="w-full px-3 py-2 text-xs font-mono border border-[#D8D0C3] rounded outline-none focus:border-[#0C2340]"
+                      className="w-full px-3 py-2 text-xs font-mono border border-[#181818]/12 bg-[#FBFAF6] text-[#181818] rounded outline-none focus:border-[#0C2340]"
                     />
                   </div>
                 </div>
@@ -265,14 +265,14 @@ export default function RazorpayModal({
             {/* TAB 3: NETBANKING */}
             {activeTab === 'netbanking' && (
               <div className="space-y-3 pt-1">
-                <span className="text-[11px] font-mono uppercase text-[#77736C] block">
+                <span className="text-[11px] font-mono uppercase text-[#77736B] block">
                   Popular Indian Banks
                 </span>
                 <div className="grid grid-cols-2 gap-2 text-xs font-mono">
                   {['HDFC Bank', 'ICICI Bank', 'State Bank of India', 'Axis Bank'].map((b, i) => (
                     <label
                       key={b}
-                      className="flex items-center gap-2 p-2.5 border border-[#E2DDD5] rounded cursor-pointer hover:bg-[#FAF8F5]"
+                      className="flex items-center gap-2 p-2.5 border border-[#181818]/12 rounded cursor-pointer hover:bg-[#EFEBE2]"
                     >
                       <input type="radio" name="bank" defaultChecked={i === 0} />
                       <span>{b}</span>
@@ -283,7 +283,7 @@ export default function RazorpayModal({
             )}
 
             {/* Guest Summary Pill */}
-            <div className="pt-2 border-t border-[#ECE8E0] flex items-center justify-between text-[11px] font-mono text-[#77736C]">
+            <div className="pt-2 border-t border-[#181818]/10 flex items-center justify-between text-[11px] font-mono text-[#77736B]">
               <span>Payer: <strong>{guestName || 'Valued Guest'}</strong></span>
               <span>{guestEmail || 'guest@novahouse.com'}</span>
             </div>
@@ -310,7 +310,7 @@ export default function RazorpayModal({
                 <button
                   type="button"
                   onClick={onDismiss}
-                  className="text-[#77736C] hover:text-[#111111]"
+                  className="text-[#77736B] hover:text-[#181818]"
                 >
                   Cancel Payment
                 </button>
@@ -320,12 +320,12 @@ export default function RazorpayModal({
         )}
 
         {/* Security Footer */}
-        <div className="bg-[#FAF8F5] p-3 border-t border-[#ECE8E0] text-[10px] font-mono text-[#77736C] flex items-center justify-between">
+        <div className="bg-[#EFEBE2] p-3 border-t border-[#181818]/10 text-[10px] font-mono text-[#77736B] flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <ShieldCheck size={14} className="text-emerald-600" />
             <span>256-bit Encrypted · Razorpay Test Gateway</span>
           </div>
-          <span className="text-[#A58A5C]">NOVA HOUSE BENGALURU</span>
+          <span className="text-[#B69A68]">NOVA HOUSE BENGALURU</span>
         </div>
       </div>
     </div>

@@ -39,8 +39,8 @@ export default function Hero({ onOpenBooking, onExplore }) {
         <div className="my-auto py-6 sm:py-8 max-w-4xl">
           {/* 1. Small Location & Status Eyebrow */}
           <div className="inline-flex items-center gap-2.5 mb-5 px-3 py-1 bg-black/40 backdrop-blur-md border border-white/15 rounded-full">
-            <span className="w-1.5 h-1.5 rounded-full bg-[#A58A5C]" />
-            <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] uppercase text-[#F4F1EB]">
+            <span className="w-1.5 h-1.5 rounded-full bg-[#B69A68]" />
+            <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.24em] uppercase text-[#F5F2EA]">
               MODERN LUXURY · RICHMOND ROAD
             </span>
           </div>
@@ -62,8 +62,8 @@ export default function Hero({ onOpenBooking, onExplore }) {
               onClick={onOpenBooking}
               className="btn-luxury-primary !py-3.5 sm:!py-4 !px-7 sm:!px-8 text-xs tracking-[0.2em] rounded-none shadow-md"
               style={{
-                backgroundColor: '#A58A5C',
-                borderColor: '#A58A5C',
+                backgroundColor: '#B69A68',
+                borderColor: '#B69A68',
                 color: '#111111',
               }}
             >
@@ -86,20 +86,20 @@ export default function Hero({ onOpenBooking, onExplore }) {
         </div>
 
         {/* Bottom Metadata & Scroll Prompt */}
-        <div className="flex items-center justify-between border-t border-white/15 pt-5 pb-2 text-xs text-[#F4F1EB]/80">
-          <div className="font-mono text-[10px] sm:text-[11px] tracking-[0.16em] uppercase text-[#D8D0C3]/90 hidden md:block">
+        <div className="flex items-center justify-between border-t border-white/15 pt-5 pb-2 text-xs text-[#F5F2EA]/80">
+          <div className="font-mono text-[10px] sm:text-[11px] tracking-[0.16em] uppercase text-[#B8B3AA] hidden md:block">
             DESIGNED FOR BUSINESS TRAVELLERS, COUPLES & GUESTS
           </div>
 
           <a
             href="#intro"
             onClick={scrollToExplore}
-            className="flex items-center gap-2.5 text-inherit no-underline group hover:text-[#A58A5C] transition-colors ml-auto md:ml-0"
+            className="flex items-center gap-2.5 text-inherit no-underline group hover:text-[#B69A68] transition-colors ml-auto md:ml-0"
           >
             <span className="font-mono text-[10px] sm:text-[11px] tracking-[0.2em] uppercase">
-              SCROLL TO DISCOVER
+              EXPLORE
             </span>
-            <ArrowDown size={13} className="group-hover:translate-y-0.5 transition-transform text-[#A58A5C]" />
+            <ArrowDown size={13} className="group-hover:translate-y-0.5 transition-transform text-[#B69A68]" />
           </a>
         </div>
       </div>

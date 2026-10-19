@@ -44,10 +44,10 @@ export default function Navbar({ onOpenBooking }) {
               className="group flex flex-col no-underline text-inherit"
               aria-label="Nova House Home"
             >
-              <span className="font-serif text-xl sm:text-2xl tracking-[0.2em] font-light leading-none group-hover:text-[#A58A5C] transition-colors">
+              <span className="font-serif text-xl sm:text-2xl tracking-[0.2em] font-light leading-none group-hover:text-[#B69A68] transition-colors">
                 NOVA HOUSE
               </span>
-              <span className="font-mono text-[9px] tracking-[0.28em] text-[#A58A5C] uppercase mt-1">
+              <span className="font-mono text-[9px] tracking-[0.28em] text-[#B69A68] uppercase mt-1">
                 BENGALURU · INDIA
               </span>
             </a>
@@ -95,21 +95,21 @@ export default function Navbar({ onOpenBooking }) {
         className={`mobile-nav-drawer ${mobileMenuOpen ? 'is-open' : ''}`}
         style={{
           backgroundColor: '#111111',
-          color: '#FFFFFF',
+          color: '#F5F2EA',
         }}
       >
         <div className="flex items-center justify-between pb-6 border-b border-white/10">
           <div className="flex flex-col">
-            <span className="font-serif text-xl sm:text-2xl tracking-[0.2em] font-light text-[#F4F1EB]">
+            <span className="font-serif text-xl sm:text-2xl tracking-[0.2em] font-light text-[#F5F2EA]">
               NOVA HOUSE
             </span>
-            <span className="font-mono text-[9px] tracking-[0.28em] text-[#A58A5C] uppercase mt-1">
+            <span className="font-mono text-[9px] tracking-[0.28em] text-[#B69A68] uppercase mt-1">
               BENGALURU · INDIA
             </span>
           </div>
           <button
             onClick={() => setMobileMenuOpen(false)}
-            className="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 text-[#F4F1EB] hover:text-[#A58A5C] hover:border-[#A58A5C] transition-colors"
+            className="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 text-[#F5F2EA] hover:text-[#B69A68] hover:border-[#B69A68] transition-colors"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
             aria-label="Close menu"
           >
@@ -118,9 +118,8 @@ export default function Navbar({ onOpenBooking }) {
         </div>
 
         <div className="py-8">
-          <span className="editorial-tag text-[#A58A5C] mb-6 block">Directory</span>
           <div className="flex flex-col gap-3">
-            {navLinks.map((link, idx) => (
+            {navLinks.map((link) => (
               <a
                 key={link.label}
                 href={link.href}
@@ -128,7 +127,6 @@ export default function Navbar({ onOpenBooking }) {
                 className="mobile-nav-link"
               >
                 <span>{link.label}</span>
-                <span className="mobile-nav-number">0{idx + 1}</span>
               </a>
             ))}
           </div>
@@ -141,12 +139,12 @@ export default function Navbar({ onOpenBooking }) {
               onOpenBooking();
             }}
             className="w-full btn-luxury-primary !py-4 text-xs tracking-widest font-semibold"
-            style={{ backgroundColor: '#A58A5C', borderColor: '#A58A5C', color: '#111111' }}
+            style={{ backgroundColor: '#B69A68', borderColor: '#B69A68', color: '#111111' }}
           >
             <span>Book Your Stay</span>
             <ArrowUpRight size={15} />
           </button>
-          <div className="flex items-center justify-between text-xs text-[#D8D0C3]/70 font-mono">
+          <div className="flex items-center justify-between text-xs text-[#B8B3AA] font-mono">
             <span>Bengaluru · 12° 58' N</span>
             <span>+91 80 4920 8800</span>
           </div>
