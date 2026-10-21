@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { ArrowRight, Utensils, Wine, Clock, Sparkles } from 'lucide-react';
+import { motion } from 'motion/react';
 import { DINING_DATA } from '../data/hotelData';
+import { buttonPrimaryGlow } from '../utils/animations';
 
 export default function Dining({ onOpenDiningMenu }) {
   const [selectedPeriod, setSelectedPeriod] = useState(DINING_DATA.periods[2]); // Default Dinner
@@ -100,17 +102,20 @@ export default function Dining({ onOpenDiningMenu }) {
           <div className="flex flex-wrap items-center justify-between gap-4 border-b border-white/10 pb-6">
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               {DINING_DATA.periods.map((period) => (
-                <button
+                <motion.button
                   key={period.id}
                   onClick={() => setSelectedPeriod(period)}
-                  className={`px-4 py-2.5 text-xs font-mono tracking-widest uppercase transition-all ${
+                  whileTap={{ scale: 0.95 }}
+                  whileHover={{ y: -1 }}
+                  transition={{ duration: 0.15 }}
+                  className={`px-4 py-2.5 text-xs font-mono tracking-widest uppercase transition-colors cursor-pointer ${
                     selectedPeriod.id === period.id
-                      ? 'bg-[#B69A68] text-[#111111] font-semibold'
+                      ? 'bg-[#B69A68] text-[#111111] font-semibold shadow-sm'
                       : 'bg-[#1C1C1A] text-[#B8B3AA] hover:text-[#F5F2EA] hover:bg-[#252522]'
                   }`}
                 >
                   {period.name}
-                </button>
+                </motion.button>
               ))}
             </div>
 
@@ -134,14 +139,15 @@ export default function Dining({ onOpenDiningMenu }) {
             </div>
 
             <div className="md:col-span-5 flex flex-col sm:flex-row md:flex-col justify-end gap-4">
-              <button
+              <motion.button
                 onClick={onOpenDiningMenu}
-                className="btn-luxury-primary !py-4 text-xs tracking-widest w-full"
+                {...buttonPrimaryGlow}
+                className="btn-luxury-primary !py-4 text-xs tracking-widest w-full cursor-pointer"
                 style={{ backgroundColor: '#B69A68', borderColor: '#B69A68', color: '#111111' }}
               >
                 <span>Explore Dining →</span>
                 <ArrowRight size={14} />
-              </button>
+              </motion.button>
             </div>
           </div>
         </div>

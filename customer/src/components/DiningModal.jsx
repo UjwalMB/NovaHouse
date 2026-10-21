@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, Utensils, Wine, Clock, Sparkles, Calendar, Users } from 'lucide-react';
+import { motion } from 'motion/react';
 import { DINING_DATA } from '../data/hotelData';
 import { fetchLiveDiningMenu, subscribeToDiningMenu } from '../services/diningService';
+import {
+  modalBackdropVariants,
+  modalDialogVariants,
+  buttonPrimaryGlow,
+} from '../utils/animations';
 
 export default function DiningModal({ onClose, onTableReserved }) {
   const [activeTab, setActiveTab] = useState('menu'); // 'menu' | 'reserve'
@@ -88,16 +94,24 @@ export default function DiningModal({ onClose, onTableReserved }) {
   };
 
   return (
-    <div
+    <motion.div
       className="modal-overlay"
+      variants={modalBackdropVariants}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label="Ember Restaurant Live Menu & Table Reservation"
       data-lenis-prevent="true"
     >
-      <div
-        className="modal-dialog-content bg-[#111111] text-[#F5F2EA] w-full max-w-4xl shadow-2xl border border-white/15 relative animate-fade-in"
+      <motion.div
+        className="modal-dialog-content bg-[#111111] text-[#F5F2EA] w-full max-w-4xl shadow-2xl border border-white/15 relative"
+        variants={modalDialogVariants}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
         onClick={(e) => e.stopPropagation()}
         data-lenis-prevent="true"
         style={{
@@ -132,13 +146,14 @@ export default function DiningModal({ onClose, onTableReserved }) {
             </div>
           </div>
 
-          <button
+          <motion.button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-white/10 text-[#F5F2EA] transition-colors"
+            whileTap={{ scale: 0.9 }}
+            className="p-2 rounded-full hover:bg-white/10 text-[#F5F2EA] transition-colors cursor-pointer"
             aria-label="Close modal"
           >
             <X size={18} />
-          </button>
+          </motion.button>
         </div>
 
         <div className="p-6 sm:p-8 md:p-10 space-y-8">
@@ -161,17 +176,19 @@ export default function DiningModal({ onClose, onTableReserved }) {
               {/* Category Filter Tabs */}
               <div className="flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
                 {categories.map((cat) => (
-                  <button
+                  <motion.button
                     key={cat}
                     onClick={() => setSelectedCategory(cat)}
-                    className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all ${
+                    whileTap={{ scale: 0.95 }}
+                    whileHover={{ y: -1 }}
+                    className={`px-3.5 py-1.5 text-xs font-mono tracking-wider uppercase transition-all cursor-pointer ${
                       selectedCategory === cat
                         ? 'bg-[#B69A68] text-[#111111] font-semibold'
                         : 'bg-[#181818] text-[#B8B3AA] hover:bg-[#222222] hover:text-white'
                     }`}
                   >
                     {cat}
-                  </button>
+                  </motion.button>
                 ))}
               </div>
 
@@ -228,14 +245,15 @@ export default function DiningModal({ onClose, onTableReserved }) {
                   <h4 className="font-serif text-xl text-[#F5F2EA]">Join Us at the Hearth Counter</h4>
                   <p className="text-xs text-[#B8B3AA] mt-1">Priority table bookings reserved for hotel residents.</p>
                 </div>
-                <button
+                <motion.button
                   type="button"
                   onClick={() => setActiveTab('reserve')}
-                  className="btn-luxury-primary !py-3 !px-6 text-xs tracking-widest shrink-0"
+                  {...buttonPrimaryGlow}
+                  className="btn-luxury-primary !py-3 !px-6 text-xs tracking-widest shrink-0 cursor-pointer"
                   style={{ backgroundColor: '#B69A68', borderColor: '#B69A68', color: '#111111' }}
                 >
                   Reserve Priority Table →
-                </button>
+                </motion.button>
               </div>
             </div>
           ) : (
@@ -343,13 +361,14 @@ export default function DiningModal({ onClose, onTableReserved }) {
                     </div>
 
                     <div className="sm:col-span-3 pt-4">
-                      <button
+                      <motion.button
                         type="submit"
-                        className="w-full btn-luxury-primary !py-4 text-xs tracking-widest"
+                        {...buttonPrimaryGlow}
+                        className="w-full btn-luxury-primary !py-4 text-xs tracking-widest cursor-pointer"
                         style={{ backgroundColor: '#B69A68', borderColor: '#B69A68', color: '#181818' }}
                       >
                         <span>Confirm Priority Table Reservation</span>
-                      </button>
+                      </motion.button>
                     </div>
                   </form>
                 )}
@@ -357,7 +376,7 @@ export default function DiningModal({ onClose, onTableReserved }) {
             </div>
           )}
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

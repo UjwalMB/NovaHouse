@@ -15,7 +15,10 @@ import {
   Phone,
   FileText,
   AlertCircle,
+  Printer,
+  ChevronRight,
 } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { ROOMS_DATA } from '../data/hotelData';
 import {
@@ -25,6 +28,13 @@ import {
 import { checkAvailability } from '../services/bookingApi';
 import { fetchLiveRoomsCatalog } from '../services/roomsService';
 import RazorpayModal from './RazorpayModal';
+import AnimatedPrice from './AnimatedPrice';
+import {
+  buttonPrimaryGlow,
+  buttonSecondaryTactile,
+  chipInteractive,
+  cardInteractive,
+} from '../utils/animations';
 
 export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   const todayStr = new Date().toISOString().split('T')[0];
@@ -39,6 +49,9 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   const [guests, setGuests] = useState('2 Guests');
   const [roomsList, setRoomsList] = useState(ROOMS_DATA);
   const [selectedRoomId, setSelectedRoomId] = useState(preselectedRoomId || 'nova-suite');
+
+  // Quick preset active tracker: null | '2N' | '3N' | '7N'
+  const [activeDurationPreset, setActiveDurationPreset] = useState('3N');
 
   // Guest details state
   const [guestName, setGuestName] = useState('');
@@ -78,6 +91,13 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     };
   }, []);
 
+  // Update selected room when preselectedRoomId prop changes
+  useEffect(() => {
+    if (preselectedRoomId) {
+      setSelectedRoomId(preselectedRoomId);
+    }
+  }, [preselectedRoomId]);
+
   const getMinCheckOut = (inDateStr) => {
     if (!inDateStr) return '';
     const d = new Date(inDateStr);
@@ -87,10 +107,25 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
   const handleCheckInChange = (newIn) => {
     setCheckIn(newIn);
+    setActiveDurationPreset(null);
     const minOut = getMinCheckOut(newIn);
     if (!checkOut || checkOut <= newIn) {
       setCheckOut(minOut);
     }
+  };
+
+  const handleCheckOutChange = (newOut) => {
+    setCheckOut(newOut);
+    setActiveDurationPreset(null);
+  };
+
+  // Quick Stay Presets
+  const applyDurationPreset = (days, label) => {
+    const start = new Date(checkIn || todayStr);
+    const end = new Date(start);
+    end.setDate(end.getDate() + days);
+    setCheckOut(end.toISOString().split('T')[0]);
+    setActiveDurationPreset(label);
   };
 
   // Compute stay details
@@ -109,7 +144,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
   };
 
   const nights = calculateNights();
-  const roomSubtotal = selectedRoom.numericPrice * nights;
+  const roomSubtotal = (selectedRoom.numericPrice || 22000) * nights;
   const taxes = Math.round(roomSubtotal * 0.18);
   const totalPrice = roomSubtotal + taxes;
 
@@ -128,7 +163,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     }
     const cleanPhone = guestPhone ? guestPhone.replace(/[^0-9]/g, '') : '';
     if (!cleanPhone || cleanPhone.length < 10) {
-      setFormError('Please enter a valid phone number.');
+      setFormError('Please enter a valid 10-digit phone number.');
       return;
     }
     if (!checkIn) {
@@ -228,10 +263,10 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
       try {
         confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.7 },
-          colors: ['#B69A68', '#181818', '#E8E2D7', '#F7F5EF'],
+          particleCount: 90,
+          spread: 70,
+          origin: { y: 0.65 },
+          colors: ['#B69A68', '#111111', '#E8E2D7', '#FFFFFF'],
         });
       } catch (err) {}
 
@@ -247,168 +282,276 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     <section id="booking" className="section-spacing bg-[#F7F5EF] text-[#181818] relative">
       <div className="container-luxury">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#181818]/10 pb-8 mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#181818]/15 pb-8 mb-12 sm:mb-16">
           <div>
-            <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight">
+            <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#B69A68] block mb-2 font-semibold">
+              Direct Online Reservations
+            </span>
+            <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight text-[#111111]">
               Your stay <br />
               <span className="italic font-normal text-[#B69A68]">starts here.</span>
             </h2>
           </div>
 
-          <p className="text-sm font-sans text-[#77736B] max-w-sm md:text-right">
-            Reserve directly with NOVA HOUSE for our guaranteed best tariff, complimentary daily breakfast, and flexible 48h cancellation.
+          <p className="text-sm font-sans text-[#2D2924] max-w-sm md:text-right leading-relaxed font-medium">
+            Reserve directly with NOVA HOUSE for our guaranteed best direct tariff, complimentary daily breakfast, and flexible 48h cancellation.
           </p>
         </div>
 
-        {/* Booking Interface Container */}
-        <div className="bg-[#EFEBE2] border border-[#181818]/10 p-6 sm:p-10 lg:p-12 shadow-sm">
+        {/* Booking Container */}
+        <div className="bg-[#EFEBE2] border border-[#181818]/15 p-5 sm:p-8 lg:p-12 shadow-sm rounded-none">
           {confirmedReservation ? (
-            <div className="bg-[#FBFAF6] border border-[#B69A68] p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 animate-fade-in shadow-lg">
+            /* Confirmation Voucher View */
+            <motion.div
+              initial={{ opacity: 0, scale: 0.98 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.4 }}
+              className="bg-[#FBFAF6] border-2 border-[#B69A68] p-8 sm:p-12 text-center max-w-2xl mx-auto space-y-6 shadow-xl"
+            >
               <div className="w-16 h-16 rounded-full bg-[#B69A68] text-[#111111] flex items-center justify-center mx-auto shadow-md">
                 <Check size={32} />
               </div>
 
               <div>
-                <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[#B69A68] block mb-1">
-                  NOVA HOUSE
+                <span className="font-mono text-[10px] uppercase tracking-[0.28em] text-[#B69A68] block mb-1 font-bold">
+                  NOVA HOUSE · BENGALURU
                 </span>
-                <h3 className="font-serif text-3xl sm:text-4xl font-light uppercase text-[#181818]">
-                  BOOKING CONFIRMED
+                <h3 className="font-serif text-3xl sm:text-4xl font-light uppercase text-[#111111]">
+                  RESERVATION CONFIRMED
                 </h3>
-                <p className="font-serif italic text-base text-[#77736B] mt-1">
-                  "Your stay is reserved."
+                <p className="font-serif italic text-base text-[#4A453E] mt-1">
+                  "Your sanctuary is ready for your arrival."
                 </p>
               </div>
 
               {/* Booking Dossier Details Table */}
-              <div className="p-6 bg-[#EFEBE2] border border-[#181818]/10 rounded-xs space-y-3 font-mono text-xs text-left">
-                <div className="flex justify-between items-center pb-2 border-b border-[#181818]/10">
-                  <span className="text-[#77736B]">Booking ID:</span>
-                  <strong className="text-[#181818] font-semibold">{confirmedReservation.code}</strong>
+              <div className="p-6 bg-[#FFFFFF] border border-[#D5CFC4] text-left space-y-3 font-mono text-xs shadow-xs">
+                <div className="flex justify-between items-center pb-2.5 border-b border-[#EFEBE2]">
+                  <span className="text-[#555047] font-medium">Confirmation Code:</span>
+                  <strong className="text-[#111111] font-bold tracking-wider">{confirmedReservation.code}</strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Payment Status:</span>
-                  <span className="px-2.5 py-0.5 rounded-xs bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-bold">
-                    PAID
+                  <span className="text-[#555047] font-medium">Payment Status:</span>
+                  <span className="px-2.5 py-0.5 bg-[#EDF7F0] text-[#1B4D29] border border-[#C8E8D1] font-bold">
+                    PAID · GUARANTEED
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Guest Name:</span>
-                  <span className="text-[#181818] font-medium">{confirmedReservation.guestName}</span>
+                  <span className="text-[#555047] font-medium">Guest Name:</span>
+                  <span className="text-[#111111] font-semibold">{confirmedReservation.guestName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Phone Number:</span>
-                  <span className="text-[#181818] font-mono">{confirmedReservation.guestPhone}</span>
+                  <span className="text-[#555047] font-medium">Contact:</span>
+                  <span className="text-[#111111]">{confirmedReservation.guestPhone} · {confirmedReservation.guestEmail}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Email Address:</span>
-                  <span className="text-[#181818] font-mono">{confirmedReservation.guestEmail}</span>
+                  <span className="text-[#555047] font-medium">Sanctuary:</span>
+                  <span className="text-[#111111] font-semibold">{confirmedReservation.room.title}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Room Sanctuary:</span>
-                  <span className="text-[#181818] font-medium">{confirmedReservation.room.title}</span>
+                  <span className="text-[#555047] font-medium">Stay Dates:</span>
+                  <span className="text-[#111111] font-bold">{confirmedReservation.checkIn} → {confirmedReservation.checkOut} ({confirmedReservation.nights} Nights)</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Check-in:</span>
-                  <span className="text-[#181818]">{confirmedReservation.checkIn}</span>
+                  <span className="text-[#555047] font-medium">Guests:</span>
+                  <span className="text-[#111111]">{confirmedReservation.guests}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Check-out:</span>
-                  <span className="text-[#181818]">{confirmedReservation.checkOut}</span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-[#77736B]">Guests:</span>
-                  <span className="text-[#181818]">{confirmedReservation.guests}</span>
-                </div>
-                {confirmedReservation.specialRequests && (
-                  <div className="flex justify-between items-start pt-1 border-t border-[#181818]/10">
-                    <span className="text-[#77736B] shrink-0">Special Requests:</span>
-                    <span className="text-[#181818] text-right font-sans">{confirmedReservation.specialRequests}</span>
-                  </div>
-                )}
                 {confirmedReservation.paymentId && (
                   <div className="flex justify-between items-center">
-                    <span className="text-[#77736B]">Razorpay Payment ID:</span>
-                    <span className="text-[#181818] font-mono text-[11px]">{confirmedReservation.paymentId}</span>
+                    <span className="text-[#555047] font-medium">Transaction ID:</span>
+                    <span className="text-[#111111] font-mono text-[11px]">{confirmedReservation.paymentId}</span>
                   </div>
                 )}
-                <div className="flex justify-between items-baseline pt-2 border-t border-[#181818]/10">
-                  <span className="text-[#77736B]">Total Amount:</span>
-                  <span className="font-serif text-2xl text-[#181818] font-semibold">
-                    ₹ {confirmedReservation.total.toLocaleString()}
+                <div className="flex justify-between items-baseline pt-3 border-t border-[#EFEBE2]">
+                  <span className="text-[#555047] font-medium">Total Paid:</span>
+                  <span className="font-serif text-2xl text-[#111111] font-bold">
+                    ₹ {confirmedReservation.total.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
-              {/* Action Buttons: PRINT VOUCHER / BACK TO NOVA HOUSE */}
+              {/* Action Buttons */}
               <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-                <button
+                <motion.button
                   type="button"
                   onClick={() => window.print()}
-                  className="btn-luxury-primary !py-3.5 !px-8 text-xs tracking-wider cursor-pointer"
-                  style={{ backgroundColor: '#181818', color: '#F5F2EA', borderColor: '#181818' }}
+                  {...buttonSecondaryTactile}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#FFFFFF] border-2 border-[#111111] text-[#111111] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
+                  <Printer size={15} />
                   <span>PRINT VOUCHER</span>
-                </button>
-                <button
+                </motion.button>
+                <motion.button
                   type="button"
                   onClick={() => setConfirmedReservation(null)}
-                  className="btn-luxury-secondary text-xs !py-3.5 !px-8 cursor-pointer"
+                  {...buttonPrimaryGlow}
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#111111] text-[#F5F2EA] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
-                  BACK TO NOVA HOUSE
-                </button>
+                  <span>BOOK ANOTHER SANCTUARY</span>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-6">
-              {/* Form Input Fields Grid: Stay Details */}
-              <div className="space-y-2">
-                <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
-                  Stay Specifications
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                  {/* Check In */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <Calendar size={13} className="text-[#B69A68]" />
-                      <span>Check-in</span>
+            <form onSubmit={handleSubmit} className="space-y-8">
+              {/* STEP 1: Interactive Visual Room Selector */}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <label className="luxury-form-label !mb-0">
+                    <BedDouble size={16} className="label-icon" />
+                    <span>STEP 1 · SELECT YOUR SANCTUARY</span>
+                  </label>
+                  <span className="font-mono text-xs text-[#2D2924] font-medium hidden sm:inline">
+                    Click room to select
+                  </span>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  {roomsList.map((room) => {
+                    const isSelected = selectedRoomId === room.id;
+                    const isAvail = room.isAvailable !== false;
+                    return (
+                      <motion.div
+                        key={room.id}
+                        onClick={() => isAvail && setSelectedRoomId(room.id)}
+                        {...cardInteractive}
+                        className={`group relative flex flex-col justify-between bg-[#FFFFFF] border-2 transition-all cursor-pointer overflow-hidden p-3.5 ${
+                          isSelected
+                            ? 'border-[#B69A68] ring-3 ring-[#B69A68]/35 shadow-md bg-[#FFFDF9]'
+                            : 'border-[#D5CFC4] hover:border-[#B69A68]/70 shadow-xs'
+                        } ${!isAvail ? 'opacity-55 cursor-not-allowed' : ''}`}
+                      >
+                        {/* Visual Image Banner */}
+                        <div className="relative aspect-[16/10] overflow-hidden bg-[#E8E2D7] mb-3">
+                          <img
+                            src={room.images?.primary}
+                            alt={room.title}
+                            className="w-full h-full object-cover transform scale-100 group-hover:scale-105 transition-transform duration-500"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent pointer-events-none" />
+
+                          {/* Selected Checkmark Badge */}
+                          {isSelected && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#B69A68] text-[#111111] flex items-center justify-center shadow-md font-bold"
+                            >
+                              <Check size={14} />
+                            </motion.div>
+                          )}
+
+                          {/* Room Category Pill */}
+                          <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/80 backdrop-blur-xs text-[10px] font-mono text-[#F5F2EA] uppercase tracking-wider">
+                            {room.category}
+                          </div>
+                        </div>
+
+                        {/* Card Info */}
+                        <div className="space-y-1.5 flex-grow">
+                          <h4 className="font-serif text-lg font-light uppercase text-[#111111] group-hover:text-[#B69A68] transition-colors leading-tight">
+                            {room.title}
+                          </h4>
+                          <div className="flex items-center gap-2 text-[11px] font-mono text-[#555047]">
+                            <span>{room.size}</span>
+                            <span>·</span>
+                            <span>{room.bed}</span>
+                          </div>
+                        </div>
+
+                        {/* Rate footer */}
+                        <div className="pt-3 mt-3 border-t border-[#EFEBE2] flex items-baseline justify-between">
+                          <span className="font-serif text-base font-semibold text-[#111111]">
+                            {room.pricePerNight}
+                          </span>
+                          <span className="font-mono text-[10px] text-[#555047]">/ night</span>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
+                </div>
+              </div>
+
+              {/* STEP 2: Dates, Quick Presets & Guest Details */}
+              <div className="space-y-4 pt-4 border-t border-[#181818]/15">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <label className="luxury-form-label !mb-0">
+                    <Calendar size={16} className="label-icon" />
+                    <span>STEP 2 · STAY DATES & DURATION</span>
+                  </label>
+
+                  {/* Quick Preset Duration Chips */}
+                  <div className="flex flex-wrap items-center gap-2">
+                    <span className="font-mono text-[11px] text-[#555047] font-semibold mr-1">Quick:</span>
+                    <motion.button
+                      type="button"
+                      {...chipInteractive}
+                      onClick={() => applyDurationPreset(2, '2N')}
+                      className={`quick-chip-btn ${activeDurationPreset === '2N' ? 'is-active' : ''}`}
+                    >
+                      Weekend (2N)
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      {...chipInteractive}
+                      onClick={() => applyDurationPreset(3, '3N')}
+                      className={`quick-chip-btn ${activeDurationPreset === '3N' ? 'is-active' : ''}`}
+                    >
+                      Retreat (3N)
+                    </motion.button>
+                    <motion.button
+                      type="button"
+                      {...chipInteractive}
+                      onClick={() => applyDurationPreset(7, '7N')}
+                      className={`quick-chip-btn ${activeDurationPreset === '7N' ? 'is-active' : ''}`}
+                    >
+                      Weekly (7N)
+                    </motion.button>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                  {/* Check-In */}
+                  <div>
+                    <label className="luxury-form-label" htmlFor="booking-check-in">
+                      Check-In Date
                     </label>
                     <input
+                      id="booking-check-in"
                       type="date"
                       min={todayStr}
                       value={checkIn}
                       onChange={(e) => handleCheckInChange(e.target.value)}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      className="luxury-form-input"
                       required
                     />
                   </div>
 
-                  {/* Check Out */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <Calendar size={13} className="text-[#B69A68]" />
-                      <span>Check-out</span>
+                  {/* Check-Out */}
+                  <div>
+                    <label className="luxury-form-label" htmlFor="booking-check-out">
+                      Check-Out Date
                     </label>
                     <input
+                      id="booking-check-out"
                       type="date"
                       value={checkOut}
                       min={getMinCheckOut(checkIn)}
-                      onChange={(e) => setCheckOut(e.target.value)}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      onChange={(e) => handleCheckOutChange(e.target.value)}
+                      className="luxury-form-input"
                       required
                     />
                   </div>
 
                   {/* Guests */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <Users size={13} className="text-[#B69A68]" />
-                      <span>Guests</span>
+                  <div>
+                    <label className="luxury-form-label" htmlFor="booking-guests">
+                      Party Size
                     </label>
                     <select
+                      id="booking-guests"
                       value={guests}
                       onChange={(e) => setGuests(e.target.value)}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      className="luxury-form-select"
                     >
                       <option>1 Adult</option>
                       <option>2 Adults</option>
@@ -417,171 +560,194 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                       <option>4 Adults (Signature Suite)</option>
                     </select>
                   </div>
-
-                  {/* Room Preference */}
-                  <div className="space-y-2">
-                    <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <BedDouble size={13} className="text-[#B69A68]" />
-                      <span>Room Preference</span>
-                    </label>
-                    <select
-                      value={selectedRoomId}
-                      onChange={(e) => setSelectedRoomId(e.target.value)}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
-                    >
-                      {roomsList.map((r) => (
-                        <option key={r.id} value={r.id}>
-                          {r.title} ({r.pricePerNight}) {r.status && r.status !== 'Available' ? `[${r.status}]` : ''}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
                 </div>
               </div>
 
-              {/* Form Input Fields Grid: Guest Credentials */}
-              <div className="space-y-2 pt-2 border-t border-[#181818]/10">
-                <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
-                  Patron Guest Information
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {/* STEP 3: Patron Guest Information */}
+              <div className="space-y-4 pt-4 border-t border-[#181818]/15">
+                <label className="luxury-form-label !mb-0">
+                  <User size={16} className="label-icon" />
+                  <span>STEP 3 · PATRON CONTACT INFORMATION</span>
+                </label>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
                   {/* Guest Full Name */}
-                  <div className="space-y-2">
-                    <label htmlFor="booking-guest-name" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <User size={13} className="text-[#B69A68]" />
-                      <span>GUEST NAME</span>
+                  <div>
+                    <label htmlFor="booking-guest-name" className="luxury-form-label">
+                      Full Legal Name
                     </label>
                     <input
                       id="booking-guest-name"
                       type="text"
-                      placeholder="Enter your full name"
+                      placeholder="e.g. Rohith Varma"
                       value={guestName}
                       onChange={(e) => {
                         setGuestName(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      className="luxury-form-input"
                       required
                     />
                   </div>
 
                   {/* Phone / WhatsApp */}
-                  <div className="space-y-2">
-                    <label htmlFor="booking-guest-phone" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <Phone size={13} className="text-[#B69A68]" />
-                      <span>PHONE / WHATSAPP</span>
+                  <div>
+                    <label htmlFor="booking-guest-phone" className="luxury-form-label">
+                      Phone Number (WhatsApp)
                     </label>
                     <input
                       id="booking-guest-phone"
                       type="tel"
-                      placeholder="Enter your phone number"
+                      placeholder="e.g. 9845012345"
                       value={guestPhone}
                       onChange={(e) => {
                         setGuestPhone(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      className="luxury-form-input"
                       required
                     />
                   </div>
 
                   {/* Email Address */}
-                  <div className="space-y-2">
-                    <label htmlFor="booking-guest-email" className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                      <Mail size={13} className="text-[#B69A68]" />
-                      <span>EMAIL ADDRESS</span>
+                  <div>
+                    <label htmlFor="booking-guest-email" className="luxury-form-label">
+                      Email Address (for Voucher)
                     </label>
                     <input
                       id="booking-guest-email"
                       type="email"
-                      placeholder="Enter your email address"
+                      placeholder="e.g. patron@novahouse.com"
                       value={guestEmail}
                       onChange={(e) => {
                         setGuestEmail(e.target.value);
                         if (formError) setFormError('');
                       }}
-                      className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
+                      className="luxury-form-input"
                       required
                     />
                   </div>
                 </div>
-              </div>
 
-              {/* Special Requests Field */}
-              <div className="space-y-2">
-                <label className="flex items-center gap-2 text-xs font-mono uppercase tracking-widest text-[#77736B]">
-                  <FileText size={13} className="text-[#B69A68]" />
-                  <span>Special Requests / Notes (Optional)</span>
-                </label>
-                <input
-                  type="text"
-                  placeholder="e.g. Airport pickup, quiet courtyard floor, vegan breakfast, late check-in..."
-                  value={specialRequests}
-                  onChange={(e) => setSpecialRequests(e.target.value)}
-                  className="w-full bg-[#FBFAF6] border border-[#181818]/12 p-4 text-xs font-mono text-[#181818] outline-none focus:border-[#181818] transition-colors"
-                />
+                {/* Special Requests */}
+                <div>
+                  <label htmlFor="booking-special-requests" className="luxury-form-label">
+                    <FileText size={13} className="label-icon" />
+                    <span>Special Accommodations or Arrival Time (Optional)</span>
+                  </label>
+                  <input
+                    id="booking-special-requests"
+                    type="text"
+                    placeholder="e.g. Airport transfer, quiet courtyard floor, vegan breakfast..."
+                    value={specialRequests}
+                    onChange={(e) => setSpecialRequests(e.target.value)}
+                    className="luxury-form-input"
+                  />
+                </div>
               </div>
 
               {/* Error Banners */}
               {formError && (
-                <div className="p-3 bg-red-50 border border-red-200 text-red-800 text-xs font-mono flex items-center gap-2 animate-fade-in">
-                  <AlertCircle size={15} className="shrink-0 text-red-600" />
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-red-50 border-2 border-red-300 text-red-900 text-xs font-mono font-semibold flex items-center gap-3 shadow-xs"
+                >
+                  <AlertCircle size={18} className="shrink-0 text-red-600" />
                   <span>{formError}</span>
-                </div>
+                </motion.div>
               )}
 
               {availabilityMessage && (
-                <div className="p-3 bg-amber-50 border border-amber-200 text-amber-800 text-xs font-mono flex items-center gap-2 animate-fade-in">
-                  <AlertCircle size={15} className="shrink-0 text-amber-600" />
+                <motion.div
+                  initial={{ opacity: 0, y: -6 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  className="p-4 bg-amber-50 border-2 border-amber-300 text-amber-900 text-xs font-mono font-semibold flex items-center gap-3 shadow-xs"
+                >
+                  <AlertCircle size={18} className="shrink-0 text-amber-600" />
                   <span>{availabilityMessage}</span>
-                </div>
+                </motion.div>
               )}
 
-              {/* Real-time Rate Summary Bar */}
-              <div className="p-6 bg-[#FBFAF6] border border-[#181818]/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-                <div className="space-y-1">
-                  <span className="font-mono text-[10px] tracking-widest uppercase text-[#B69A68] block font-medium">
-                    Real-time Stay Estimation
-                  </span>
-                  <div className="flex items-baseline gap-2">
-                    <span className="font-serif text-3xl font-light text-[#181818]">
-                      ₹ {totalPrice.toLocaleString()}
-                    </span>
-                    <span className="font-mono text-xs text-[#77736B]">
-                      total for {nights} night{nights > 1 ? 's' : ''} (incl. GST)
-                    </span>
+              {/* STEP 4: Real-time Rate Summary Card & Direct CTA */}
+              <div className="bg-[#111111] text-[#F5F2EA] p-6 sm:p-8 border border-white/10 shadow-lg space-y-6">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
+                  <div className="space-y-1">
+                    <div className="flex items-center gap-2">
+                      <span className="w-2 h-2 rounded-full bg-[#B69A68] animate-pulse" />
+                      <span className="font-mono text-xs uppercase tracking-widest text-[#B69A68] font-bold">
+                        Guaranteed Direct Rate
+                      </span>
+                    </div>
+                    <div className="flex items-baseline gap-3">
+                      <span className="font-serif text-3xl sm:text-5xl font-light text-[#FFFFFF]">
+                        <AnimatedPrice value={totalPrice} prefix="₹ " />
+                      </span>
+                      <span className="font-mono text-xs text-[#B8B3AA]">
+                        total for {nights} night{nights > 1 ? 's' : ''} (incl. 18% GST)
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Summary Breakdown Pills */}
+                  <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#B8B3AA]">
+                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                      <span className="text-[#B69A68] block text-[10px] uppercase">Suite Rate</span>
+                      <span className="text-[#F5F2EA] font-semibold">₹ {selectedRoom.numericPrice.toLocaleString('en-IN')} / night</span>
+                    </div>
+                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                      <span className="text-[#B69A68] block text-[10px] uppercase">Duration</span>
+                      <span className="text-[#F5F2EA] font-semibold">{nights} Nights</span>
+                    </div>
+                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                      <span className="text-[#B69A68] block text-[10px] uppercase">GST (18%)</span>
+                      <span className="text-[#F5F2EA] font-semibold">₹ {taxes.toLocaleString('en-IN')}</span>
+                    </div>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-6 text-xs font-mono text-[#77736B]">
+                {/* Trust Inclusions */}
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono text-[#B8B3AA]">
                   <div className="flex items-center gap-2">
-                    <Shield size={14} className="text-[#B69A68]" />
-                    <span>Best Direct Price Guaranteed</span>
+                    <Shield size={14} className="text-[#B69A68] shrink-0" />
+                    <span>Best Price Guaranteed Direct</span>
                   </div>
-                  <div className="hidden md:flex items-center gap-2">
-                    <Clock size={14} className="text-[#B69A68]" />
-                    <span>Instant Confirmation</span>
+                  <div className="flex items-center gap-2">
+                    <Clock size={14} className="text-[#B69A68] shrink-0" />
+                    <span>Instant Real-Time Confirmation</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Sparkles size={14} className="text-[#B69A68] shrink-0" />
+                    <span>Complimentary Artisan Breakfast</span>
                   </div>
                 </div>
-              </div>
 
-              {/* Submit CTA Button */}
-              <div className="pt-2">
-                <button
-                  type="submit"
-                  disabled={isChecking}
-                  className="w-full btn-luxury-primary !py-5 text-xs tracking-[0.2em] font-semibold cursor-pointer"
-                  style={{
-                    backgroundColor: '#181818',
-                    color: '#F5F2EA',
-                    borderColor: '#181818',
-                  }}
-                >
-                  <span>
-                    {isChecking ? 'Checking Real-time Availability...' : 'Proceed to Secure Payment'}
-                  </span>
-                  <ArrowUpRight size={16} />
-                </button>
+                {/* Primary CTA Button */}
+                <div className="pt-2">
+                  <motion.button
+                    type="submit"
+                    disabled={isChecking}
+                    {...buttonPrimaryGlow}
+                    className="w-full btn-luxury-primary !py-5 text-xs sm:text-sm tracking-[0.22em] font-bold uppercase cursor-pointer flex items-center justify-center gap-3"
+                    style={{
+                      backgroundColor: '#B69A68',
+                      color: '#111111',
+                      borderColor: '#B69A68',
+                    }}
+                  >
+                    {isChecking ? (
+                      <>
+                        <Loader2 size={18} className="animate-spin text-[#111111]" />
+                        <span>VERIFYING REGISTRY AVAILABILITY...</span>
+                      </>
+                    ) : (
+                      <>
+                        <span>PROCEED TO SECURE RESERVATION</span>
+                        <ArrowUpRight size={16} />
+                      </>
+                    )}
+                  </motion.button>
+                </div>
               </div>
             </form>
           )}
