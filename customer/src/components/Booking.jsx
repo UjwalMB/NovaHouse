@@ -282,20 +282,22 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     <section id="booking" className="section-spacing bg-[#F7F5EF] text-[#181818] relative">
       <div className="container-luxury">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[#181818]/15 pb-8 mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[#181818]/15 pb-8 mb-10 sm:mb-12">
           <div>
-            <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#B69A68] block mb-2 font-semibold">
+            <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#B69A68] block mb-3 font-semibold">
               Direct Online Reservations
             </span>
-            <h2 className="font-serif text-4xl sm:text-6xl md:text-7xl font-light uppercase leading-[0.95] tracking-tight text-[#111111]">
-              Your stay <br />
-              <span className="italic font-normal text-[#B69A68]">starts here.</span>
+            <h2 className="font-serif text-5xl sm:text-6xl md:text-7xl font-light uppercase tracking-tight text-[#111111] leading-[1.08]">
+              <span className="block">Your stay</span>
+              <span className="block italic font-normal text-[#B69A68]">starts here.</span>
             </h2>
           </div>
 
-          <p className="text-sm font-sans text-[#2D2924] max-w-sm md:text-right leading-relaxed font-medium">
-            Reserve directly with NOVA HOUSE for our guaranteed best direct tariff, complimentary daily breakfast, and flexible 48h cancellation.
-          </p>
+          <div className="max-w-sm md:text-right">
+            <p className="text-sm font-sans text-[#2D2924] leading-relaxed font-medium">
+              Reserve directly with NOVA HOUSE for our guaranteed best direct tariff, complimentary daily breakfast, and flexible 48h cancellation.
+            </p>
+          </div>
         </div>
 
         {/* Booking Container */}
