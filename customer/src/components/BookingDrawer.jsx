@@ -1228,46 +1228,56 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               {/* Section 19: Authoritative Pricing Display */}
               <div
-                className="p-5 border border-[#181818]/10 space-y-2.5 shadow-xs rounded-none font-sans"
-                style={{ backgroundColor: '#EFEBE2' }}
+                className="p-5 border border-[#181818]/10 space-y-2.5 shadow-xs rounded-none"
+                style={{ backgroundColor: '#EFEBE2', fontFamily: '"Inter", sans-serif' }}
               >
                 {!selectedRoom || nights === 0 ? (
-                  <div className="py-2 text-center text-xs font-sans text-[#77736B]">
+                  <div className="py-2 text-center text-xs text-[#77736B]">
                     Select a room and stay dates to calculate room tariff & taxes.
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-sans font-medium">Duration:</span>
-                      <span className="font-mono font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      <span className="text-[#77736B] font-medium">Duration:</span>
+                      <span className="font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         {nights} {nights === 1 ? 'Night' : 'Nights'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-sans font-medium">Room Rate ({nights}x):</span>
-                      <span className="font-mono font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      <span className="text-[#77736B] font-medium">Room Rate ({nights}x):</span>
+                      <span className="font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹{roomSubtotal.toLocaleString('en-IN')}
                       </span>
                     </div>
                     {appliedOffer && promoDiscount > 0 && (
                       <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold">
-                        <span className="font-sans">Privilege Discount ({appliedOffer.code}):</span>
-                        <span className="font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        <span>Privilege Discount ({appliedOffer.code}):</span>
+                        <span style={{ fontVariantNumeric: 'tabular-nums' }}>
                           -₹{promoDiscount.toLocaleString('en-IN')}
                         </span>
                       </div>
                     )}
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-sans font-medium">Luxury GST (18%):</span>
-                      <span className="font-mono font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      <span className="text-[#77736B] font-medium">Luxury GST (18%):</span>
+                      <span className="font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹{estimatedTaxes.toLocaleString('en-IN')}
                       </span>
                     </div>
                     <div className="pt-2.5 border-t border-[#181818]/10 flex items-baseline justify-between">
-                      <span className="text-xs font-sans font-bold text-[#181818] uppercase tracking-wider">
+                      <span
+                        className="text-xs font-bold text-[#181818] uppercase tracking-wider"
+                        style={{ fontFamily: '"Inter", sans-serif' }}
+                      >
                         Total Payable:
                       </span>
-                      <span className="font-mono text-2xl text-[#181818] font-bold tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      <span
+                        className="text-2xl text-[#181818]"
+                        style={{
+                          fontFamily: '"Inter", sans-serif',
+                          fontWeight: 600,
+                          fontVariantNumeric: 'tabular-nums',
+                        }}
+                      >
                         ₹{estimatedTotal.toLocaleString('en-IN')}
                       </span>
                     </div>
