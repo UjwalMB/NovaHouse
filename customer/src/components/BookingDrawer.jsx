@@ -627,41 +627,41 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               {/* Authoritative Reservation Dossier */}
               <div
-                className="p-5 border border-[#181818]/10 space-y-3.5 text-left font-mono text-xs rounded-none shadow-xs"
+                className="p-5 border border-[#181818]/10 space-y-3.5 text-left font-sans text-xs rounded-none shadow-xs"
                 style={{ backgroundColor: '#EFEBE2' }}
               >
                 <div className="flex justify-between items-center pb-2.5 border-b border-[#181818]/10">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Reservation ID:</span>
-                  <strong className="text-[#181818] font-semibold text-sm">
+                  <span className="text-[#77736B] font-sans font-semibold uppercase tracking-wider text-[11px]">Reservation ID:</span>
+                  <strong className="text-[#181818] font-mono font-semibold text-sm" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     {confirmedBooking.bookingId}
                   </strong>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Room:</span>
-                  <span className="text-[#181818] font-medium">{confirmedBooking.roomTitle}</span>
+                  <span className="text-[#77736B] font-sans font-semibold uppercase tracking-wider text-[11px]">Room:</span>
+                  <span className="text-[#181818] font-serif text-sm font-semibold">{confirmedBooking.roomTitle}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Check-in:</span>
-                  <span className="text-[#181818]">{formatDisplayDate(confirmedBooking.checkIn)}</span>
+                  <span className="text-[#77736B] font-sans font-semibold uppercase tracking-wider text-[11px]">Check-in:</span>
+                  <span className="text-[#181818] font-mono text-xs" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatDisplayDate(confirmedBooking.checkIn)}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Check-out:</span>
-                  <span className="text-[#181818]">{formatDisplayDate(confirmedBooking.checkOut)}</span>
+                  <span className="text-[#77736B] font-sans font-semibold uppercase tracking-wider text-[11px]">Check-out:</span>
+                  <span className="text-[#181818] font-mono text-xs" style={{ fontVariantNumeric: 'tabular-nums' }}>{formatDisplayDate(confirmedBooking.checkOut)}</span>
                 </div>
 
                 <div className="flex justify-between items-center">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Amount Paid:</span>
-                  <span className="font-serif text-xl text-[#181818] font-semibold">
+                  <span className="text-[#77736B] font-sans font-bold uppercase tracking-wider text-[11px]">Amount Paid:</span>
+                  <span className="font-mono text-xl text-[#181818] font-bold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     ₹{Number(confirmedBooking.totalAmount).toLocaleString('en-IN')}
                   </span>
                 </div>
 
                 <div className="flex justify-between items-center pt-2.5 border-t border-[#181818]/10">
-                  <span className="text-[#77736B] uppercase tracking-wider text-[11px]">Status:</span>
-                  <span className="px-2.5 py-0.5 rounded-none bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-bold tracking-wider text-[11px]">
+                  <span className="text-[#77736B] font-sans font-semibold uppercase tracking-wider text-[11px]">Status:</span>
+                  <span className="px-2.5 py-0.5 rounded-none bg-[#EDF7F0] text-[#235C33] border border-[#C8E8D1] font-sans font-bold tracking-wider text-[11px] uppercase">
                     CONFIRMED
                   </span>
                 </div>
@@ -1228,38 +1228,46 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               {/* Section 19: Authoritative Pricing Display */}
               <div
-                className="p-5 border border-[#181818]/10 space-y-2.5 shadow-xs rounded-none"
+                className="p-5 border border-[#181818]/10 space-y-2.5 shadow-xs rounded-none font-sans"
                 style={{ backgroundColor: '#EFEBE2' }}
               >
                 {!selectedRoom || nights === 0 ? (
-                  <div className="py-2 text-center text-xs font-mono text-[#77736B]">
+                  <div className="py-2 text-center text-xs font-sans text-[#77736B]">
                     Select a room and stay dates to calculate room tariff & taxes.
                   </div>
                 ) : (
                   <>
-                    <div className="flex items-center justify-between text-xs font-mono text-[#181818]">
-                      <span className="text-[#77736B]">Duration:</span>
-                      <span className="font-semibold">{nights} {nights === 1 ? 'Night' : 'Nights'}</span>
+                    <div className="flex items-center justify-between text-xs text-[#181818]">
+                      <span className="text-[#77736B] font-sans font-medium">Duration:</span>
+                      <span className="font-mono font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {nights} {nights === 1 ? 'Night' : 'Nights'}
+                      </span>
                     </div>
-                    <div className="flex items-center justify-between text-xs font-mono text-[#181818]">
-                      <span className="text-[#77736B]">Room Rate ({nights}x):</span>
-                      <span>₹{roomSubtotal.toLocaleString('en-IN')}</span>
+                    <div className="flex items-center justify-between text-xs text-[#181818]">
+                      <span className="text-[#77736B] font-sans font-medium">Room Rate ({nights}x):</span>
+                      <span className="font-mono font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        ₹{roomSubtotal.toLocaleString('en-IN')}
+                      </span>
                     </div>
                     {appliedOffer && promoDiscount > 0 && (
-                      <div className="flex items-center justify-between text-xs font-mono text-emerald-700 font-semibold">
-                        <span>Privilege Discount ({appliedOffer.code}):</span>
-                        <span>-₹{promoDiscount.toLocaleString('en-IN')}</span>
+                      <div className="flex items-center justify-between text-xs text-emerald-700 font-semibold">
+                        <span className="font-sans">Privilege Discount ({appliedOffer.code}):</span>
+                        <span className="font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                          -₹{promoDiscount.toLocaleString('en-IN')}
+                        </span>
                       </div>
                     )}
-                    <div className="flex items-center justify-between text-xs font-mono text-[#181818]">
-                      <span className="text-[#77736B]">Luxury GST (18%):</span>
-                      <span>₹{estimatedTaxes.toLocaleString('en-IN')}</span>
+                    <div className="flex items-center justify-between text-xs text-[#181818]">
+                      <span className="text-[#77736B] font-sans font-medium">Luxury GST (18%):</span>
+                      <span className="font-mono font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        ₹{estimatedTaxes.toLocaleString('en-IN')}
+                      </span>
                     </div>
                     <div className="pt-2.5 border-t border-[#181818]/10 flex items-baseline justify-between">
-                      <span className="text-xs font-mono font-bold text-[#181818] uppercase tracking-wider">
+                      <span className="text-xs font-sans font-bold text-[#181818] uppercase tracking-wider">
                         Total Payable:
                       </span>
-                      <span className="font-serif text-2xl text-[#181818] font-semibold">
+                      <span className="font-mono text-2xl text-[#181818] font-bold tracking-tight" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹{estimatedTotal.toLocaleString('en-IN')}
                       </span>
                     </div>
