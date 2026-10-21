@@ -1232,19 +1232,19 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                 style={{ backgroundColor: '#EFEBE2', fontFamily: '"Inter", sans-serif' }}
               >
                 {!selectedRoom || nights === 0 ? (
-                  <div className="py-2 text-center text-xs text-[#77736B]">
+                  <div className="py-2 text-center text-xs text-[#3E3A34]">
                     Select a room and stay dates to calculate room tariff & taxes.
                   </div>
                 ) : (
                   <>
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-medium">Duration:</span>
+                      <span className="text-[#3E3A34] font-medium">Duration:</span>
                       <span className="font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         {nights} {nights === 1 ? 'Night' : 'Nights'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-medium">Room Rate ({nights}x):</span>
+                      <span className="text-[#3E3A34] font-medium">Room Rate ({nights}x):</span>
                       <span className="font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹{roomSubtotal.toLocaleString('en-IN')}
                       </span>
@@ -1258,7 +1258,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                       </div>
                     )}
                     <div className="flex items-center justify-between text-xs text-[#181818]">
-                      <span className="text-[#77736B] font-medium">Luxury GST (18%):</span>
+                      <span className="text-[#3E3A34] font-medium">Luxury GST (18%):</span>
                       <span className="font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹{estimatedTaxes.toLocaleString('en-IN')}
                       </span>

@@ -20,7 +20,7 @@
   --color-border-dark: rgba(245, 242, 234, 0.12);
   --color-text: #181818;
   --color-text-light: #F5F2EA;
-  --color-text-muted: #77736B;
+  --color-text-muted: #3E3A34;
   --color-text-muted-dark: #B8B3AA;
   --color-accent: #B69A68;
   --color-accent-hover: #C5AB7B;
@@ -224,7 +224,7 @@ body::after {
 }
 
 .luxury-form-input::placeholder {
-  color: #8C867B !important;
+  color: #5A554C !important;
   font-weight: 400;
   opacity: 1;
 }
@@ -1224,7 +1224,7 @@ body::after {
   text-transform: uppercase;
   border: 1px solid transparent;
   background-color: transparent;
-  color: var(--color-text-muted, #77736B);
+  color: var(--color-text-muted, #3E3A34);
   cursor: pointer;
   transition: all 0.25s var(--ease-editorial);
   white-space: nowrap;
@@ -1474,8 +1474,8 @@ body::after {
 .text-\[\#B69A68\] { color: #B69A68 !important; }
 .text-\[\#A58A5C\], .text-gold { color: #B69A68 !important; }
 .text-\[\#A39F97\] { color: #B8B3AA !important; }
-.text-\[\#77736B\] { color: #77736B !important; }
-.text-\[\#77736C\], .text-muted { color: #77736B !important; }
+.text-\[\#77736B\] { color: #3E3A34 !important; }
+.text-\[\#77736C\], .text-muted { color: #3E3A34 !important; }
 .text-\[\#88847D\] { color: #B8B3AA !important; }
 .text-\[\#181818\] { color: #181818 !important; }
 .text-\[\#171717\], .text-\[\#111111\], .text-dark { color: #181818 !important; }

@@ -56,11 +56,11 @@ export default function StatCard({
       }`}
     >
       <div className="flex items-start justify-between gap-4">
-        <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#77736C] block mb-1">
+        <div className="min-w-0 flex-1">
+          <span className="font-mono text-xs uppercase tracking-widest text-[#383531] block mb-1">
             {title}
           </span>
-          <div className="font-sans text-2xl md:text-3xl font-semibold text-[#111111] tracking-tight tabular-nums">
+          <div className="font-sans text-xl sm:text-2xl 2xl:text-3xl font-semibold text-[#111111] tracking-tight tabular-nums whitespace-nowrap overflow-hidden text-ellipsis">
             {numericValue !== null ? (
               <AnimatedCounter
                 value={numericValue}
@@ -88,7 +88,7 @@ export default function StatCard({
                   ? 'text-[#235C33]'
                   : trend.direction === 'down'
                   ? 'text-[#962828]'
-                  : 'text-[#77736C]'
+                  : 'text-[#383531]'
               }`}
             >
               {trend.direction === 'up' && <TrendingUp size={13} />}
@@ -97,7 +97,7 @@ export default function StatCard({
               {trend.value}
             </span>
           )}
-          {subtitle && <span className="text-[#77736C]">{subtitle}</span>}
+          {subtitle && <span className="text-[#383531] truncate">{subtitle}</span>}
         </div>
       )}
     </motion.div>

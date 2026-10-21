@@ -13,8 +13,8 @@
   --color-dark-surface: #1E1E1E;
   
   --color-text-primary: #111111;
-  --color-text-secondary: #77736C;
-  --color-text-muted: #9E9990;
+  --color-text-secondary: #383531;
+  --color-text-muted: #55514A;
   --color-text-inverse: #F4F1EB;
   
   --color-border: #E2DDD5;
@@ -54,10 +54,10 @@
   /* Layout Dimensions */
   --sidebar-width: 260px;
   --topbar-height: 70px;
-  --radius-xs: 2px;
-  --radius-sm: 4px;
-  --radius-md: 6px;
-  --radius-lg: 8px;
+  --radius-xs: 3px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
   --radius-full: 9999px;
 
   /* Shadows */
@@ -272,13 +272,14 @@ table {
   gap: 4px;
 }
 
-.admin-nav-section-title {
+.admin-nav-section-title,
+.nav-section-heading {
   padding: 0 12px;
   font-family: var(--font-mono);
   font-size: 10px;
   letter-spacing: 0.2em;
   text-transform: uppercase;
-  color: #77736C;
+  color: #B8B2A6 !important;
   font-weight: 600;
   margin-bottom: 6px;
   display: block;
@@ -331,21 +332,27 @@ table {
   background-color: #0D0D0D;
 }
 
-.admin-footer-link {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: rgba(216, 208, 195, 0.85);
-  border-radius: var(--radius-xs);
-  transition: all 0.2s ease;
+.admin-footer-link,
+.admin-external-link {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  padding: 10px 12px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  color: #D8D0C3 !important;
+  background-color: transparent !important;
+  border-radius: var(--radius-sm) !important;
+  transition: all 0.2s ease !important;
+  text-decoration: none !important;
+  width: 100% !important;
+  box-sizing: border-box !important;
 }
 
-.admin-footer-link:hover {
-  background-color: rgba(255, 255, 255, 0.05);
-  color: var(--color-gold);
+.admin-footer-link:hover,
+.admin-external-link:hover {
+  background-color: rgba(255, 255, 255, 0.08) !important;
+  color: var(--color-gold) !important;
 }
 
 .admin-footer-left {
@@ -363,21 +370,29 @@ table {
   opacity: 0.4;
 }
 
-.admin-footer-logout {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 8px 12px;
-  font-family: var(--font-mono);
-  font-size: 11px;
-  color: #962828;
-  border-radius: var(--radius-xs);
-  transition: all 0.2s ease;
+.admin-footer-logout,
+.admin-logout-btn {
+  width: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  gap: 8px !important;
+  padding: 10px 12px !important;
+  font-family: var(--font-mono) !important;
+  font-size: 11px !important;
+  color: #F87171 !important;
+  background-color: transparent !important;
+  border: none !important;
+  border-radius: var(--radius-sm) !important;
+  cursor: pointer !important;
+  transition: all 0.2s ease !important;
+  text-align: left !important;
+  box-sizing: border-box !important;
 }
 
-.admin-footer-logout:hover {
-  background-color: rgba(253, 240, 240, 0.1);
+.admin-footer-logout:hover,
+.admin-logout-btn:hover {
+  background-color: rgba(239, 68, 68, 0.12) !important;
+  color: #EF4444 !important;
 }
 
 /* ==========================================================================
@@ -386,7 +401,7 @@ table {
 .admin-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   box-shadow: var(--shadow-sm);
   overflow: hidden;
 }
@@ -402,7 +417,7 @@ table {
 .stat-card {
   background-color: var(--color-surface);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   padding: 20px 22px;
   box-shadow: var(--shadow-sm);
   display: flex;
@@ -564,7 +579,7 @@ table {
   -webkit-overflow-scrolling: touch;
   border: 1px solid var(--color-border);
   background-color: var(--color-surface);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
 }
 
 .data-table-container::-webkit-scrollbar {
@@ -999,11 +1014,11 @@ table {
 .text-\[\#111111\] { color: #111111 !important; }
 .text-\[\#FFFFFF\], .text-white { color: #FFFFFF !important; }
 .text-\[\#F4F1EB\] { color: #F4F1EB !important; }
-.text-\[\#77736C\] { color: #77736C !important; }
+.text-\[\#77736C\] { color: #383531 !important; }
 .text-\[\#A58A5C\] { color: #A58A5C !important; }
 .text-\[\#D8D0C3\] { color: #D8D0C3 !important; }
 .text-\[\#A39F97\] { color: #A39F97 !important; }
-.text-\[\#9E9990\] { color: #9E9990 !important; }
+.text-\[\#9E9990\] { color: #55514A !important; }
 .text-\[\#55514B\] { color: #55514B !important; }
 .text-\[\#962828\] { color: #962828 !important; }
 .text-\[\#235C33\] { color: #235C33 !important; }

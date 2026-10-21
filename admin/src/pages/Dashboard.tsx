@@ -390,7 +390,7 @@ export default function Dashboard() {
 
         <StatCard
           title="Today's Revenue"
-          value={`₹ ${todayRevenue.toLocaleString()}`}
+          value={`₹${todayRevenue.toLocaleString('en-IN')}`}
           icon={IndianRupee}
           trend={{ direction: 'up', value: 'captured online/POS' }}
           subtitle="verified collections"
@@ -545,7 +545,7 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {todayArrivals.map((b) => (
-                    <div key={b.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-3">
+                    <div key={b.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <span className="font-mono text-[10px] text-[#A58A5C] block">#{b.id}</span>
@@ -621,7 +621,7 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {todayDepartures.map((b) => (
-                    <div key={b.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-3">
+                    <div key={b.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md space-y-3">
                       <div className="flex items-start justify-between">
                         <div>
                           <span className="font-mono text-[10px] text-[#A58A5C] block">#{b.id}</span>
@@ -700,7 +700,7 @@ export default function Dashboard() {
                     <div
                       key={r.id}
                       onClick={() => navigate('/admin/rooms')}
-                      className={`p-3 border rounded-xs cursor-pointer transition-all hover:shadow-xs space-y-1.5 ${statusBg}`}
+                      className={`p-3 border rounded-md cursor-pointer transition-all hover:shadow-xs space-y-1.5 ${statusBg}`}
                     >
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold">Key #{r.roomNumber}</span>
@@ -741,7 +741,7 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pendingHkTasks.map((t) => (
-                    <div key={t.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2.5">
+                    <div key={t.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-[#111111]">Room #{t.roomNumber}</span>
                         <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-xs ${
@@ -802,7 +802,7 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {openMaintenance.map((m) => (
-                    <div key={m.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2.5">
+                    <div key={m.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-[#111111]">Room #{m.roomNumber}</span>
                         <span className={`px-2 py-0.5 text-[9px] font-mono font-bold rounded-xs ${
@@ -864,7 +864,7 @@ export default function Dashboard() {
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
                   {pendingEnquiriesList.map((e) => (
-                    <div key={e.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2.5">
+                    <div key={e.id} className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md space-y-2.5">
                       <div className="flex items-center justify-between">
                         <span className="font-mono text-xs font-bold text-[#111111]">{e.name}</span>
                         <span className="text-[10px] font-mono px-1.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-200 rounded-xs">
@@ -1046,7 +1046,7 @@ export default function Dashboard() {
               .map((b) => (
                 <div
                   key={b.id}
-                  className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs flex items-center justify-between text-xs"
+                  className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md flex items-center justify-between text-xs"
                 >
                   <div>
                     <span className="font-semibold text-[#111111] block">{b.guestName}</span>
@@ -1093,7 +1093,7 @@ export default function Dashboard() {
               .map((b) => (
                 <div
                   key={b.id}
-                  className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs flex items-center justify-between text-xs"
+                  className="p-3 bg-[#FAF8F5] border border-[#ECE8E0] rounded-md flex items-center justify-between text-xs"
                 >
                   <div>
                     <span className="font-semibold text-[#111111] block">{b.guestName}</span>

@@ -165,10 +165,6 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
             <div className="admin-sidebar-brand">NOVA HOUSE</div>
             <div className="admin-sidebar-tagline">HOTEL ADMIN</div>
           </div>
-          <span className="live-status-pill">
-            <span className="live-status-dot" />
-            <span>LIVE</span>
-          </span>
         </div>
 
         {/* Navigation Sections */}
@@ -267,20 +263,20 @@ export default function Sidebar({ onCloseMobile }: SidebarProps) {
           href={import.meta.env.VITE_PUBLIC_WEBSITE_URL || 'http://127.0.0.1:5173'}
           target="_blank"
           rel="noopener noreferrer"
-          className="admin-external-link"
+          className="admin-footer-link"
         >
-          <div className="flex items-center gap-2">
-            <Globe size={15} />
+          <div className="flex items-center gap-2.5">
+            <Globe size={15} className="text-[#A58A5C]" />
             <span>Public Website</span>
           </div>
-          <ExternalLink size={13} />
+          <ExternalLink size={13} className="opacity-60" />
         </a>
 
         <button
           onClick={handleLogout}
-          className="admin-logout-btn"
+          className="admin-footer-logout"
         >
-          <LogOut size={14} />
+          <LogOut size={15} />
           <span>Exit Admin Portal</span>
         </button>
       </div>
