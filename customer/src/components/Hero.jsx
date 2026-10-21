@@ -10,8 +10,7 @@ import {
 
 export default function Hero({ onOpenBooking, onExplore }) {
   const badgeRef = useRef(null);
-  const headlineLine1Ref = useRef(null);
-  const headlineLine2Ref = useRef(null);
+  const headlineRef = useRef(null);
   const accentLineRef = useRef(null);
   const subheadRef = useRef(null);
   const cta1Ref = useRef(null);
@@ -21,7 +20,7 @@ export default function Hero({ onOpenBooking, onExplore }) {
   useEffect(() => {
     const anim = animateHeroEntrance({
       badge: badgeRef.current,
-      headlineLines: [headlineLine1Ref.current, headlineLine2Ref.current].filter(Boolean),
+      headlineLines: [headlineRef.current].filter(Boolean),
       accentLine: accentLineRef.current,
       subhead: subheadRef.current,
       ctaButtons: [cta1Ref.current, cta2Ref.current].filter(Boolean),
@@ -66,7 +65,7 @@ export default function Hero({ onOpenBooking, onExplore }) {
         <div className="w-full pt-4" />
 
         {/* Core Hero Editorial Hierarchy */}
-        <div className="my-auto py-6 sm:py-8 max-w-4xl">
+        <div className="my-auto py-6 sm:py-8 max-w-5xl">
           {/* 1. Small Location & Status Eyebrow */}
           <div
             ref={badgeRef}
@@ -79,14 +78,14 @@ export default function Hero({ onOpenBooking, onExplore }) {
             </span>
           </div>
 
-          {/* 2. Main Headline with High Contrast Display Typography */}
-          <h1 className="hero-headline mb-4 sm:mb-6">
-            <span ref={headlineLine1Ref} className="block" style={{ opacity: 0 }}>
-              A PLACE
-            </span>
-            <span ref={headlineLine2Ref} className="hero-headline-sub block" style={{ opacity: 0 }}>
-              TO PAUSE.
-            </span>
+          {/* 2. Main Headline with High Contrast Display Typography in a single line */}
+          <h1
+            ref={headlineRef}
+            className="hero-headline mb-4 sm:mb-6 whitespace-nowrap"
+            style={{ opacity: 0 }}
+          >
+            <span>A PLACE </span>
+            <span className="hero-headline-sub">TO PAUSE.</span>
           </h1>
 
           {/* Decorative Gold Accent Line */}

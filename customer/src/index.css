@@ -1421,11 +1421,11 @@ body::after {
 .hero-headline {
   font-family: var(--font-serif);
   font-weight: 300;
-  line-height: 0.94;
+  line-height: 1;
   letter-spacing: -0.02em;
   text-transform: uppercase;
   color: #FFFFFF;
-  font-size: clamp(2.75rem, 6.8vw, 6.25rem);
+  font-size: clamp(1.75rem, 5.6vw, 5.5rem);
   text-shadow: 0 4px 28px rgba(0, 0, 0, 0.45);
 }
 
