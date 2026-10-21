@@ -5,8 +5,8 @@ import { loginStaff } from '../services/authService';
 
 export default function Login() {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('manager@novahouse.example');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState('admin@novahouse.com');
+  const [password, setPassword] = useState('admin');
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe] = useState(true);
   const [loading, setLoading] = useState(false);
@@ -32,7 +32,8 @@ export default function Login() {
   };
 
   const handleFillDemo = () => {
-    setEmail('manager@novahouse.example');
+    setEmail('admin@novahouse.com');
+    setPassword('admin');
   };
 
   return (
@@ -98,7 +99,7 @@ export default function Login() {
           <div className="p-3 bg-[#1D1D1D] border border-white/10 rounded-xs flex items-center justify-between text-xs">
             <div className="flex items-center gap-2 text-[#D8D0C3]">
               <Sparkles size={14} className="text-[#A58A5C]" />
-              <span className="font-mono text-[11px]">Demo: Hotel Manager</span>
+              <span className="font-mono text-[11px]">Demo: Admin Access</span>
             </div>
             <button
               type="button"
