@@ -282,7 +282,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
     <section id="booking" className="section-spacing bg-[#F7F5EF] text-[#181818] relative">
       <div className="container-luxury">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 border-b border-[#181818]/15 pb-8 mb-12 sm:mb-16">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-8 border-b border-[#181818]/15 pb-8 mb-12 sm:mb-16">
           <div>
             <span className="font-mono text-xs uppercase tracking-[0.25em] text-[#B69A68] block mb-2 font-semibold">
               Direct Online Reservations
@@ -299,7 +299,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
         </div>
 
         {/* Booking Container */}
-        <div className="bg-[#EFEBE2] border border-[#181818]/15 p-5 sm:p-8 lg:p-12 shadow-sm rounded-none">
+        <div className="bg-[#EFEBE2] border border-[#181818]/15 p-6 sm:p-10 lg:p-12 shadow-sm rounded-none">
           {confirmedReservation ? (
             /* Confirmation Voucher View */
             <motion.div
@@ -396,20 +396,17 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
               </div>
             </motion.div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-8">
-              {/* STEP 1: Interactive Visual Room Selector */}
-              <div className="space-y-3">
+            <form onSubmit={handleSubmit} className="space-y-10 sm:space-y-12">
+              {/* Visual Room Selector */}
+              <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <label className="luxury-form-label !mb-0">
                     <BedDouble size={16} className="label-icon" />
-                    <span>STEP 1 · SELECT YOUR SANCTUARY</span>
+                    <span>SELECT YOUR SANCTUARY</span>
                   </label>
-                  <span className="font-mono text-xs text-[#2D2924] font-medium hidden sm:inline">
-                    Click room to select
-                  </span>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 lg:gap-6">
                   {roomsList.map((room) => {
                     const isSelected = selectedRoomId === room.id;
                     const isAvail = room.isAvailable !== false;
@@ -418,14 +415,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                         key={room.id}
                         onClick={() => isAvail && setSelectedRoomId(room.id)}
                         {...cardInteractive}
-                        className={`group relative flex flex-col justify-between bg-[#FFFFFF] border-2 transition-all cursor-pointer overflow-hidden p-3.5 ${
+                        className={`group relative flex flex-col justify-between bg-[#FFFFFF] border-2 transition-all cursor-pointer overflow-hidden p-4 sm:p-5 ${
                           isSelected
                             ? 'border-[#B69A68] ring-3 ring-[#B69A68]/35 shadow-md bg-[#FFFDF9]'
                             : 'border-[#D5CFC4] hover:border-[#B69A68]/70 shadow-xs'
                         } ${!isAvail ? 'opacity-55 cursor-not-allowed' : ''}`}
                       >
                         {/* Visual Image Banner */}
-                        <div className="relative aspect-[16/10] overflow-hidden bg-[#E8E2D7] mb-3">
+                        <div className="relative aspect-[16/10] overflow-hidden bg-[#E8E2D7] mb-3.5">
                           <img
                             src={room.images?.primary}
                             alt={room.title}
@@ -438,14 +435,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="absolute top-2 right-2 w-6 h-6 rounded-full bg-[#B69A68] text-[#111111] flex items-center justify-center shadow-md font-bold"
+                              className="absolute top-2.5 right-2.5 w-6 h-6 rounded-full bg-[#B69A68] text-[#111111] flex items-center justify-center shadow-md font-bold"
                             >
                               <Check size={14} />
                             </motion.div>
                           )}
 
                           {/* Room Category Pill */}
-                          <div className="absolute bottom-2 left-2 px-2 py-0.5 bg-black/80 backdrop-blur-xs text-[10px] font-mono text-[#F5F2EA] uppercase tracking-wider">
+                          <div className="absolute bottom-2.5 left-2.5 px-2.5 py-0.5 bg-black/80 backdrop-blur-xs text-[10px] font-mono text-[#F5F2EA] uppercase tracking-wider">
                             {room.category}
                           </div>
                         </div>
@@ -463,7 +460,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                         </div>
 
                         {/* Rate footer */}
-                        <div className="pt-3 mt-3 border-t border-[#EFEBE2] flex items-baseline justify-between">
+                        <div className="pt-3.5 mt-3.5 border-t border-[#EFEBE2] flex items-baseline justify-between">
                           <span className="font-serif text-base font-semibold text-[#111111]">
                             {room.pricePerNight}
                           </span>
@@ -475,12 +472,12 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 </div>
               </div>
 
-              {/* STEP 2: Dates, Quick Presets & Guest Details */}
-              <div className="space-y-4 pt-4 border-t border-[#181818]/15">
-                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+              {/* Dates, Quick Presets & Guest Details */}
+              <div className="space-y-5 pt-8 sm:pt-10 border-t border-[#181818]/15">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
                   <label className="luxury-form-label !mb-0">
                     <Calendar size={16} className="label-icon" />
-                    <span>STEP 2 · STAY DATES & DURATION</span>
+                    <span>STAY DATES & DURATION</span>
                   </label>
 
                   {/* Quick Preset Duration Chips */}
@@ -513,7 +510,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6">
                   {/* Check-In */}
                   <div>
                     <label className="luxury-form-label" htmlFor="booking-check-in">
@@ -567,14 +564,14 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 </div>
               </div>
 
-              {/* STEP 3: Patron Guest Information */}
-              <div className="space-y-4 pt-4 border-t border-[#181818]/15">
+              {/* Patron Guest Information */}
+              <div className="space-y-5 pt-8 sm:pt-10 border-t border-[#181818]/15">
                 <label className="luxury-form-label !mb-0">
                   <User size={16} className="label-icon" />
-                  <span>STEP 3 · PATRON CONTACT INFORMATION</span>
+                  <span>PATRON CONTACT INFORMATION</span>
                 </label>
 
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-5 lg:gap-6">
                   {/* Guest Full Name */}
                   <div>
                     <label htmlFor="booking-guest-name" className="luxury-form-label">
@@ -583,7 +580,6 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                     <input
                       id="booking-guest-name"
                       type="text"
-                      placeholder="e.g. Rohith Varma"
                       value={guestName}
                       onChange={(e) => {
                         setGuestName(e.target.value);
@@ -602,7 +598,6 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                     <input
                       id="booking-guest-phone"
                       type="tel"
-                      placeholder="e.g. 9845012345"
                       value={guestPhone}
                       onChange={(e) => {
                         setGuestPhone(e.target.value);
@@ -621,7 +616,6 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                     <input
                       id="booking-guest-email"
                       type="email"
-                      placeholder="e.g. patron@novahouse.com"
                       value={guestEmail}
                       onChange={(e) => {
                         setGuestEmail(e.target.value);
@@ -642,7 +636,6 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   <input
                     id="booking-special-requests"
                     type="text"
-                    placeholder="e.g. Airport transfer, quiet courtyard floor, vegan breakfast..."
                     value={specialRequests}
                     onChange={(e) => setSpecialRequests(e.target.value)}
                     className="luxury-form-input"
@@ -673,9 +666,9 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                 </motion.div>
               )}
 
-              {/* STEP 4: Real-time Rate Summary Card & Direct CTA */}
-              <div className="bg-[#111111] text-[#F5F2EA] p-6 sm:p-8 border border-white/10 shadow-lg space-y-6">
-                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-6 border-b border-white/10">
+              {/* Real-time Rate Summary Card & Direct CTA */}
+              <div className="bg-[#111111] text-[#F5F2EA] p-6 sm:p-10 lg:p-12 border border-white/10 shadow-lg space-y-8 mt-8">
+                <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 pb-8 border-b border-white/10">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
                       <span className="w-2 h-2 rounded-full bg-[#B69A68] animate-pulse" />
@@ -695,19 +688,19 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
 
                   {/* Summary Breakdown Pills */}
                   <div className="flex flex-wrap items-center gap-4 text-xs">
-                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                    <div className="bg-[#1C1C1A] px-4 py-2.5 border border-white/10">
                       <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">Suite Rate</span>
                       <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹ {selectedRoom.numericPrice.toLocaleString('en-IN')} / night
                       </span>
                     </div>
-                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                    <div className="bg-[#1C1C1A] px-4 py-2.5 border border-white/10">
                       <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">Duration</span>
                       <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         {nights} Nights
                       </span>
                     </div>
-                    <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
+                    <div className="bg-[#1C1C1A] px-4 py-2.5 border border-white/10">
                       <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">GST (18%)</span>
                       <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
                         ₹ {taxes.toLocaleString('en-IN')}
