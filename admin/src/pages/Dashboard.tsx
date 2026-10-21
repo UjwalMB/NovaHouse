@@ -21,6 +21,7 @@ import {
   Building,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
+import { motion } from 'motion/react';
 import StatCard from '../components/ui/StatCard';
 import Button from '../components/ui/Button';
 import StatusBadge from '../components/ui/StatusBadge';
@@ -353,7 +354,7 @@ export default function Dashboard() {
       </div>
 
       {/* TOP KPI CARDS (Required by STEP 4) */}
-      <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-6 gap-3 sm:gap-4">
         <StatCard
           title="Occupancy %"
           value={`${occupancyRate}%`}
@@ -407,8 +408,8 @@ export default function Dashboard() {
       {/* OPERATIONAL SECTION (Required by STEP 4) */}
       <div className="admin-card">
         {/* Operational Section Navigation Tabs */}
-        <div className="border-b border-[#ECE8E0] px-4 pt-4 flex flex-wrap items-center justify-between gap-3">
-          <div className="flex flex-wrap items-center gap-1">
+        <div className="border-b border-[#ECE8E0] px-4 pt-3 flex items-center justify-between gap-3 overflow-x-auto">
+          <div className="flex items-center gap-1 min-w-max pb-1">
             <button
               onClick={() => setOpsTab('arrivals')}
               className={`px-3 py-2 text-xs font-mono uppercase tracking-wider border-b-2 transition-all flex items-center gap-2 cursor-pointer ${
@@ -520,7 +521,13 @@ export default function Dashboard() {
         <div className="p-4 sm:p-6">
           {/* TAB 1: Today's Arrivals */}
           {opsTab === 'arrivals' && (
-            <div className="space-y-4">
+            <motion.div
+              key="arrivals"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Expected Check-Ins & Arrivals</h4>
@@ -585,12 +592,18 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 2: Today's Departures */}
           {opsTab === 'departures' && (
-            <div className="space-y-4">
+            <motion.div
+              key="departures"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Expected Check-Outs & Departures</h4>
@@ -651,12 +664,18 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 3: Room Status Rack */}
           {opsTab === 'roomStatus' && (
-            <div className="space-y-4">
+            <motion.div
+              key="roomStatus"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Live Room Rack & Status Matrix</h4>
@@ -693,12 +712,18 @@ export default function Dashboard() {
                   );
                 })}
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 4: Housekeeping Alerts */}
           {opsTab === 'housekeeping' && (
-            <div className="space-y-4">
+            <motion.div
+              key="housekeeping"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Pending Housekeeping & Sanitization Tasks</h4>
@@ -748,12 +773,18 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 5: Maintenance Alerts */}
           {opsTab === 'maintenance' && (
-            <div className="space-y-4">
+            <motion.div
+              key="maintenance"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Open Engineering & Maintenance Requests</h4>
@@ -804,12 +835,18 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
 
           {/* TAB 6: Pending Enquiries */}
           {opsTab === 'enquiries' && (
-            <div className="space-y-4">
+            <motion.div
+              key="enquiries"
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+              className="space-y-4"
+            >
               <div className="flex items-center justify-between">
                 <div>
                   <h4 className="font-serif text-lg font-light text-[#111111]">Pending Guest Inquiries & Leads</h4>
@@ -854,7 +891,7 @@ export default function Dashboard() {
                   ))}
                 </div>
               )}
-            </div>
+            </motion.div>
           )}
         </div>
       </div>

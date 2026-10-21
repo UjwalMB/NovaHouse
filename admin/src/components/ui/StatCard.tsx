@@ -1,5 +1,7 @@
 import React from 'react';
 import { TrendingUp, TrendingDown, Minus, LucideIcon } from 'lucide-react';
+import { motion } from 'motion/react';
+import AnimatedCounter from './AnimatedCounter';
 
 export interface TrendInfo {
   direction: 'up' | 'down' | 'neutral';
@@ -14,6 +16,7 @@ interface StatCardProps {
   icon?: LucideIcon;
   accent?: boolean;
   className?: string;
+  animated?: boolean;
 }
 
 export default function StatCard({
@@ -24,16 +27,49 @@ export default function StatCard({
   icon: Icon,
   accent = false,
   className = '',
+  animated = true,
 }: StatCardProps) {
+  // Parse numeric string if possible for Anime.js rolling counter
+  let prefix = '';
+  let numericValue: number | null = null;
+  let suffix = '';
+
+  if (typeof value === 'number') {
+    numericValue = value;
+  } else if (typeof value === 'string' && animated) {
+    const match = value.match(/^([^\d.-]*)([\d,]+(?:\.\d+)?)(.*)$/);
+    if (match) {
+      prefix = match[1];
+      const parsed = parseFloat(match[2].replace(/,/g, ''));
+      if (!isNaN(parsed)) {
+        numericValue = parsed;
+        suffix = match[3];
+      }
+    }
+  }
+
   return (
-    <div className={`stat-card ${className} ${accent ? 'border-l-4 !border-l-[#A58A5C]' : ''}`}>
+    <motion.div
+      whileHover={{ y: -3, transition: { duration: 0.2, ease: 'easeOut' } }}
+      className={`stat-card transition-shadow hover:shadow-md ${className} ${
+        accent ? 'border-l-4 !border-l-[#A58A5C]' : ''
+      }`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div>
           <span className="font-mono text-xs uppercase tracking-widest text-[#77736C] block mb-1">
             {title}
           </span>
-          <div className="font-serif text-3xl font-light text-[#111111] tracking-tight">
-            {value}
+          <div className="font-sans text-2xl md:text-3xl font-semibold text-[#111111] tracking-tight tabular-nums">
+            {numericValue !== null ? (
+              <AnimatedCounter
+                value={numericValue}
+                prefix={prefix}
+                suffix={suffix}
+              />
+            ) : (
+              value
+            )}
           </div>
         </div>
         {Icon && (
@@ -64,6 +100,7 @@ export default function StatCard({
           {subtitle && <span className="text-[#77736C]">{subtitle}</span>}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
+
