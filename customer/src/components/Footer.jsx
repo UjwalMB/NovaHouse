@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUp, Compass } from 'lucide-react';
+import { motion } from 'motion/react';
 import { HOTEL_INFO } from '../data/hotelData';
 import { fetchHotelConfig, subscribeToHotelConfig } from '../services/hotelService';
 
@@ -179,14 +180,16 @@ export default function Footer() {
             © 2026 Nova House. All rights reserved.
           </div>
 
-          <button
+          <motion.button
             onClick={scrollToTop}
-            className="back-to-top-btn"
+            whileHover={{ y: -2 }}
+            whileTap={{ scale: 0.95 }}
+            className="back-to-top-btn cursor-pointer"
             aria-label="Back to top"
           >
             <span>Back to top</span>
             <ArrowUp size={13} />
-          </button>
+          </motion.button>
         </div>
       </div>
     </footer>

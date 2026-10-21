@@ -1,5 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { X, Check, BedDouble, Maximize2, Eye, Coffee, Wifi, Sparkles, ArrowUpRight } from 'lucide-react';
+import { motion } from 'motion/react';
+import {
+  modalBackdropVariants,
+  modalDialogVariants,
+  buttonTactile,
+} from '../utils/animations';
 
 export default function RoomModal({ room, onClose, onSelectRoomForBooking }) {
   const [activeImageIndex, setActiveImageIndex] = useState(0);
@@ -27,16 +33,24 @@ export default function RoomModal({ room, onClose, onSelectRoomForBooking }) {
   };
 
   return (
-    <div
+    <motion.div
       className="modal-overlay"
+      variants={modalBackdropVariants}
+      initial="hidden"
+      animate="visible"
+      exit="hidden"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
       aria-label={`${room.title} Details`}
       data-lenis-prevent="true"
     >
-      <div
-        className="modal-dialog-content bg-[#F7F5EF] text-[#181818] w-full max-w-5xl shadow-2xl border border-[#181818]/12 relative animate-fade-in"
+      <motion.div
+        className="modal-dialog-content bg-[#F7F5EF] text-[#181818] w-full max-w-5xl shadow-2xl border border-[#181818]/12 relative"
+        variants={modalDialogVariants}
+        initial="hidden"
+        animate="visible"
+        exit="hidden"
         onClick={(e) => e.stopPropagation()}
         data-lenis-prevent="true"
         style={{
@@ -52,13 +66,14 @@ export default function RoomModal({ room, onClose, onSelectRoomForBooking }) {
             <h3 className="font-serif text-xl sm:text-2xl font-light uppercase text-[#181818]">{room.title}</h3>
           </div>
 
-          <button
+          <motion.button
             onClick={onClose}
-            className="p-2 rounded-full hover:bg-[#181818] hover:text-[#F5F2EA] transition-colors border border-[#181818]/10"
+            whileTap={{ scale: 0.9 }}
+            className="p-2 rounded-full hover:bg-[#181818] hover:text-[#F5F2EA] transition-colors border border-[#181818]/10 cursor-pointer"
             aria-label="Close modal"
           >
             <X size={18} />
-          </button>
+          </motion.button>
         </div>
 
         {/* Modal Body */}
@@ -159,14 +174,15 @@ export default function RoomModal({ room, onClose, onSelectRoomForBooking }) {
                 </p>
               </div>
 
-              <button
+              <motion.button
                 onClick={handleBookNow}
-                className="w-full btn-luxury-primary !py-4"
+                {...buttonTactile}
+                className="w-full btn-luxury-primary !py-4 cursor-pointer"
                 style={{ backgroundColor: '#181818', color: '#F5F2EA', borderColor: '#181818' }}
               >
                 <span>Reserve {room.title}</span>
                 <ArrowUpRight size={15} />
-              </button>
+              </motion.button>
 
               <div className="text-[11px] text-center font-mono text-[#77736B]">
                 Free cancellation up to 48h prior · Guaranteed Best Direct Rate
@@ -174,7 +190,7 @@ export default function RoomModal({ room, onClose, onSelectRoomForBooking }) {
             </div>
           </div>
         </div>
-      </div>
-    </div>
+      </motion.div>
+    </motion.div>
   );
 }

@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowUpRight, BedDouble, Maximize2, Sparkles, ArrowRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { ROOMS_DATA } from '../data/hotelData';
 import { fetchLiveRoomsCatalog, subscribeToLiveRooms } from '../services/roomsService';
+import { buttonTactile, cardInteractive } from '../utils/animations';
 
 export default function Rooms({ onViewRoom, onBookRoom }) {
   const [activeFilter, setActiveFilter] = useState('All');
@@ -79,15 +81,16 @@ export default function Rooms({ onViewRoom, onBookRoom }) {
               {['All', 'Rooms', 'Suites'].map((filter) => {
                 const isActive = activeFilter === filter;
                 return (
-                  <button
+                  <motion.button
                     key={filter}
                     type="button"
                     onClick={() => setActiveFilter(filter)}
                     className={`filter-tab-btn ${isActive ? 'is-active' : ''}`}
                     aria-pressed={isActive}
+                    whileTap={{ scale: 0.96 }}
                   >
                     {filter}
-                  </button>
+                  </motion.button>
                 );
               })}
             </div>
@@ -95,12 +98,19 @@ export default function Rooms({ onViewRoom, onBookRoom }) {
         </div>
 
         {/* Editorial Rooms Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
-          {filteredRooms.map((room, index) => (
-            <div
-              key={room.id}
-              className="group flex flex-col bg-[#FBFAF6] border border-[#181818]/10 overflow-hidden hover:border-[#B69A68]/50 hover:-translate-y-1.5 transition-all duration-500 ease-out shadow-xs hover:shadow-lg"
-            >
+        <motion.div layout className="grid grid-cols-1 md:grid-cols-2 gap-8 lg:gap-12">
+          <AnimatePresence mode="popLayout">
+            {filteredRooms.map((room, index) => (
+              <motion.div
+                key={room.id}
+                layout
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.96 }}
+                transition={{ duration: 0.45, delay: index * 0.08 }}
+                {...cardInteractive}
+                className="group flex flex-col bg-[#FBFAF6] border border-[#181818]/10 overflow-hidden hover:border-[#B69A68]/50 transition-all duration-300 shadow-xs hover:shadow-lg"
+              >
               {/* Room Image Container with High Contrast Badges */}
               <div className="relative aspect-[16/10] overflow-hidden bg-[#E8E2D7]">
                 <img
@@ -186,18 +196,20 @@ export default function Rooms({ onViewRoom, onBookRoom }) {
 
                 {/* Actions Bar */}
                 <div className="flex items-center justify-between pt-6 border-t border-[#181818]/10">
-                  <button
+                  <motion.button
                     onClick={() => onViewRoom(room)}
-                    className="editorial-link text-xs font-mono tracking-widest"
+                    className="editorial-link text-xs font-mono tracking-widest cursor-pointer"
+                    whileHover={{ x: 4 }}
                   >
                     <span>View Room</span>
                     <ArrowRight size={14} />
-                  </button>
+                  </motion.button>
 
-                  <button
+                  <motion.button
                     onClick={() => room.isAvailable !== false && onBookRoom(room.id)}
                     disabled={room.isAvailable === false}
-                    className={`btn-luxury-primary !py-2.5 !px-5 text-[11px] ${
+                    {...buttonTactile}
+                    className={`btn-luxury-primary !py-2.5 !px-5 text-[11px] cursor-pointer ${
                       room.isAvailable === false ? 'opacity-50 cursor-not-allowed' : ''
                     }`}
                     style={{
@@ -208,12 +220,13 @@ export default function Rooms({ onViewRoom, onBookRoom }) {
                   >
                     <span>{room.isAvailable === false ? (room.status || 'Unavailable') : 'Reserve'}</span>
                     <ArrowUpRight size={13} />
-                  </button>
+                  </motion.button>
                 </div>
               </div>
-            </div>
+            </motion.div>
           ))}
-        </div>
+          </AnimatePresence>
+        </motion.div>
       </div>
     </section>
   );

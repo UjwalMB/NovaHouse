@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Clock, Thermometer, Check } from 'lucide-react';
+import { motion } from 'motion/react';
 import { EXPERIENCES_DATA } from '../data/hotelData';
 
 export default function Experiences() {
@@ -33,11 +34,13 @@ export default function Experiences() {
               {EXPERIENCES_DATA.map((exp, idx) => {
                 const isActive = idx === activeIndex;
                 return (
-                  <div
+                  <motion.div
                     key={exp.id || idx}
                     onMouseEnter={() => setActiveIndex(idx)}
                     onFocus={() => setActiveIndex(idx)}
                     onClick={() => setActiveIndex(idx)}
+                    whileHover={{ x: 4 }}
+                    whileTap={{ scale: 0.99 }}
                     role="button"
                     tabIndex={0}
                     onKeyDown={(e) => {
@@ -45,7 +48,7 @@ export default function Experiences() {
                         setActiveIndex(idx);
                       }
                     }}
-                    className={`experience-card group ${isActive ? 'is-active' : ''}`}
+                    className={`experience-card group cursor-pointer ${isActive ? 'is-active' : ''}`}
                   >
                     <div className="flex items-center justify-between">
                       <div className="flex items-center gap-2.5">
@@ -80,7 +83,7 @@ export default function Experiences() {
                         {exp.description}
                       </p>
                     </div>
-                  </div>
+                  </motion.div>
                 );
               })}
             </div>

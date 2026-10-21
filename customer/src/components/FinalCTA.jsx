@@ -1,5 +1,7 @@
 import React from 'react';
 import { ArrowUpRight } from 'lucide-react';
+import { motion } from 'motion/react';
+import { buttonPrimaryGlow } from '../utils/animations';
 
 export default function FinalCTA({ onOpenBooking }) {
   return (
@@ -24,8 +26,13 @@ export default function FinalCTA({ onOpenBooking }) {
         <div className="absolute inset-0 pointer-events-none opacity-10 architectural-grid-subtle" />
       </div>
 
-      <div className="container-luxury relative z-10 text-center max-w-4xl space-y-8">
-
+      <motion.div
+        initial={{ opacity: 0, y: 24 }}
+        whileInView={{ opacity: 1, y: 0 }}
+        viewport={{ once: true }}
+        transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        className="container-luxury relative z-10 text-center max-w-4xl space-y-8"
+      >
         <h2
           className="font-serif text-6xl sm:text-7xl md:text-8xl lg:text-9xl font-light uppercase tracking-tight leading-[0.9] text-[#FFFFFF]"
           style={{ textShadow: '0 4px 24px rgba(0, 0, 0, 0.7)' }}
@@ -42,9 +49,10 @@ export default function FinalCTA({ onOpenBooking }) {
         </p>
 
         <div className="pt-4">
-          <button
+          <motion.button
             onClick={onOpenBooking}
-            className="btn-luxury-primary !py-5 !px-10 text-xs tracking-[0.22em] font-semibold shadow-lg"
+            {...buttonPrimaryGlow}
+            className="btn-luxury-primary !py-5 !px-10 text-xs tracking-[0.22em] font-semibold shadow-lg cursor-pointer"
             style={{
               backgroundColor: '#B69A68',
               borderColor: '#B69A68',
@@ -53,7 +61,7 @@ export default function FinalCTA({ onOpenBooking }) {
           >
             <span>Book Your Stay</span>
             <ArrowUpRight size={16} />
-          </button>
+          </motion.button>
         </div>
 
         <div className="pt-6">
@@ -69,7 +77,7 @@ export default function FinalCTA({ onOpenBooking }) {
             84 Residency Road · Richmond Town · Bengaluru 560025
           </span>
         </div>
-      </div>
+      </motion.div>
     </section>
   );
 }

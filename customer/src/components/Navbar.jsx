@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Menu, X, ArrowUpRight } from 'lucide-react';
+import { motion, AnimatePresence } from 'motion/react';
 import { HOTEL_INFO } from '../data/hotelData';
+import { buttonPrimaryGlow, buttonTactile } from '../utils/animations';
 
 export default function Navbar({ onOpenBooking }) {
   const [scrolled, setScrolled] = useState(false);
@@ -70,22 +72,24 @@ export default function Navbar({ onOpenBooking }) {
           {/* RIGHT: Book a Stay CTA & Toggle Button */}
           <div className="flex items-center gap-3 sm:gap-4">
             {/* Book A Stay CTA */}
-            <button
+            <motion.button
               onClick={onOpenBooking}
-              className="navbar-cta-btn hidden sm:inline-flex"
+              {...buttonPrimaryGlow}
+              className="navbar-cta-btn hidden sm:inline-flex cursor-pointer"
             >
               <span>Book a Stay</span>
               <ArrowUpRight size={13} />
-            </button>
+            </motion.button>
 
             {/* Mobile / Tablet Menu Toggle Button */}
-            <button
+            <motion.button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="nav-toggle-btn"
+              whileTap={{ scale: 0.9 }}
+              className="nav-toggle-btn cursor-pointer"
               aria-label="Toggle navigation menu"
             >
               {mobileMenuOpen ? <X size={20} /> : <Menu size={20} />}
-            </button>
+            </motion.button>
           </div>
         </div>
       </header>
@@ -107,14 +111,15 @@ export default function Navbar({ onOpenBooking }) {
               BENGALURU · INDIA
             </span>
           </div>
-          <button
+          <motion.button
             onClick={() => setMobileMenuOpen(false)}
-            className="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 text-[#F5F2EA] hover:text-[#B69A68] hover:border-[#B69A68] transition-colors"
+            whileTap={{ scale: 0.9 }}
+            className="w-10 h-10 rounded-full flex items-center justify-center border border-white/20 text-[#F5F2EA] hover:text-[#B69A68] hover:border-[#B69A68] transition-colors cursor-pointer"
             style={{ backgroundColor: 'rgba(255, 255, 255, 0.05)' }}
             aria-label="Close menu"
           >
             <X size={20} />
-          </button>
+          </motion.button>
         </div>
 
         <div className="py-8">
@@ -133,17 +138,18 @@ export default function Navbar({ onOpenBooking }) {
         </div>
 
         <div className="space-y-5 pt-6 border-t border-white/10">
-          <button
+          <motion.button
             onClick={() => {
               setMobileMenuOpen(false);
               onOpenBooking();
             }}
-            className="w-full btn-luxury-primary !py-4 text-xs tracking-widest font-semibold"
+            {...buttonPrimaryGlow}
+            className="w-full btn-luxury-primary !py-4 text-xs tracking-widest font-semibold cursor-pointer"
             style={{ backgroundColor: '#B69A68', borderColor: '#B69A68', color: '#111111' }}
           >
             <span>Book Your Stay</span>
             <ArrowUpRight size={15} />
-          </button>
+          </motion.button>
           <div className="flex items-center justify-between text-xs text-[#B8B3AA] font-mono">
             <span>Bengaluru · 12° 58' N</span>
             <span>+91 80 4920 8800</span>

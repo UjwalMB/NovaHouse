@@ -20,6 +20,7 @@ import {
   Phone,
   Tag,
 } from 'lucide-react';
+import { motion } from 'motion/react';
 import confetti from 'canvas-confetti';
 import { ROOMS_DATA } from '../data/hotelData';
 import {
@@ -32,6 +33,7 @@ import {
 import { checkAvailability } from '../services/bookingApi';
 import { fetchLiveRoomsCatalog } from '../services/roomsService';
 import { validatePromoCode } from '../services/offersService';
+import { buttonPrimaryGlow } from '../utils/animations';
 
 /**
  * Format a YYYY-MM-DD date into "18 Oct 2026"
@@ -588,14 +590,15 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               Reserve Sanctuary
             </h3>
           </div>
-          <button
+          <motion.button
             onClick={onClose}
+            whileTap={{ scale: 0.9 }}
             className="w-9 h-9 flex items-center justify-center border border-[#181818]/15 rounded-full hover:bg-[#181818] hover:text-[#F5F2EA] transition-colors"
             aria-label="Close drawer"
             style={{ backgroundColor: '#EFEBE2', color: '#181818' }}
           >
             <X size={16} />
-          </button>
+          </motion.button>
         </div>
 
         {/* Drawer Body */}
@@ -986,7 +989,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
           {paymentState === 'idle' && (
             <form onSubmit={handleStartPayment} className="space-y-4">
               <div>
-                <label htmlFor="drawer-guest-name" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                <label htmlFor="drawer-guest-name" className="luxury-form-label">
                   GUEST NAME
                 </label>
                 <input
@@ -998,14 +1001,14 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                     setGuestName(e.target.value);
                     if (errorMessage) setErrorMessage('');
                   }}
-                  className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                  className="luxury-form-input"
                   required
                 />
               </div>
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="drawer-guest-email" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                  <label htmlFor="drawer-guest-email" className="luxury-form-label">
                     EMAIL ADDRESS
                   </label>
                   <input
@@ -1017,12 +1020,12 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                       setGuestEmail(e.target.value);
                       if (errorMessage) setErrorMessage('');
                     }}
-                    className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                    className="luxury-form-input"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="drawer-guest-phone" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                  <label htmlFor="drawer-guest-phone" className="luxury-form-label">
                     PHONE / WHATSAPP
                   </label>
                   <input
@@ -1034,14 +1037,14 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                       setGuestPhone(e.target.value);
                       if (errorMessage) setErrorMessage('');
                     }}
-                    className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                    className="luxury-form-input"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="drawer-select-room" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                <label htmlFor="drawer-select-room" className="luxury-form-label">
                   SELECT ROOM
                 </label>
                 <select
@@ -1051,7 +1054,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                     setRoomId(e.target.value);
                     setInlineAvailabilityError('');
                   }}
-                  className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                  className="luxury-form-select"
                 >
                   <option value="">Select a room</option>
                   {roomsList.map((r) => (
@@ -1064,7 +1067,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
 
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label htmlFor="drawer-check-in" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                  <label htmlFor="drawer-check-in" className="luxury-form-label">
                     CHECK-IN DATE
                   </label>
                   <input
@@ -1073,12 +1076,12 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                     min={todayStr}
                     value={checkIn}
                     onChange={(e) => handleCheckInChange(e.target.value)}
-                    className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                    className="luxury-form-input"
                     required
                   />
                 </div>
                 <div>
-                  <label htmlFor="drawer-check-out" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                  <label htmlFor="drawer-check-out" className="luxury-form-label">
                     CHECK-OUT DATE
                   </label>
                   <input
@@ -1087,21 +1090,21 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                     value={checkOut}
                     min={checkIn ? getMinCheckOut(checkIn) : todayStr}
                     onChange={(e) => handleCheckOutChange(e.target.value)}
-                    className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                    className="luxury-form-input"
                     required
                   />
                 </div>
               </div>
 
               <div>
-                <label htmlFor="drawer-guests" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                <label htmlFor="drawer-guests" className="luxury-form-label">
                   GUESTS
                 </label>
                 <select
                   id="drawer-guests"
                   value={guests}
                   onChange={(e) => setGuests(e.target.value)}
-                  className="w-full border border-[#181818]/12 p-3 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none bg-[#FBFAF6] text-[#181818]"
+                  className="luxury-form-select"
                 >
                   <option value="">Select number of guests</option>
                   <option value="1 Adult">1 Adult</option>
@@ -1113,7 +1116,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               </div>
 
               <div>
-                <label htmlFor="drawer-special-requests" className="block text-[10px] font-mono uppercase tracking-widest text-[#77736B] mb-1.5 font-medium">
+                <label htmlFor="drawer-special-requests" className="luxury-form-label">
                   SPECIAL REQUESTS / NOTES (OPTIONAL)
                 </label>
                 <textarea
@@ -1122,7 +1125,7 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
                   placeholder="e.g. Airport transfer, quiet floor, late check-in..."
                   value={specialRequests}
                   onChange={(e) => setSpecialRequests(e.target.value)}
-                  className="w-full border border-[#181818]/12 p-2.5 text-xs font-mono outline-none focus:border-[#181818] transition-colors rounded-none resize-none bg-[#FBFAF6] text-[#181818]"
+                  className="luxury-form-input !h-auto resize-none"
                 />
               </div>
 
@@ -1284,31 +1287,32 @@ export default function BookingDrawer({ isOpen, onClose, defaultRoomId, initialP
               {/* ================================================================ */}
               {/* SECTION 1 & 2: PRIMARY ACTION BUTTON (PAY ₹{amount})              */}
               {/* ================================================================ */}
-              <button
+              <motion.button
                 type="button"
                 id="booking-pay-cta"
                 onClick={handleStartPayment}
                 disabled={isProcessing}
-                className={`w-full py-4 px-6 text-xs font-mono tracking-widest font-semibold shadow-md flex items-center justify-center gap-2.5 rounded-none uppercase transition-all duration-200 ${
+                {...(!isProcessing && buttonState !== 'ERROR' ? buttonPrimaryGlow : { whileTap: { scale: 0.98 } })}
+                className={`w-full py-4 px-6 text-xs font-mono tracking-widest font-semibold shadow-md flex items-center justify-center gap-2.5 rounded-none uppercase transition-all duration-200 cursor-pointer ${
                   isProcessing
                     ? 'bg-[#2A2A2A] text-[#B8B3AA] cursor-wait opacity-90'
                     : buttonState === 'ERROR'
-                    ? 'bg-[#8B2020] hover:bg-[#6E1818] text-[#FFFFFF] cursor-pointer'
-                    : 'bg-[#181818] hover:bg-[#000000] text-[#F5F2EA] active:scale-[0.99] cursor-pointer'
+                    ? 'bg-[#8B2020] hover:bg-[#6E1818] text-[#FFFFFF]'
+                    : 'bg-[#B69A68] hover:bg-[#A38755] text-[#111111]'
                 }`}
                 style={{ minHeight: '52px' }}
               >
                 {isProcessing ? (
-                  <Loader2 size={16} className="animate-spin text-[#B69A68]" />
+                  <Loader2 size={16} className="animate-spin text-[#111111]" />
                 ) : buttonState === 'SUCCESS' ? (
-                  <Check size={16} className="text-emerald-400" />
+                  <Check size={16} className="text-[#111111]" />
                 ) : buttonState === 'ERROR' ? (
                   <RefreshCw size={16} className="text-white" />
                 ) : (
-                  <CreditCard size={16} className="text-[#B69A68]" />
+                  <CreditCard size={16} className="text-[#111111]" />
                 )}
                 <span className="font-mono tracking-wider text-[12px]">{getButtonText()}</span>
-              </button>
+              </motion.button>
             </form>
           )}
         </div>

@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { Tag, Sparkles, ArrowUpRight, Copy, Check, Clock, Gift } from 'lucide-react';
+import { motion } from 'motion/react';
 import { fetchActiveOffers, subscribeToOffers } from '../services/offersService';
+import { buttonTactile, cardInteractive } from '../utils/animations';
 
 export default function Offers({ onClaimOffer }) {
   const [offers, setOffers] = useState([]);
@@ -84,9 +86,10 @@ export default function Offers({ onClaimOffer }) {
         {/* Offers Grid */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 lg:gap-8">
           {offers.map((offer, index) => (
-            <div
+            <motion.div
               key={offer.id || index}
-              className="bg-[#FBFAF6] border border-[#181818]/10 p-6 sm:p-8 flex flex-col justify-between hover:border-[#B69A68]/50 hover:-translate-y-1.5 transition-all duration-500 ease-out shadow-xs hover:shadow-lg group"
+              {...cardInteractive}
+              className="bg-[#FBFAF6] border border-[#181818]/10 p-6 sm:p-8 flex flex-col justify-between hover:border-[#B69A68]/50 transition-all duration-300 shadow-xs hover:shadow-lg group"
             >
               <div>
                 {/* Discount Badge */}
@@ -117,10 +120,11 @@ export default function Offers({ onClaimOffer }) {
                     </span>
                   </div>
 
-                  <button
+                  <motion.button
                     type="button"
                     onClick={(e) => handleCopyCode(offer.code, e)}
-                    className="p-1 text-[#77736B] hover:text-[#181818] transition-colors"
+                    whileTap={{ scale: 0.9 }}
+                    className="p-1 text-[#77736B] hover:text-[#181818] transition-colors cursor-pointer"
                     title="Copy Promo Code"
                     aria-label={`Copy code ${offer.code}`}
                   >
@@ -131,21 +135,22 @@ export default function Offers({ onClaimOffer }) {
                     ) : (
                       <Copy size={13} />
                     )}
-                  </button>
+                  </motion.button>
                 </div>
 
                 {/* Action Button */}
-                <button
+                <motion.button
                   type="button"
                   onClick={() => onClaimOffer && onClaimOffer(offer)}
-                  className="w-full btn-luxury-primary !py-3 text-[11px] tracking-widest flex items-center justify-center gap-2"
+                  {...buttonTactile}
+                  className="w-full btn-luxury-primary !py-3 text-[11px] tracking-widest flex items-center justify-center gap-2 cursor-pointer"
                   style={{ backgroundColor: '#181818', color: '#F5F2EA', borderColor: '#181818' }}
                 >
                   <span>Book with this Offer</span>
                   <ArrowUpRight size={13} />
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
           ))}
         </div>
       </div>
