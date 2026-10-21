@@ -169,8 +169,12 @@ export default function Invoices() {
       key: 'invoiceNumber',
       render: (inv) => (
         <div>
-          <span className="font-mono text-xs font-bold text-[#111111] block">{inv.invoiceNumber}</span>
-          <span className="text-[10px] text-[#77736C] font-mono">Issued: {inv.issueDate}</span>
+          <span className="font-mono text-xs font-bold text-[#111111] tracking-wider block" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            {inv.invoiceNumber}
+          </span>
+          <span className="text-[10px] text-[#77736C] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            Issued: {inv.issueDate}
+          </span>
         </div>
       ),
     },
@@ -179,14 +183,16 @@ export default function Invoices() {
       key: 'guestName',
       render: (inv) => (
         <div>
-          <span className="font-medium text-xs text-[#111111] block">{inv.guestName}</span>
+          <span className="font-sans font-medium text-xs text-[#111111] block">{inv.guestName}</span>
           {inv.companyName && (
-            <span className="text-[10px] font-mono text-[#A58A5C] block">
-              {inv.companyName} {inv.gstin && `· GSTIN: ${inv.gstin}`}
+            <span className="text-[11px] font-sans text-[#A58A5C] block">
+              {inv.companyName} {inv.gstin && <span className="font-mono text-[10px] text-[#77736C]">· GSTIN: {inv.gstin}</span>}
             </span>
           )}
           {inv.roomNumber && (
-            <span className="text-[10px] text-[#77736C] font-mono block">Room Key #{inv.roomNumber}</span>
+            <span className="text-[10px] text-[#77736C] font-sans block">
+              Room Key: <strong className="font-mono text-[#111111]">#{inv.roomNumber}</strong>
+            </span>
           )}
         </div>
       ),
@@ -194,13 +200,13 @@ export default function Invoices() {
     {
       header: 'Due Date',
       key: 'dueDate',
-      render: (inv) => <span className="font-mono text-xs text-[#77736C]">{inv.dueDate}</span>,
+      render: (inv) => <span className="font-mono text-xs text-[#77736C]" style={{ fontVariantNumeric: 'tabular-nums' }}>{inv.dueDate}</span>,
     },
     {
       header: 'Taxes (GST 18%)',
       key: 'totalTaxes',
       render: (inv) => (
-        <span className="font-mono text-xs text-[#55514B]">
+        <span className="font-mono text-xs text-[#55514B]" style={{ fontVariantNumeric: 'tabular-nums' }}>
           ₹ {inv.totalTaxes.toLocaleString()}
         </span>
       ),
@@ -209,7 +215,7 @@ export default function Invoices() {
       header: 'Grand Total',
       key: 'grandTotal',
       render: (inv) => (
-        <span className="font-mono text-xs font-bold text-[#111111]">
+        <span className="font-mono text-xs font-bold text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>
           ₹ {inv.grandTotal.toLocaleString()}
         </span>
       ),
@@ -228,7 +234,7 @@ export default function Invoices() {
           {inv.status === 'Pending' && (
             <button
               onClick={() => handleUpdateStatus(inv.id, 'Paid')}
-              className="px-2 py-1 text-[10px] font-mono font-medium text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xs transition-colors cursor-pointer"
+              className="px-2 py-1 text-[10px] font-sans font-semibold uppercase tracking-wider text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 rounded-xs transition-colors cursor-pointer"
             >
               Mark Paid
             </button>
@@ -262,13 +268,13 @@ export default function Invoices() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-6 border-b border-[#E2DDD5]">
         <div>
-          <span className="font-mono text-xs uppercase tracking-widest text-[#A58A5C] block mb-1">
+          <span className="font-mono text-xs uppercase tracking-[0.2em] text-[#A58A5C] block mb-1 font-semibold">
             Financial Ledger & Tax Compliant Billing
           </span>
-          <h1 className="font-serif text-3xl font-light text-[#111111] uppercase tracking-tight">
+          <h1 className="font-serif text-3xl font-light text-[#111111] uppercase tracking-wide">
             Invoices Management
           </h1>
-          <p className="text-xs text-[#77736C] mt-1">
+          <p className="font-sans text-xs text-[#77736C] mt-1">
             Generate statutory GST invoices, break down lodging tariffs and F&B folios, and disburse official billing.
           </p>
         </div>
@@ -286,21 +292,29 @@ export default function Invoices() {
       {/* KPI Tiles */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="admin-card p-4 border-l-4 border-[#111111]">
-          <span className="font-mono text-[10px] uppercase text-[#77736C] block">Total Invoiced Volume</span>
-          <span className="font-serif text-2xl font-light text-[#111111]">₹ {totalInvoiced.toLocaleString()}</span>
-          <span className="text-[10px] text-[#77736C] block mt-1">{invoices.length} invoices generated</span>
+          <span className="font-sans text-[11px] uppercase tracking-wider font-semibold text-[#77736C] block">Total Invoiced Volume</span>
+          <span className="font-mono text-2xl font-semibold text-[#111111] block mt-0.5" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            ₹ {totalInvoiced.toLocaleString()}
+          </span>
+          <span className="font-sans text-[11px] text-[#77736C] block mt-1">
+            <strong className="font-mono text-[#111111]">{invoices.length}</strong> invoices generated
+          </span>
         </div>
 
         <div className="admin-card p-4 border-l-4 border-emerald-600">
-          <span className="font-mono text-[10px] uppercase text-[#77736C] block">Collected / Settled</span>
-          <span className="font-serif text-2xl font-light text-emerald-800">₹ {paidInvoiced.toLocaleString()}</span>
-          <span className="text-[10px] text-[#77736C] block mt-1">Receipted and reconciled</span>
+          <span className="font-sans text-[11px] uppercase tracking-wider font-semibold text-[#77736C] block">Collected / Settled</span>
+          <span className="font-mono text-2xl font-semibold text-emerald-800 block mt-0.5" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            ₹ {paidInvoiced.toLocaleString()}
+          </span>
+          <span className="font-sans text-[11px] text-[#77736C] block mt-1">Receipted and reconciled</span>
         </div>
 
         <div className="admin-card p-4 border-l-4 border-amber-500">
-          <span className="font-mono text-[10px] uppercase text-[#77736C] block">Pending Collections</span>
-          <span className="font-serif text-2xl font-light text-amber-800">₹ {pendingInvoiced.toLocaleString()}</span>
-          <span className="text-[10px] text-[#77736C] block mt-1">Awaiting checkout settlement</span>
+          <span className="font-sans text-[11px] uppercase tracking-wider font-semibold text-[#77736C] block">Pending Collections</span>
+          <span className="font-mono text-2xl font-semibold text-amber-800 block mt-0.5" style={{ fontVariantNumeric: 'tabular-nums' }}>
+            ₹ {pendingInvoiced.toLocaleString()}
+          </span>
+          <span className="font-sans text-[11px] text-[#77736C] block mt-1">Awaiting checkout settlement</span>
         </div>
       </div>
 
@@ -346,55 +360,55 @@ export default function Invoices() {
         title="Generate Tax Invoice"
         subtitle="NOVA HOUSE · Statutory GST Billing"
       >
-        <form onSubmit={handleCreateSubmit} className="space-y-4">
+        <form onSubmit={handleCreateSubmit} className="space-y-4 font-sans">
           <div className="grid grid-cols-2 gap-3 text-xs">
             <div className="form-group !mb-0">
-              <label className="form-label">Guest Full Name</label>
+              <label className="form-label font-sans">Guest Full Name</label>
               <input
                 type="text"
                 required
                 value={form.guestName}
                 onChange={(e) => setForm({ ...form, guestName: e.target.value })}
                 placeholder="Ratan Tata"
-                className="form-input text-xs"
+                className="form-input text-xs font-sans"
               />
             </div>
 
             <div className="form-group !mb-0">
-              <label className="form-label">Email</label>
+              <label className="form-label font-sans">Email</label>
               <input
                 type="email"
                 value={form.guestEmail}
                 onChange={(e) => setForm({ ...form, guestEmail: e.target.value })}
                 placeholder="patron@company.com"
-                className="form-input text-xs"
+                className="form-input text-xs font-sans"
               />
             </div>
 
             <div className="form-group !mb-0">
-              <label className="form-label">Company Name (Optional)</label>
+              <label className="form-label font-sans">Company Name (Optional)</label>
               <input
                 type="text"
                 value={form.companyName}
                 onChange={(e) => setForm({ ...form, companyName: e.target.value })}
                 placeholder="Tata Sons Pvt Ltd"
-                className="form-input text-xs"
+                className="form-input text-xs font-sans"
               />
             </div>
 
             <div className="form-group !mb-0">
-              <label className="form-label">Corporate GSTIN (Optional)</label>
+              <label className="form-label font-sans">Corporate GSTIN (Optional)</label>
               <input
                 type="text"
                 value={form.gstin}
                 onChange={(e) => setForm({ ...form, gstin: e.target.value })}
                 placeholder="29AAAAA0000A1Z5"
-                className="form-input text-xs font-mono"
+                className="form-input text-xs font-mono uppercase tracking-wider"
               />
             </div>
 
             <div className="form-group !mb-0">
-              <label className="form-label">Room Key #</label>
+              <label className="form-label font-sans">Room Key #</label>
               <input
                 type="text"
                 value={form.roomNumber}
@@ -405,7 +419,7 @@ export default function Invoices() {
             </div>
 
             <div className="form-group !mb-0">
-              <label className="form-label">Due Date</label>
+              <label className="form-label font-sans">Due Date</label>
               <input
                 type="date"
                 value={form.dueDate}
@@ -416,15 +430,15 @@ export default function Invoices() {
           </div>
 
           {/* Line items table */}
-          <div className="space-y-2 pt-2">
+          <div className="space-y-2 pt-2 font-sans">
             <div className="flex items-center justify-between">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#A58A5C] font-semibold">
+              <span className="font-sans text-xs uppercase tracking-wider text-[#A58A5C] font-semibold">
                 Billable Line Items
               </span>
               <button
                 type="button"
                 onClick={handleAddItem}
-                className="text-[11px] font-mono text-[#A58A5C] hover:underline flex items-center gap-1 cursor-pointer"
+                className="text-[11px] font-sans font-semibold text-[#A58A5C] hover:underline flex items-center gap-1 cursor-pointer"
               >
                 <Plus size={12} />
                 <span>Add Item</span>
@@ -433,32 +447,34 @@ export default function Invoices() {
 
             <div className="space-y-2 max-h-44 overflow-y-auto">
               {form.items.map((item) => (
-                <div key={item.id} className="grid grid-cols-12 gap-2 p-2 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs text-xs">
+                <div key={item.id} className="grid grid-cols-12 gap-2 p-2 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs text-xs font-sans">
                   <input
                     type="text"
                     value={item.description}
                     onChange={(e) => handleItemChange(item.id, 'description', e.target.value)}
                     placeholder="Description"
-                    className="col-span-6 form-input text-xs"
+                    className="col-span-6 form-input text-xs font-sans"
                   />
                   <input
                     type="number"
                     value={item.quantity}
                     onChange={(e) => handleItemChange(item.id, 'quantity', Number(e.target.value))}
                     placeholder="Qty"
-                    className="col-span-2 form-input text-xs font-mono"
+                    className="col-span-2 form-input text-xs font-mono text-center"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   />
                   <input
                     type="number"
                     value={item.unitPrice}
                     onChange={(e) => handleItemChange(item.id, 'unitPrice', Number(e.target.value))}
                     placeholder="Price"
-                    className="col-span-3 form-input text-xs font-mono"
+                    className="col-span-3 form-input text-xs font-mono text-right"
+                    style={{ fontVariantNumeric: 'tabular-nums' }}
                   />
                   <button
                     type="button"
                     onClick={() => handleRemoveItem(item.id)}
-                    className="col-span-1 text-[#77736C] hover:text-[#962828] flex items-center justify-center cursor-pointer"
+                    className="col-span-1 text-[#77736C] hover:text-[#962828] flex items-center justify-center cursor-pointer font-bold"
                   >
                     ×
                   </button>
@@ -466,12 +482,12 @@ export default function Invoices() {
               ))}
             </div>
 
-            <div className="text-[11px] font-mono text-[#77736C] text-right pt-2 border-t border-[#ECE8E0]">
+            <div className="text-[11px] font-sans text-[#77736C] text-right pt-2 border-t border-[#ECE8E0]">
               * Automated 18% GST (9% CGST + 9% SGST) applied to final grand total.
             </div>
           </div>
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-[#ECE8E0]">
+          <div className="flex justify-end gap-2 pt-3 border-t border-[#ECE8E0] font-sans">
             <Button variant="secondary" size="sm" onClick={() => setIsNewInvoiceOpen(false)}>
               Cancel
             </Button>
@@ -490,71 +506,77 @@ export default function Invoices() {
         subtitle={selectedInvoice ? `${selectedInvoice.guestName}` : ''}
       >
         {selectedInvoice && (
-          <div className="space-y-6">
-            <div className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2">
+          <div className="space-y-6 font-sans">
+            <div className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-2 font-sans">
               <div className="flex justify-between items-center">
-                <span className="font-mono text-sm font-bold text-[#111111]">{selectedInvoice.invoiceNumber}</span>
+                <span className="font-mono text-sm font-bold text-[#111111] tracking-wider" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                  {selectedInvoice.invoiceNumber}
+                </span>
                 <StatusBadge status={selectedInvoice.status} />
               </div>
-              <div className="text-xs text-[#77736C] space-y-1">
-                <div>Guest: <strong className="text-[#111111]">{selectedInvoice.guestName}</strong></div>
+              <div className="text-xs text-[#77736C] space-y-1 font-sans">
+                <div>Guest: <strong className="text-[#111111] font-medium">{selectedInvoice.guestName}</strong></div>
                 {selectedInvoice.companyName && (
-                  <div>Company: <strong className="text-[#111111]">{selectedInvoice.companyName}</strong></div>
+                  <div>Company: <strong className="text-[#111111] font-medium">{selectedInvoice.companyName}</strong></div>
                 )}
                 {selectedInvoice.gstin && (
-                  <div>GSTIN: <strong className="text-[#111111] font-mono">{selectedInvoice.gstin}</strong></div>
+                  <div>GSTIN: <strong className="text-[#111111] font-mono tracking-wider">{selectedInvoice.gstin}</strong></div>
                 )}
                 <div>Room: <strong className="text-[#111111] font-mono">{selectedInvoice.roomNumber || 'N/A'}</strong></div>
-                <div>Issue Date: <strong className="text-[#111111] font-mono">{selectedInvoice.issueDate}</strong></div>
-                <div>Due Date: <strong className="text-[#111111] font-mono">{selectedInvoice.dueDate}</strong></div>
+                <div>Issue Date: <strong className="text-[#111111] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedInvoice.issueDate}</strong></div>
+                <div>Due Date: <strong className="text-[#111111] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedInvoice.dueDate}</strong></div>
               </div>
             </div>
 
             {/* Line items list */}
             <div className="space-y-2">
-              <span className="font-mono text-xs uppercase tracking-wider text-[#A58A5C] font-bold block">
+              <span className="font-sans text-xs uppercase tracking-wider text-[#A58A5C] font-semibold block">
                 Itemized Tariff & Services
               </span>
-              <div className="space-y-1.5 border border-[#ECE8E0] rounded-xs divide-y divide-[#ECE8E0] text-xs font-mono">
+              <div className="space-y-1.5 border border-[#ECE8E0] rounded-xs divide-y divide-[#ECE8E0] text-xs font-sans">
                 {selectedInvoice.items.map((item, idx) => (
                   <div key={idx} className="p-3 flex justify-between items-center bg-white">
                     <div>
-                      <span className="text-[#111111] block font-medium">{item.description}</span>
-                      <span className="text-[10px] text-[#77736C]">{item.quantity} × ₹ {item.unitPrice.toLocaleString()} ({item.category})</span>
+                      <span className="text-[#111111] block font-medium font-sans">{item.description}</span>
+                      <span className="text-[11px] text-[#77736C] font-sans">
+                        <span className="font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>{item.quantity}</span> × <span className="font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {item.unitPrice.toLocaleString()}</span> ({item.category})
+                      </span>
                     </div>
-                    <span className="font-semibold text-[#111111]">₹ {item.amount.toLocaleString()}</span>
+                    <span className="font-semibold text-[#111111] font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                      ₹ {item.amount.toLocaleString()}
+                    </span>
                   </div>
                 ))}
               </div>
             </div>
 
             {/* Calculation Breakdown */}
-            <div className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-1.5 text-xs font-mono">
-              <div className="flex justify-between text-[#77736C]">
+            <div className="p-4 bg-[#FAF8F5] border border-[#ECE8E0] rounded-xs space-y-1.5 text-xs font-sans">
+              <div className="flex justify-between text-[#77736C] font-sans">
                 <span>Subtotal:</span>
-                <span>₹ {selectedInvoice.subtotal.toLocaleString()}</span>
+                <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.subtotal.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-[#77736C]">
+              <div className="flex justify-between text-[#77736C] font-sans">
                 <span>CGST (9%):</span>
-                <span>₹ {selectedInvoice.cgst.toLocaleString()}</span>
+                <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.cgst.toLocaleString()}</span>
               </div>
-              <div className="flex justify-between text-[#77736C]">
+              <div className="flex justify-between text-[#77736C] font-sans">
                 <span>SGST (9%):</span>
-                <span>₹ {selectedInvoice.sgst.toLocaleString()}</span>
+                <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.sgst.toLocaleString()}</span>
               </div>
               {selectedInvoice.discount > 0 && (
-                <div className="flex justify-between text-emerald-700">
+                <div className="flex justify-between text-emerald-700 font-sans">
                   <span>Privilege Discount:</span>
-                  <span>- ₹ {selectedInvoice.discount.toLocaleString()}</span>
+                  <span className="font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>- ₹ {selectedInvoice.discount.toLocaleString()}</span>
                 </div>
               )}
-              <div className="flex justify-between text-sm font-bold text-[#111111] pt-2 border-t border-dashed border-[#CDC7BC]">
-                <span>Grand Total:</span>
-                <span>₹ {selectedInvoice.grandTotal.toLocaleString()}</span>
+              <div className="flex justify-between text-sm font-bold text-[#111111] pt-2 border-t border-dashed border-[#CDC7BC] font-sans">
+                <span className="uppercase tracking-wider text-xs">Grand Total:</span>
+                <span className="font-mono text-base font-bold" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.grandTotal.toLocaleString()}</span>
               </div>
             </div>
 
-            <div className="pt-4 border-t border-[#ECE8E0] flex flex-wrap gap-2 justify-between">
+            <div className="pt-4 border-t border-[#ECE8E0] flex flex-wrap gap-2 justify-between font-sans">
               <Button
                 variant="secondary"
                 size="sm"
@@ -574,7 +596,7 @@ export default function Invoices() {
                   Mark Paid & Generate Receipt
                 </Button>
               ) : (
-                <span className="text-xs font-mono text-emerald-700 font-semibold flex items-center gap-1">
+                <span className="text-xs font-sans text-emerald-700 font-semibold flex items-center gap-1">
                   <CheckCircle2 size={13} />
                   <span>Settled & Receipt Issued</span>
                 </span>
@@ -593,107 +615,115 @@ export default function Invoices() {
       >
         {selectedInvoice && (
           <div className="space-y-6">
-            <div id="printable-invoice" className="p-6 bg-white border border-[#E2DDD5] rounded-xs space-y-6 font-serif text-[#111111]">
+            <div id="printable-invoice" className="p-6 bg-white border border-[#E2DDD5] rounded-xs space-y-6 text-[#111111]">
               {/* Hotel Letterhead */}
               <div className="flex justify-between items-start border-b border-[#111111] pb-4">
                 <div>
-                  <h2 className="font-serif text-2xl tracking-widest font-light">NOVA HOUSE</h2>
-                  <span className="font-mono text-[9px] tracking-widest uppercase block text-[#A58A5C]">
+                  <h2 className="font-serif text-3xl tracking-widest font-light text-[#111111]">NOVA HOUSE</h2>
+                  <span className="font-mono text-[9px] tracking-[0.25em] uppercase block text-[#A58A5C] font-semibold mt-0.5">
                     Hotel & Sanctuary · Bengaluru, India
                   </span>
-                  <div className="font-mono text-[10px] text-[#55514B] mt-1 space-y-0.5">
+                  <div className="font-sans text-[11px] text-[#55514B] mt-2 space-y-0.5 leading-relaxed">
                     <div>Lavelle Road, Richmond Circle, Bengaluru 560001</div>
-                    <div>GSTIN: 29AAACN8820P1Z4 · CIN: U55101KA2024PTC189021</div>
+                    <div className="font-mono text-[10px] text-[#77736C]">GSTIN: 29AAACN8820P1Z4 · CIN: U55101KA2024PTC189021</div>
                     <div>reservations@novahouse.com · +91 80 4965 8800</div>
                   </div>
                 </div>
 
-                <div className="text-right font-mono text-xs">
-                  <span className="font-bold text-sm text-[#111111] block">TAX INVOICE</span>
-                  <span className="text-[#A58A5C] block">#{selectedInvoice.invoiceNumber}</span>
-                  <span className="text-[10px] text-[#77736C] block mt-1">Issue Date: {selectedInvoice.issueDate}</span>
-                  <span className="text-[10px] text-[#77736C] block">Due Date: {selectedInvoice.dueDate}</span>
+                <div className="text-right">
+                  <span className="font-serif text-base tracking-widest text-[#111111] font-semibold block">TAX INVOICE</span>
+                  <span className="font-mono text-xs font-bold text-[#A58A5C] tracking-wider block mt-0.5" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    #{selectedInvoice.invoiceNumber}
+                  </span>
+                  <div className="text-[11px] font-sans text-[#77736C] mt-2 space-y-0.5">
+                    <div>Issue Date: <span className="font-mono text-[#111111] font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedInvoice.issueDate}</span></div>
+                    <div>Due Date: <span className="font-mono text-[#111111] font-medium" style={{ fontVariantNumeric: 'tabular-nums' }}>{selectedInvoice.dueDate}</span></div>
+                  </div>
                 </div>
               </div>
 
               {/* Billed To */}
-              <div className="grid grid-cols-2 gap-4 font-mono text-xs text-[#55514B]">
+              <div className="grid grid-cols-2 gap-4 text-xs font-sans text-[#55514B]">
                 <div>
-                  <span className="text-[10px] uppercase text-[#77736C] block">Billed To (Guest / Client):</span>
-                  <strong className="text-[#111111] text-sm block mt-0.5">{selectedInvoice.guestName}</strong>
-                  {selectedInvoice.companyName && <div>{selectedInvoice.companyName}</div>}
-                  {selectedInvoice.gstin && <div>GSTIN: {selectedInvoice.gstin}</div>}
-                  {selectedInvoice.guestEmail && <div>{selectedInvoice.guestEmail}</div>}
+                  <span className="text-[10px] uppercase tracking-wider text-[#77736C] font-semibold block mb-0.5">
+                    Billed To (Guest / Client):
+                  </span>
+                  <strong className="font-serif text-lg font-normal text-[#111111] block">{selectedInvoice.guestName}</strong>
+                  {selectedInvoice.companyName && <div className="font-sans text-xs font-medium text-[#111111]">{selectedInvoice.companyName}</div>}
+                  {selectedInvoice.gstin && <div className="font-mono text-xs text-[#55514B] tracking-wider">GSTIN: {selectedInvoice.gstin}</div>}
+                  {selectedInvoice.guestEmail && <div className="font-sans text-xs text-[#77736C]">{selectedInvoice.guestEmail}</div>}
                 </div>
 
                 <div className="text-right">
-                  <span className="text-[10px] uppercase text-[#77736C] block">Stay Specifics:</span>
-                  <div>Room Allocated: <strong>Suite #{selectedInvoice.roomNumber || '101'}</strong></div>
-                  <div>Status: <strong className="uppercase">{selectedInvoice.status}</strong></div>
-                  <div>Payment Mode: {selectedInvoice.paymentMethod || 'Razorpay Gateway'}</div>
+                  <span className="text-[10px] uppercase tracking-wider text-[#77736C] font-semibold block mb-0.5">
+                    Stay Specifics:
+                  </span>
+                  <div className="font-sans text-xs text-[#55514B]">Room Allocated: <strong className="font-mono text-[#111111]">Suite #{selectedInvoice.roomNumber || '101'}</strong></div>
+                  <div className="font-sans text-xs text-[#55514B]">Status: <strong className="uppercase font-sans font-bold text-[#111111]">{selectedInvoice.status}</strong></div>
+                  <div className="font-sans text-xs text-[#55514B]">Payment Mode: <span className="font-sans text-[#111111]">{selectedInvoice.paymentMethod || 'Razorpay Gateway'}</span></div>
                 </div>
               </div>
 
               {/* Items Table */}
-              <table className="w-full text-xs font-mono border-collapse">
+              <table className="w-full text-xs border-collapse">
                 <thead>
-                  <tr className="border-b border-[#111111] text-left text-[10px] uppercase text-[#77736C]">
-                    <th className="py-2">Description</th>
-                    <th className="py-2">Category</th>
-                    <th className="py-2 text-center">Qty</th>
-                    <th className="py-2 text-right">Unit Rate (₹)</th>
-                    <th className="py-2 text-right">Amount (₹)</th>
+                  <tr className="border-b border-[#111111] text-left text-[10px] font-sans uppercase tracking-wider font-semibold text-[#77736C]">
+                    <th className="py-2.5 font-semibold">Description</th>
+                    <th className="py-2.5 font-semibold">Category</th>
+                    <th className="py-2.5 text-center font-semibold">Qty</th>
+                    <th className="py-2.5 text-right font-semibold">Unit Rate (₹)</th>
+                    <th className="py-2.5 text-right font-semibold">Amount (₹)</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#ECE8E0]">
                   {selectedInvoice.items.map((item, idx) => (
                     <tr key={idx} className="py-2">
-                      <td className="py-2.5 font-medium text-[#111111]">{item.description}</td>
-                      <td className="py-2.5 text-[#77736C]">{item.category}</td>
-                      <td className="py-2.5 text-center">{item.quantity}</td>
-                      <td className="py-2.5 text-right font-mono">₹ {item.unitPrice.toLocaleString()}</td>
-                      <td className="py-2.5 text-right font-mono font-semibold">₹ {item.amount.toLocaleString()}</td>
+                      <td className="py-2.5 font-sans font-medium text-[#111111]">{item.description}</td>
+                      <td className="py-2.5 font-sans text-[#77736C] text-[11px]">{item.category}</td>
+                      <td className="py-2.5 text-center font-mono text-xs text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>{item.quantity}</td>
+                      <td className="py-2.5 text-right font-mono text-xs text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {item.unitPrice.toLocaleString()}</td>
+                      <td className="py-2.5 text-right font-mono text-xs font-semibold text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {item.amount.toLocaleString()}</td>
                     </tr>
                   ))}
                 </tbody>
               </table>
 
               {/* Tax & Total Summary */}
-              <div className="border-t border-[#111111] pt-3 flex justify-end font-mono text-xs">
+              <div className="border-t border-[#111111] pt-3 flex justify-end font-sans text-xs">
                 <div className="w-64 space-y-1.5">
-                  <div className="flex justify-between text-[#77736C]">
+                  <div className="flex justify-between text-[#77736C] font-sans">
                     <span>Subtotal:</span>
-                    <span>₹ {selectedInvoice.subtotal.toLocaleString()}</span>
+                    <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.subtotal.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-[#77736C]">
+                  <div className="flex justify-between text-[#77736C] font-sans">
                     <span>CGST (9.0%):</span>
-                    <span>₹ {selectedInvoice.cgst.toLocaleString()}</span>
+                    <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.cgst.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between text-[#77736C]">
+                  <div className="flex justify-between text-[#77736C] font-sans">
                     <span>SGST (9.0%):</span>
-                    <span>₹ {selectedInvoice.sgst.toLocaleString()}</span>
+                    <span className="font-mono text-[#111111]" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.sgst.toLocaleString()}</span>
                   </div>
                   <div className="flex justify-between text-base font-bold text-[#111111] pt-2 border-t border-[#111111]">
-                    <span>Grand Total:</span>
-                    <span>₹ {selectedInvoice.grandTotal.toLocaleString()}</span>
+                    <span className="font-sans uppercase tracking-wide text-xs">Grand Total:</span>
+                    <span className="font-mono font-bold text-base" style={{ fontVariantNumeric: 'tabular-nums' }}>₹ {selectedInvoice.grandTotal.toLocaleString()}</span>
                   </div>
                 </div>
               </div>
 
               {/* Signoff */}
-              <div className="border-t border-[#ECE8E0] pt-4 flex justify-between items-end text-[10px] font-mono text-[#77736C]">
-                <div>
-                  <div>Thank you for staying at NOVA HOUSE Bengaluru.</div>
-                  <div>This is a computer-generated tax invoice verified under GST regulations.</div>
+              <div className="border-t border-[#ECE8E0] pt-4 flex justify-between items-end">
+                <div className="space-y-1">
+                  <div className="font-serif italic text-xs text-[#4A453E]">Thank you for staying at NOVA HOUSE Bengaluru.</div>
+                  <div className="font-sans text-[10px] text-[#77736C]">This is an official computer-generated tax invoice verified under GST regulations.</div>
                 </div>
-                <div className="text-right">
-                  <div className="w-32 border-b border-[#111111] mb-1" />
-                  <div>Authorized Signatory · Front Desk</div>
+                <div className="text-right font-sans">
+                  <div className="w-36 border-b border-[#111111] mb-1 ml-auto" />
+                  <div className="text-[10px] font-sans uppercase tracking-wider text-[#77736C] font-semibold">Authorized Signatory · Front Desk</div>
                 </div>
               </div>
             </div>
 
-            <div className="flex justify-end gap-2">
+            <div className="flex justify-end gap-2 font-sans">
               <Button variant="secondary" size="sm" onClick={() => setIsPrintModalOpen(false)}>
                 Close
               </Button>

@@ -325,58 +325,62 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
               </div>
 
               {/* Booking Dossier Details Table */}
-              <div className="p-6 bg-[#FFFFFF] border border-[#D5CFC4] text-left space-y-3 font-mono text-xs shadow-xs">
+              <div className="p-6 bg-[#FFFFFF] border border-[#D5CFC4] text-left space-y-3 font-sans text-xs shadow-xs">
                 <div className="flex justify-between items-center pb-2.5 border-b border-[#EFEBE2]">
-                  <span className="text-[#555047] font-medium">Confirmation Code:</span>
-                  <strong className="text-[#111111] font-bold tracking-wider">{confirmedReservation.code}</strong>
+                  <span className="text-[#555047] font-semibold">Confirmation Code:</span>
+                  <strong className="text-[#111111] font-mono font-bold tracking-wider" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                    {confirmedReservation.code}
+                  </strong>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Payment Status:</span>
-                  <span className="px-2.5 py-0.5 bg-[#EDF7F0] text-[#1B4D29] border border-[#C8E8D1] font-bold">
+                  <span className="text-[#555047] font-semibold">Payment Status:</span>
+                  <span className="px-2.5 py-0.5 bg-[#EDF7F0] text-[#1B4D29] border border-[#C8E8D1] font-sans font-bold text-[11px] uppercase tracking-wider">
                     PAID · GUARANTEED
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Guest Name:</span>
-                  <span className="text-[#111111] font-semibold">{confirmedReservation.guestName}</span>
+                  <span className="text-[#555047] font-semibold">Guest Name:</span>
+                  <span className="text-[#111111] font-sans font-medium">{confirmedReservation.guestName}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Contact:</span>
-                  <span className="text-[#111111]">{confirmedReservation.guestPhone} · {confirmedReservation.guestEmail}</span>
+                  <span className="text-[#555047] font-semibold">Contact:</span>
+                  <span className="text-[#111111] font-sans">{confirmedReservation.guestPhone} · {confirmedReservation.guestEmail}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Sanctuary:</span>
-                  <span className="text-[#111111] font-semibold">{confirmedReservation.room.title}</span>
+                  <span className="text-[#555047] font-semibold">Sanctuary:</span>
+                  <span className="text-[#111111] font-serif text-sm font-semibold">{confirmedReservation.room.title}</span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Stay Dates:</span>
-                  <span className="text-[#111111] font-bold">{confirmedReservation.checkIn} → {confirmedReservation.checkOut} ({confirmedReservation.nights} Nights)</span>
+                  <span className="text-[#555047] font-semibold">Stay Dates:</span>
+                  <span className="text-[#111111] font-sans">
+                    <span className="font-mono font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>{confirmedReservation.checkIn}</span> → <span className="font-mono font-semibold" style={{ fontVariantNumeric: 'tabular-nums' }}>{confirmedReservation.checkOut}</span> ({confirmedReservation.nights} Nights)
+                  </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-[#555047] font-medium">Guests:</span>
-                  <span className="text-[#111111]">{confirmedReservation.guests}</span>
+                  <span className="text-[#555047] font-semibold">Guests:</span>
+                  <span className="text-[#111111] font-sans">{confirmedReservation.guests}</span>
                 </div>
                 {confirmedReservation.paymentId && (
                   <div className="flex justify-between items-center">
-                    <span className="text-[#555047] font-medium">Transaction ID:</span>
-                    <span className="text-[#111111] font-mono text-[11px]">{confirmedReservation.paymentId}</span>
+                    <span className="text-[#555047] font-semibold">Transaction ID:</span>
+                    <span className="text-[#111111] font-mono text-[11px] tracking-wide" style={{ fontVariantNumeric: 'tabular-nums' }}>{confirmedReservation.paymentId}</span>
                   </div>
                 )}
                 <div className="flex justify-between items-baseline pt-3 border-t border-[#EFEBE2]">
-                  <span className="text-[#555047] font-medium">Total Paid:</span>
-                  <span className="font-serif text-2xl text-[#111111] font-bold">
+                  <span className="text-[#555047] font-sans font-bold uppercase tracking-wider text-xs">Total Paid:</span>
+                  <span className="font-mono text-2xl text-[#111111] font-bold" style={{ fontVariantNumeric: 'tabular-nums' }}>
                     ₹ {confirmedReservation.total.toLocaleString('en-IN')}
                   </span>
                 </div>
               </div>
 
               {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
+              <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2 font-sans">
                 <motion.button
                   type="button"
                   onClick={() => window.print()}
                   {...buttonSecondaryTactile}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#FFFFFF] border-2 border-[#111111] text-[#111111] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#FFFFFF] border-2 border-[#111111] text-[#111111] font-sans text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   <Printer size={15} />
                   <span>PRINT VOUCHER</span>
@@ -385,7 +389,7 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   type="button"
                   onClick={() => setConfirmedReservation(null)}
                   {...buttonPrimaryGlow}
-                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#111111] text-[#F5F2EA] font-mono text-xs font-bold uppercase tracking-wider cursor-pointer"
+                  className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3.5 bg-[#111111] text-[#F5F2EA] font-sans text-xs font-bold uppercase tracking-wider cursor-pointer"
                 >
                   <span>BOOK ANOTHER SANCTUARY</span>
                 </motion.button>
@@ -690,24 +694,30 @@ export default function Booking({ preselectedRoomId, onBookingSuccess }) {
                   </div>
 
                   {/* Summary Breakdown Pills */}
-                  <div className="flex flex-wrap items-center gap-4 text-xs font-mono text-[#B8B3AA]">
+                  <div className="flex flex-wrap items-center gap-4 text-xs">
                     <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
-                      <span className="text-[#B69A68] block text-[10px] uppercase">Suite Rate</span>
-                      <span className="text-[#F5F2EA] font-semibold">₹ {selectedRoom.numericPrice.toLocaleString('en-IN')} / night</span>
+                      <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">Suite Rate</span>
+                      <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        ₹ {selectedRoom.numericPrice.toLocaleString('en-IN')} / night
+                      </span>
                     </div>
                     <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
-                      <span className="text-[#B69A68] block text-[10px] uppercase">Duration</span>
-                      <span className="text-[#F5F2EA] font-semibold">{nights} Nights</span>
+                      <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">Duration</span>
+                      <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        {nights} Nights
+                      </span>
                     </div>
                     <div className="bg-[#1C1C1A] px-3.5 py-2 border border-white/10">
-                      <span className="text-[#B69A68] block text-[10px] uppercase">GST (18%)</span>
-                      <span className="text-[#F5F2EA] font-semibold">₹ {taxes.toLocaleString('en-IN')}</span>
+                      <span className="text-[#B69A68] block text-[10px] uppercase font-sans font-semibold tracking-wider">GST (18%)</span>
+                      <span className="text-[#F5F2EA] font-semibold font-mono" style={{ fontVariantNumeric: 'tabular-nums' }}>
+                        ₹ {taxes.toLocaleString('en-IN')}
+                      </span>
                     </div>
                   </div>
                 </div>
 
                 {/* Trust Inclusions */}
-                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-mono text-[#B8B3AA]">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-xs font-sans text-[#B8B3AA]">
                   <div className="flex items-center gap-2">
                     <Shield size={14} className="text-[#B69A68] shrink-0" />
                     <span>Best Price Guaranteed Direct</span>
